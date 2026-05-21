@@ -1,0 +1,26 @@
+schema: spec-driven
+
+context: |
+  Maestro = Tauri v2 desktop app that orchestrates AI coding agents to autonomously
+  resolve Linear issues into merged PRs. Forked from openai/symphony (Apache 2.0).
+
+  Tech stack:
+    - Frontend: React 19 + Vite + shadcn/ui + TanStack Router + Zustand
+    - Desktop shell: Tauri v2 (Rust backend + WebView frontend)
+    - Mobile: Expo React Native (later phase)
+    - Backend logic: TypeScript, pnpm + Turborepo monorepo
+    - Persistence: Supabase (Postgres + Realtime + Auth)
+    - Tracker: Linear API (GraphQL)
+    - Agent runtime: AppServer Protocol (LLM-provider-agnostic)
+      - Preferred OSS core: codex SDK
+      - LLM provider: pluggable, configurable
+      - First supported provider: MiniMax (OpenAI-compatible interface)
+
+  Reference docs (read-only contract): docs/references/SPEC.md, AGENTS.md, WORKFLOW.md
+    — these are the implementation contract; specs in this folder MUST NOT contradict them.
+
+  Conventions:
+    - Conventional commits
+    - English for all code identifiers, Chinese OK for proposal/design narrative
+    - 2-space indent, single quotes, semicolons
+    - shadcn/ui components mandatory in React surfaces
