@@ -17,6 +17,18 @@
       }
     ]
   },
+  "plugins": {
+    "deep-link": {
+      "desktop": [
+        {
+          "schemes": [
+            "maestro"
+          ]
+        }
+      ],
+      "mobile": []
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
