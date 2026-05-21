@@ -1,14 +1,35 @@
-import { createRoute } from "@tanstack/react-router";
+import { createRoute, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/auth";
 import { Route as RootRoute } from "./__root";
 
 export const Route = createRoute({
   getParentRoute: () => RootRoute,
   path: "/",
+  beforeLoad: async () => {
+    const state = useAuthStore.getState();
+
+    if (!state.loading && !state.session) {
+      throw redirect({ to: "/login" as never });
+    }
+  },
   component: HomePage
 });
 
 function HomePage() {
+  const { loading, session } = useAuthStore((state) => ({
+    session: state.session,
+    loading: state.loading
+  }));
+
+  if (loading) {
+    return <section className="text-sm text-slate-300">Loading session...</section>;
+  }
+
+  if (!session) {
+    return <section className="text-sm text-slate-300">Redirecting to login...</section>;
+  }
+
   return (
     <section className="space-y-6">
       <div className="space-y-2">
