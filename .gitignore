@@ -1,1 +1,7 @@
 node_modules/
+dist/
+target/
+.env*
+*.log
+.DS_Store
+.turbo/

@@ -1,0 +1,10 @@
+{
+  "identifier": "default",
+  "description": "Default capability for the Maestro desktop shell.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default"
+  ]
+}
