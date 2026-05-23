@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 1420",
+    "dev:app": "tauri dev",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit --pretty false",
     "tauri": "tauri"
   },
   "dependencies": {
+    "@maestro/types": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-router": "^1.121.21",
     "@tauri-apps/api": "^2.11.0",

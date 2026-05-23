@@ -5,6 +5,7 @@
       "dependsOn": [
         "^build"
       ],
+      "inputs": ["src/**", "index.html", "public/**", "package.json", "tsconfig.json", "vite.config.*"],
       "outputs": [
         "dist/**",
         "target/**"
@@ -18,9 +19,17 @@
       "dependsOn": [
         "^typecheck"
       ],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
       "outputs": []
     },
     "lint": {
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": ["src/**", "*.test.*", "vitest.config.*"],
       "outputs": []
     }
   }
