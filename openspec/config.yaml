@@ -1,26 +1,55 @@
 schema: spec-driven
 
 context: |
-  Maestro = Tauri v2 desktop app that orchestrates AI coding agents to autonomously
-  resolve Linear issues into merged PRs. Forked from openai/symphony (Apache 2.0).
+  Maestro = Tauri v2 desktop app that guides technical founders through a structured
+  product development pipeline (Phase 0–5), maintaining a clean unique context for
+  both humans and AI agents across long-term iterations, while enforcing market
+  commitment through an immutable product contract.
+
+  Core mission (single sentence):
+    Prevent product direction drift during long-term AI-assisted development by
+    maintaining a single source of truth for product intent, and forcing products
+    to ship via deadline + success metric commitment.
 
   Tech stack:
-    - Frontend: React 19 + Vite + shadcn/ui + TanStack Router + Zustand
     - Desktop shell: Tauri v2 (Rust backend + WebView frontend)
-    - Mobile: Expo React Native (later phase)
-    - Backend logic: TypeScript, pnpm + Turborepo monorepo
-    - Persistence: Supabase (Postgres + Realtime + Auth)
-    - Tracker: Linear API (GraphQL)
-    - Agent runtime: AppServer Protocol (LLM-provider-agnostic)
-      - Preferred OSS core: codex SDK
-      - LLM provider: pluggable, configurable
-      - First supported provider: MiniMax (OpenAI-compatible interface)
+    - Frontend: React 19 + Vite + shadcn/ui + TanStack Router + Zustand
+    - Local storage: SQLite (tauri-plugin-sql) — primary source of truth on local disk
+    - Remote sync: Supabase (Postgres) — backup + cross-device sync, NOT primary read/write
+    - Monorepo: pnpm + Turborepo
+    - LLM: pluggable model pool (OpenAI-compatible API)
+        First providers: MiniMax, DeepSeek v4 (reasoning)
+        API keys: stored in Tauri secure store (user-managed)
 
-  Reference docs (read-only contract): docs/references/SPEC.md, AGENTS.md, WORKFLOW.md
-    — these are the implementation contract; specs in this folder MUST NOT contradict them.
+  Architecture decisions (locked):
+    - Local-first: all data on user's local disk (SQLite), synced to Supabase + GitHub
+    - Network required: GitHub OAuth + LLM calls — no offline mode
+    - Contract immutability: enforced in Rust app layer (not DB triggers)
+    - Phase artifacts: committed to target repo under .maestro/ on key transitions
+    - Supabase role: remote backup / sync target only; RLS not relevant for local
+
+  Product pipeline phases:
+    0. Feed          — raw idea input (text / URL / GitHub repo / file)
+    1. Intent        — multi-round LLM clarification → intent canvas (clarity ≥ 85)
+    2. Boundary      — scope items locked permanently (in / out / open)
+    3. Validation    — dual-pass LLM (advocate + prosecutor) → go / no-go verdict
+    4. Contract      — immutable commitment: deadline + product_type + success_metric
+    5. Evolution     — versioned iterations via openspec changes in target repo
+
+  MVP scope (v0.1) — DO NOT expand without explicit change proposal:
+    IN:  technical founders, Tauri desktop, GitHub OAuth, model pool (user keys)
+    OUT: non-technical UX, Chinese market signals, multi-user, mobile
+
+  First users: Cogito Tech internal team (dogfooding)
+
+  BEFORE implementing any change, read:
+    1. openspec/specs/product.md   — product boundary (in/out scope, arch decisions)
+    2. docs/references/mvp/        — UI spec, data spec, interaction spec
+    3. docs/architecture/vision.md — architecture charter
 
   Conventions:
     - Conventional commits
     - English for all code identifiers, Chinese OK for proposal/design narrative
     - 2-space indent, single quotes, semicolons
     - shadcn/ui components mandatory in React surfaces
+    - Rust: Tauri v2 patterns, tauri-plugin-sql for SQLite access
