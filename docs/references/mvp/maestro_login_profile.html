@@ -1,0 +1,239 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap');
+*{box-sizing:border-box;}
+.wrap{font-family:'Syne',var(--font-sans);}
+.sec-title{font-size:9px;text-transform:uppercase;letter-spacing:0.14em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:10px;}
+
+.login-frame{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:32px 24px;display:flex;justify-content:center;margin-bottom:14px;}
+.login-box{width:320px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;}
+.lh{padding:24px 24px 20px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary);}
+.lh-mark{width:32px;height:32px;border:2px solid var(--color-text-primary);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;font-family:'IBM Plex Mono',monospace;margin:0 auto 10px;}
+.lh-title{font-size:16px;font-weight:600;color:var(--color-text-primary);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;}
+.lh-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.lb{padding:20px 20px 22px;}
+.gh-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:11px 16px;border:0.5px solid var(--color-border-primary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text-primary);font-family:'Syne',var(--font-sans);transition:background 0.1s;margin-bottom:14px;}
+.gh-btn:hover{background:var(--color-background-primary);}
+.login-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.ld-line{flex:1;height:0.5px;background:var(--color-border-tertiary);}
+.ld-text{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.login-note{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);text-align:center;line-height:1.6;}
+.login-note strong{color:var(--color-text-secondary);font-weight:500;}
+.login-access-info{margin-top:12px;padding:9px 11px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);display:flex;gap:7px;align-items:flex-start;}
+.lai-text{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);line-height:1.5;}
+
+.profile-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:14px;}
+.pf-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.pf-logo{display:flex;align-items:center;gap:7px;}
+.pf-mark{width:20px;height:20px;border:1.5px solid var(--color-text-primary);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.pf-name{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;}
+.pf-nav{display:flex;gap:4px;}
+.nav-item{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:4px 9px;border-radius:var(--border-radius-md);color:var(--color-text-tertiary);cursor:pointer;border:0.5px solid transparent;}
+.nav-item.act{color:var(--color-text-primary);border-color:var(--color-border-secondary);background:var(--color-background-secondary);}
+.pf-body{display:grid;grid-template-columns:200px 1fr;min-height:460px;}
+.pf-sidebar{border-right:0.5px solid var(--color-border-tertiary);padding:14px 12px;display:flex;flex-direction:column;gap:4px;}
+.pf-avatar-block{text-align:center;padding:10px 8px 14px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px;}
+.avatar{width:52px;height:52px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--color-text-primary);margin:0 auto 8px;}
+.av-name{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px;}
+.av-handle{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.av-score{margin-top:8px;padding:5px 8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);}
+.av-score-label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:2px;}
+.av-score-val{font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:#3B6D11;}
+
+.menu-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--border-radius-md);cursor:pointer;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);}
+.menu-item:hover,.menu-item.act{background:var(--color-background-secondary);color:var(--color-text-primary);}
+.menu-item.act{font-weight:500;}
+.menu-section{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);padding:8px 9px 3px;}
+.menu-item.danger{color:var(--color-text-danger,#A32D2D);}
+.menu-item.danger:hover{background:#FCEBEB;}
+
+.pf-content{padding:16px 20px;}
+.settings-group{margin-bottom:18px;}
+.sg-title{font-size:11px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.setting-row:last-child{border-bottom:none;}
+.sr-left{display:flex;flex-direction:column;gap:2px;}
+.sr-label{font-size:12px;color:var(--color-text-primary);}
+.sr-desc{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.toggle{width:36px;height:20px;border-radius:10px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);position:relative;cursor:pointer;flex-shrink:0;}
+.toggle.on{background:var(--color-text-primary);border-color:var(--color-text-primary);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:var(--color-background-primary);transition:left 0.15s;}
+.toggle.on .toggle-knob{left:19px;}
+.kv-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.kv-row:last-child{border-bottom:none;}
+.kk{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.kval{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-primary);}
+.kval.ok{color:#3B6D11;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center;}
+.stat-n{font-size:20px;font-weight:600;color:var(--color-text-primary);line-height:1;}
+.stat-n.ok{color:#3B6D11;}
+.stat-n.warn{color:#854F0B;}
+.stat-lbl{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-top:3px;}
+.btn{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);cursor:pointer;background:transparent;display:flex;align-items:center;gap:5px;}
+.conn-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.conn-row:last-child{border-bottom:none;}
+.conn-info{display:flex;align-items:center;gap:8px;}
+.conn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.conn-dot.ok{background:#3B6D11;}
+.conn-dot.off{background:#888780;}
+.conn-name{font-size:12px;color:var(--color-text-primary);}
+.conn-sub{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+</style>
+
+<h2 class="sr-only">Maestro — login page with GitHub OAuth, and user profile center with settings, stats, and integrations</h2>
+
+<div class="wrap">
+  <div class="sec-title">login page</div>
+  <div class="login-frame">
+    <div class="login-box">
+      <div class="lh">
+        <div class="lh-mark">M</div>
+        <div class="lh-title">Maestro</div>
+        <div class="lh-sub">app factory · product layer</div>
+      </div>
+      <div class="lb">
+        <button class="gh-btn">
+          <i class="ti ti-brand-github" style="font-size:18px;" aria-hidden="true"></i>
+          continue with github
+        </button>
+        <div class="login-divider">
+          <div class="ld-line"></div>
+          <span class="ld-text">access control</span>
+          <div class="ld-line"></div>
+        </div>
+        <div class="login-note">
+          <strong>invite only</strong> — maestro is currently in private beta.<br>
+          github account required to manage repos &amp; trigger builds.
+        </div>
+        <div class="login-access-info">
+          <i class="ti ti-info-circle" style="font-size:13px;color:var(--color-text-tertiary);flex-shrink:0;margin-top:1px;" aria-hidden="true"></i>
+          <div class="lai-text">signing in with github grants maestro read access to your repos and org membership. no write access until you explicitly link a repo to a product.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">user center · profile + settings</div>
+  <div class="profile-frame">
+    <div class="pf-topbar">
+      <div class="pf-logo">
+        <div class="pf-mark">M</div>
+        <span class="pf-name" style="font-family:'Syne',var(--font-sans);">Maestro</span>
+      </div>
+      <div class="pf-nav">
+        <div class="nav-item">products</div>
+        <div class="nav-item">resources</div>
+        <div class="nav-item">insights</div>
+        <div class="nav-item act">profile</div>
+      </div>
+    </div>
+
+    <div class="pf-body">
+      <div class="pf-sidebar">
+        <div class="pf-avatar-block">
+          <div class="avatar">YT</div>
+          <div class="av-name">Your Team</div>
+          <div class="av-handle">@yourteam · github</div>
+          <div class="av-score">
+            <div class="av-score-label">launch rate</div>
+            <div class="av-score-val">67% <span style="font-size:10px;color:var(--color-text-tertiary);font-weight:400;">2/3 shipped</span></div>
+          </div>
+        </div>
+
+        <div class="menu-item act"><i class="ti ti-user" style="font-size:13px;" aria-hidden="true"></i> overview</div>
+        <div class="menu-item"><i class="ti ti-settings" style="font-size:13px;" aria-hidden="true"></i> settings</div>
+        <div class="menu-item"><i class="ti ti-plug" style="font-size:13px;" aria-hidden="true"></i> integrations</div>
+        <div class="menu-item"><i class="ti ti-cpu" style="font-size:13px;" aria-hidden="true"></i> llm config</div>
+        <div class="menu-item"><i class="ti ti-shield" style="font-size:13px;" aria-hidden="true"></i> security</div>
+        <div class="menu-section">danger zone</div>
+        <div class="menu-item danger"><i class="ti ti-trash" style="font-size:13px;" aria-hidden="true"></i> delete account</div>
+        <div style="flex:1;"></div>
+        <div class="menu-item" style="margin-top:auto;"><i class="ti ti-logout" style="font-size:13px;" aria-hidden="true"></i> sign out</div>
+      </div>
+
+      <div class="pf-content">
+        <div class="settings-group">
+          <div class="sg-title">account overview</div>
+          <div class="stats-row">
+            <div class="stat-card"><div class="stat-n">6</div><div class="stat-lbl">total ideas</div></div>
+            <div class="stat-card"><div class="stat-n ok">2</div><div class="stat-lbl">in market</div></div>
+            <div class="stat-card"><div class="stat-n warn">1</div><div class="stat-lbl">force closed</div></div>
+          </div>
+          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;">
+            <div class="kv-row"><span class="kk">github account</span><span class="kval">@yourteam</span></div>
+            <div class="kv-row"><span class="kk">supabase instance</span><span class="kval ok">connected · self-hosted</span></div>
+            <div class="kv-row"><span class="kk">member since</span><span class="kval">2025-01-10</span></div>
+            <div class="kv-row"><span class="kk">plan</span><span class="kval">private beta</span></div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="sg-title">preferences</div>
+          <div class="setting-row">
+            <div class="sr-left">
+              <span class="sr-label">opus audit notifications</span>
+              <span class="sr-desc">当 opus 检测到方向漂移时推送提醒</span>
+            </div>
+            <div class="toggle on"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="setting-row">
+            <div class="sr-left">
+              <span class="sr-label">deadline pressure indicator</span>
+              <span class="sr-desc">在 dashboard 显示 deadline 倒计时压力色</span>
+            </div>
+            <div class="toggle on"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="setting-row">
+            <div class="sr-left">
+              <span class="sr-label">auto-export agent context</span>
+              <span class="sr-desc">每次 phase 推进后自动导出 JSON 上下文到 repo</span>
+            </div>
+            <div class="toggle"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="setting-row">
+            <div class="sr-left">
+              <span class="sr-label">feishu notifications</span>
+              <span class="sr-desc">openspec 执行完成后通知到飞书</span>
+            </div>
+            <div class="toggle"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="sg-title">integrations</div>
+          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:4px 12px;">
+            <div class="conn-row">
+              <div class="conn-info">
+                <div class="conn-dot ok"></div>
+                <div><div class="conn-name">github</div><div class="conn-sub">@yourteam · read access</div></div>
+              </div>
+              <button class="btn" style="font-size:10px;">manage</button>
+            </div>
+            <div class="conn-row">
+              <div class="conn-info">
+                <div class="conn-dot ok"></div>
+                <div><div class="conn-name">supabase</div><div class="conn-sub">self-hosted · db.yourteam.com</div></div>
+              </div>
+              <button class="btn" style="font-size:10px;">manage</button>
+            </div>
+            <div class="conn-row">
+              <div class="conn-info">
+                <div class="conn-dot off"></div>
+                <div><div class="conn-name">feishu / lark</div><div class="conn-sub">not connected</div></div>
+              </div>
+              <button class="btn" style="font-size:10px;" onclick="sendPrompt('连接飞书到 maestro，配置 openspec 执行完成通知')">connect ↗</button>
+            </div>
+            <div class="conn-row">
+              <div class="conn-info">
+                <div class="conn-dot off"></div>
+                <div><div class="conn-name">stripe</div><div class="conn-sub">not connected · needed for paid metric</div></div>
+              </div>
+              <button class="btn" style="font-size:10px;" onclick="sendPrompt('连接 Stripe 到 maestro，用于自动检测付费用户数')">connect ↗</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

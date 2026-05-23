@@ -1,0 +1,544 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap');
+
+  .pd-root {
+    font-family: 'Syne', var(--font-sans);
+    background: transparent;
+    min-height: 680px;
+  }
+
+  .pd-header {
+    padding: 14px 20px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .pd-breadcrumb {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-tertiary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pd-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .pd-subtitle {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .pd-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .pd-deadline-card {
+    background: #FCEBEB;
+    border: 0.5px solid #F09595;
+    border-radius: var(--border-radius-md);
+    padding: 8px 14px;
+    text-align: right;
+  }
+
+  .pd-deadline-label {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #A32D2D;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .pd-deadline-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #A32D2D;
+    line-height: 1.1;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .pd-deadline-date {
+    font-size: 10px;
+    color: #A32D2D;
+    font-family: 'IBM Plex Mono', monospace;
+    opacity: 0.7;
+  }
+
+  .pd-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 0 20px;
+  }
+
+  .pd-tab {
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 10px 14px;
+    color: var(--color-text-tertiary);
+    border-bottom: 1.5px solid transparent;
+    cursor: pointer;
+    margin-bottom: -0.5px;
+  }
+
+  .pd-tab.active {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-text-primary);
+  }
+
+  .pd-body {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 0;
+    min-height: 520px;
+  }
+
+  .pd-main {
+    padding: 16px 20px;
+    border-right: 0.5px solid var(--color-border-tertiary);
+  }
+
+  .pd-sidebar {
+    padding: 16px;
+  }
+
+  .pd-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-tertiary);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pd-add-btn {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 2px 7px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .pd-timeline {
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .pd-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: var(--color-border-secondary);
+  }
+
+  .pd-node {
+    position: relative;
+    margin-bottom: 14px;
+  }
+
+  .pd-node-dot {
+    position: absolute;
+    left: -17px;
+    top: 11px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    background: var(--color-background-primary);
+  }
+
+  .pd-node-dot.current {
+    border-color: #A32D2D;
+    background: #A32D2D;
+    box-shadow: 0 0 0 3px #FCEBEB;
+  }
+
+  .pd-node-dot.done { border-color: #3B6D11; background: #3B6D11; }
+  .pd-node-dot.future { border-color: var(--color-border-secondary); }
+
+  .pd-node-card {
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.1s;
+  }
+
+  .pd-node-card:hover {
+    border-color: var(--color-border-primary);
+  }
+
+  .pd-node-card.current {
+    border-color: #F09595;
+    background: #FCEBEB;
+  }
+
+  .pd-node-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .pd-node-version {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-primary);
+  }
+
+  .pd-node-date {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-tertiary);
+  }
+
+  .pd-node-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+  }
+
+  .pd-node-desc {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.5;
+  }
+
+  .pd-node-tags {
+    display: flex;
+    gap: 4px;
+    margin-top: 7px;
+    flex-wrap: wrap;
+  }
+
+  .pd-tag {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-secondary);
+  }
+
+  .pd-tag.spec { background: #E6F1FB; color: #185FA5; border-color: #B5D4F4; }
+  .pd-tag.feedback { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+  .pd-tag.shipped { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+
+  .pd-node-future {
+    border-style: dashed;
+    opacity: 0.6;
+  }
+
+  .pd-side-section {
+    margin-bottom: 20px;
+  }
+
+  .pd-kv-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    gap: 8px;
+  }
+
+  .pd-kv-key {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .pd-kv-val {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-primary);
+    text-align: right;
+  }
+
+  .pd-signal-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+
+  .pd-signal-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .pd-signal-text {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  .pd-signal-text strong {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .pd-audit-banner {
+    background: #FAEEDA;
+    border: 0.5px solid #FAC775;
+    border-radius: var(--border-radius-md);
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .pd-audit-text {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #854F0B;
+    line-height: 1.5;
+  }
+
+  .pd-trigger-btn {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 4px 10px;
+    cursor: pointer;
+    width: fit-content;
+  }
+</style>
+
+<div class="pd-root">
+  <div class="pd-header">
+    <div>
+      <div class="pd-breadcrumb">
+        <i class="ti ti-arrow-left" style="font-size:11px;" aria-hidden="true"></i>
+        all products &nbsp;/&nbsp; maestro
+      </div>
+      <div class="pd-title">maestro</div>
+      <div class="pd-subtitle">app factory · product layer · desktop app · github: yourteam/maestro</div>
+    </div>
+    <div class="pd-header-right">
+      <div class="pd-deadline-card">
+        <div class="pd-deadline-label">hard deadline</div>
+        <div class="pd-deadline-value">18d</div>
+        <div class="pd-deadline-date">2025-06-09 · paid > 1</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pd-tabs">
+    <div class="pd-tab active">evolution axis</div>
+    <div class="pd-tab">decision tree</div>
+    <div class="pd-tab">feedback</div>
+    <div class="pd-tab">context</div>
+  </div>
+
+  <div class="pd-body">
+    <div class="pd-main">
+      <div class="pd-section-label">
+        <span>product evolution axis</span>
+        <div class="pd-add-btn" onclick="sendPrompt('在 maestro 演化轴上添加一个新版本节点')">
+          <i class="ti ti-plus" style="font-size:10px;" aria-hidden="true"></i> add milestone
+        </div>
+      </div>
+
+      <div class="pd-audit-banner">
+        <i class="ti ti-robot" style="font-size:14px; color:#854F0B; flex-shrink:0; margin-top:1px;" aria-hidden="true"></i>
+        <div>
+          <div class="pd-audit-text"><strong>opus audit ·</strong> v0.1.0 新增了 3 个功能，但 mvp 定义只含 2 个核心模块。你是在扩展还是在漂移？</div>
+          <div class="pd-trigger-btn" onclick="sendPrompt('分析 maestro 当前版本是否存在功能漂移，给出建议')">
+            <i class="ti ti-sparkles" style="font-size:11px;" aria-hidden="true"></i>
+            review with opus ↗
+          </div>
+        </div>
+      </div>
+
+      <div class="pd-timeline">
+        <div class="pd-node">
+          <div class="pd-node-dot done"></div>
+          <div class="pd-node-card">
+            <div class="pd-node-top">
+              <span class="pd-node-version">v0.0.1 · mvp scope</span>
+              <span class="pd-node-date">2025-01-15</span>
+            </div>
+            <div class="pd-node-name">idea ingestion + market research</div>
+            <div class="pd-node-desc">统一投喂口，URL/文件/文字 → opus 澄清意图 → 市场调研报告生成</div>
+            <div class="pd-node-tags">
+              <span class="pd-tag shipped">shipped</span>
+              <span class="pd-tag spec">3 openspecs</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pd-node">
+          <div class="pd-node-dot done"></div>
+          <div class="pd-node-card">
+            <div class="pd-node-top">
+              <span class="pd-node-version">v0.0.2</span>
+              <span class="pd-node-date">2025-02-08</span>
+            </div>
+            <div class="pd-node-name">github integration + deadline lock</div>
+            <div class="pd-node-desc">supabase auth · github repo 关联 · deadline + 目标指标在创建时锁定</div>
+            <div class="pd-node-tags">
+              <span class="pd-tag shipped">shipped</span>
+              <span class="pd-tag spec">5 openspecs</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pd-node">
+          <div class="pd-node-dot current"></div>
+          <div class="pd-node-card current">
+            <div class="pd-node-top">
+              <span class="pd-node-version" style="color:#A32D2D;">v0.1.0 · current</span>
+              <span class="pd-node-date" style="color:#A32D2D;">in progress</span>
+            </div>
+            <div class="pd-node-name" style="color:#A32D2D;">evolution axis + decision tree UI</div>
+            <div class="pd-node-desc" style="color:#993C1D;">本页面所在功能 · opus 主动审计 · 反馈信号转化器</div>
+            <div class="pd-node-tags">
+              <span class="pd-tag spec">7 openspecs</span>
+              <span class="pd-tag feedback">2 user signals</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pd-node">
+          <div class="pd-node-dot future"></div>
+          <div class="pd-node-card pd-node-future">
+            <div class="pd-node-top">
+              <span class="pd-node-version">v0.2.0 · planned</span>
+              <span class="pd-node-date">if deadline met</span>
+            </div>
+            <div class="pd-node-name">market signal auto-detection</div>
+            <div class="pd-node-desc">stripe webhook · github stars api ·自动更新市场可见指标</div>
+            <div class="pd-node-tags">
+              <span class="pd-tag">roadmap</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pd-node">
+          <div class="pd-node-dot future"></div>
+          <div class="pd-node-card pd-node-future">
+            <div class="pd-node-top">
+              <span class="pd-node-version">v0.3.0 · planned</span>
+              <span class="pd-node-date">post-market</span>
+            </div>
+            <div class="pd-node-name">multi-product context sharing</div>
+            <div class="pd-node-desc">跨产品决策上下文复用 · app factory 四层协同</div>
+            <div class="pd-node-tags">
+              <span class="pd-tag">roadmap</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-sidebar">
+      <div class="pd-side-section">
+        <div class="pd-section-label">market contract</div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">type</span>
+          <span class="pd-kv-val">paid product</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">target</span>
+          <span class="pd-kv-val" style="color:#A32D2D;">paid users > 1</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">current</span>
+          <span class="pd-kv-val">0</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">deadline</span>
+          <span class="pd-kv-val" style="color:#A32D2D;">2025-06-09</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">extension</span>
+          <span class="pd-kv-val">1 left</span>
+        </div>
+      </div>
+
+      <div class="pd-side-section">
+        <div class="pd-section-label">recent signals</div>
+        <div class="pd-signal-item">
+          <div class="pd-signal-dot" style="background:#BA7517;"></div>
+          <div class="pd-signal-text"><strong>user A</strong>: 想要看到 roadmap 的图结构视图</div>
+        </div>
+        <div class="pd-signal-item">
+          <div class="pd-signal-dot" style="background:#378ADD;"></div>
+          <div class="pd-signal-text"><strong>internal</strong>: deadline 机制需要支持非盈利型指标</div>
+        </div>
+        <div class="pd-signal-item">
+          <div class="pd-signal-dot" style="background:#639922;"></div>
+          <div class="pd-signal-text"><strong>user B</strong>: 希望可以从飞书消息触发 openspec</div>
+        </div>
+        <div class="pd-trigger-btn" style="margin-top:10px;" onclick="sendPrompt('分析 maestro 近期用户反馈，找出最有价值的功能信号')">
+          <i class="ti ti-sparkles" style="font-size:11px;" aria-hidden="true"></i>
+          analyze signals ↗
+        </div>
+      </div>
+
+      <div class="pd-side-section">
+        <div class="pd-section-label">llm stack</div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">planner</span>
+          <span class="pd-kv-val">opus 4</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">coder</span>
+          <span class="pd-kv-val">sonnet 4.6</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">reviewer</span>
+          <span class="pd-kv-val">codex</span>
+        </div>
+        <div class="pd-kv-row">
+          <span class="pd-kv-key">last run</span>
+          <span class="pd-kv-val">12m ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

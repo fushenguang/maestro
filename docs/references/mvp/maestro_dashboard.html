@@ -1,0 +1,545 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap');
+
+  .m-root {
+    font-family: 'Syne', var(--font-sans);
+    background: transparent;
+    padding: 0;
+    min-height: 580px;
+  }
+
+  .m-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+
+  .m-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m-logo-mark {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--color-text-primary);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-primary);
+  }
+
+  .m-logo-text {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+  }
+
+  .m-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .m-nav-item {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: var(--border-radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border: 0.5px solid transparent;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .m-nav-item.active {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-secondary);
+    background: var(--color-background-secondary);
+  }
+
+  .m-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m-btn-new {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-primary);
+    background: var(--color-text-primary);
+    color: var(--color-background-primary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Syne', var(--font-sans);
+  }
+
+  .m-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--color-border-tertiary);
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+
+  .m-stat {
+    background: var(--color-background-primary);
+    padding: 14px 20px;
+  }
+
+  .m-stat-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .m-stat-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    line-height: 1;
+  }
+
+  .m-stat-value.warn { color: #BA7517; }
+  .m-stat-value.danger { color: #A32D2D; }
+  .m-stat-value.success { color: #3B6D11; }
+
+  .m-content {
+    padding: 16px 20px;
+  }
+
+  .m-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .m-section-title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .m-filter-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .m-filter {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    border: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .m-filter.active {
+    border-color: var(--color-border-primary);
+    color: var(--color-text-primary);
+    background: var(--color-background-secondary);
+  }
+
+  .m-idea-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--color-border-tertiary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+  }
+
+  .m-idea-row {
+    background: var(--color-background-primary);
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 90px 110px 130px 80px;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .m-idea-row:hover {
+    background: var(--color-background-secondary);
+  }
+
+  .m-idea-row.header {
+    background: var(--color-background-secondary);
+    cursor: default;
+    padding: 8px 16px;
+  }
+
+  .m-idea-row.header:hover {
+    background: var(--color-background-secondary);
+  }
+
+  .m-col-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-tertiary);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .m-idea-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .m-idea-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .m-idea-desc {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .m-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+    width: fit-content;
+  }
+
+  .m-badge.active { background: #EAF3DE; color: #3B6D11; }
+  .m-badge.warning { background: #FAEEDA; color: #854F0B; }
+  .m-badge.closed { background: #F1EFE8; color: #5F5E5A; }
+  .m-badge.draft { background: #E6F1FB; color: #185FA5; }
+
+  .m-deadline-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .m-deadline-text {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .m-deadline-text.urgent { color: #A32D2D; font-weight: 500; }
+
+  .m-progress-track {
+    height: 3px;
+    background: var(--color-border-tertiary);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .m-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .m-progress-fill.good { background: #639922; }
+  .m-progress-fill.warn { background: #BA7517; }
+  .m-progress-fill.danger { background: #E24B4A; }
+
+  .m-metric {
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-secondary);
+  }
+
+  .m-metric strong {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .m-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .m-dot.active { background: #639922; }
+  .m-dot.warning { background: #BA7517; }
+  .m-dot.closed { background: #888780; }
+  .m-dot.draft { background: #378ADD; }
+
+  .m-version-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 0.5px solid var(--color-border-tertiary);
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-secondary);
+  }
+
+  .m-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    margin-top: 12px;
+  }
+
+  .m-bottom-info {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-tertiary);
+  }
+
+  .m-repo-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--color-text-tertiary);
+  }
+</style>
+
+<div class="m-root">
+  <div class="m-topbar">
+    <div class="m-logo">
+      <div class="m-logo-mark">M</div>
+      <span class="m-logo-text">Maestro</span>
+    </div>
+    <div class="m-nav">
+      <div class="m-nav-item active">products</div>
+      <div class="m-nav-item">resources</div>
+      <div class="m-nav-item">insights</div>
+      <div class="m-nav-item">settings</div>
+    </div>
+    <div class="m-actions">
+      <div style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--color-text-tertiary); margin-right:4px;">
+        <i class="ti ti-brand-github" style="font-size:14px; vertical-align:-2px;" aria-hidden="true"></i>
+        &nbsp;@yourteam
+      </div>
+      <button class="m-btn-new" onclick="sendPrompt('帮我在 maestro 里创建一个新 idea')">
+        <i class="ti ti-plus" style="font-size:13px;" aria-hidden="true"></i>
+        new idea
+      </button>
+    </div>
+  </div>
+
+  <div class="m-stats-row">
+    <div class="m-stat">
+      <div class="m-stat-label">total products</div>
+      <div class="m-stat-value">6</div>
+    </div>
+    <div class="m-stat">
+      <div class="m-stat-label">live in market</div>
+      <div class="m-stat-value success">2</div>
+    </div>
+    <div class="m-stat">
+      <div class="m-stat-label">deadline &lt; 30d</div>
+      <div class="m-stat-value warn">1</div>
+    </div>
+    <div class="m-stat">
+      <div class="m-stat-label">force closed</div>
+      <div class="m-stat-value danger">1</div>
+    </div>
+  </div>
+
+  <div class="m-content">
+    <div class="m-section-header">
+      <span class="m-section-title">product registry</span>
+      <div class="m-filter-row">
+        <span class="m-filter active">all</span>
+        <span class="m-filter">active</span>
+        <span class="m-filter">at risk</span>
+        <span class="m-filter">closed</span>
+      </div>
+    </div>
+
+    <div class="m-idea-list">
+      <div class="m-idea-row header">
+        <div class="m-col-label">product</div>
+        <div class="m-col-label">status</div>
+        <div class="m-col-label">deadline</div>
+        <div class="m-col-label">market signal</div>
+        <div class="m-col-label">version</div>
+      </div>
+
+      <div class="m-idea-row" onclick="sendPrompt('打开 maestro 产品详情页面')">
+        <div class="m-idea-main">
+          <span class="m-idea-name">maestro</span>
+          <span class="m-idea-desc">app factory · product layer · desktop</span>
+        </div>
+        <div>
+          <span class="m-badge active">
+            <span class="m-dot active"></span>active
+          </span>
+        </div>
+        <div class="m-deadline-bar">
+          <span class="m-deadline-text urgent">18d left</span>
+          <div class="m-progress-track">
+            <div class="m-progress-fill danger" style="width: 82%"></div>
+          </div>
+        </div>
+        <div class="m-metric">
+          target: <strong>paid &gt; 1</strong><br>
+          <span style="font-size:10px; color:var(--color-text-tertiary);">currently: 0</span>
+        </div>
+        <div><span class="m-version-chip">v0.1.0</span></div>
+      </div>
+
+      <div class="m-idea-row">
+        <div class="m-idea-main">
+          <span class="m-idea-name">openspec engine</span>
+          <span class="m-idea-desc">app factory · coding layer · sdk</span>
+        </div>
+        <div>
+          <span class="m-badge active">
+            <span class="m-dot active"></span>active
+          </span>
+        </div>
+        <div class="m-deadline-bar">
+          <span class="m-deadline-text">47d left</span>
+          <div class="m-progress-track">
+            <div class="m-progress-fill warn" style="width: 55%"></div>
+          </div>
+        </div>
+        <div class="m-metric">
+          target: <strong>stars &gt; 200</strong><br>
+          <span style="font-size:10px; color:var(--color-text-tertiary);">currently: 87</span>
+        </div>
+        <div><span class="m-version-chip">v0.3.2</span></div>
+      </div>
+
+      <div class="m-idea-row">
+        <div class="m-idea-main">
+          <span class="m-idea-name">app factory · deploy layer</span>
+          <span class="m-idea-desc">infrastructure · self-hosted</span>
+        </div>
+        <div>
+          <span class="m-badge warning">
+            <span class="m-dot warning"></span>at risk
+          </span>
+        </div>
+        <div class="m-deadline-bar">
+          <span class="m-deadline-text urgent">8d left</span>
+          <div class="m-progress-track">
+            <div class="m-progress-fill danger" style="width: 93%"></div>
+          </div>
+        </div>
+        <div class="m-metric">
+          target: <strong>url live</strong><br>
+          <span style="font-size:10px; color: #A32D2D;">not reachable</span>
+        </div>
+        <div><span class="m-version-chip">v0.0.9</span></div>
+      </div>
+
+      <div class="m-idea-row">
+        <div class="m-idea-main">
+          <span class="m-idea-name">ai changelog generator</span>
+          <span class="m-idea-desc">tooling · open source · npm</span>
+        </div>
+        <div>
+          <span class="m-badge active">
+            <span class="m-dot active"></span>active
+          </span>
+        </div>
+        <div class="m-deadline-bar">
+          <span class="m-deadline-text">62d left</span>
+          <div class="m-progress-track">
+            <div class="m-progress-fill good" style="width: 35%"></div>
+          </div>
+        </div>
+        <div class="m-metric">
+          target: <strong>dl &gt; 1k/wk</strong><br>
+          <span style="font-size:10px; color: #3B6D11;">currently: 340</span>
+        </div>
+        <div><span class="m-version-chip">v1.2.0</span></div>
+      </div>
+
+      <div class="m-idea-row">
+        <div class="m-idea-main">
+          <span class="m-idea-name">context packer</span>
+          <span class="m-idea-desc">ai tooling · vscode extension</span>
+        </div>
+        <div>
+          <span class="m-badge draft">
+            <span class="m-dot draft"></span>draft
+          </span>
+        </div>
+        <div class="m-deadline-bar">
+          <span class="m-deadline-text" style="color:var(--color-text-tertiary);">—</span>
+          <div class="m-progress-track">
+            <div class="m-progress-fill good" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="m-metric" style="color:var(--color-text-tertiary);">
+          no deadline set
+        </div>
+        <div><span class="m-version-chip">draft</span></div>
+      </div>
+
+      <div class="m-idea-row" style="opacity: 0.6;">
+        <div class="m-idea-main">
+          <span class="m-idea-name" style="text-decoration: line-through;">prompt versioning saas</span>
+          <span class="m-idea-desc">deadline: 2024-11-01 · force closed</span>
+        </div>
+        <div>
+          <span class="m-badge closed">
+            <span class="m-dot closed"></span>closed
+          </span>
+        </div>
+        <div class="m-deadline-bar">
+          <span class="m-deadline-text" style="color:var(--color-text-tertiary);">expired</span>
+          <div class="m-progress-track">
+            <div class="m-progress-fill" style="width: 100%; background: #B4B2A9;"></div>
+          </div>
+        </div>
+        <div class="m-metric" style="color:var(--color-text-tertiary);">
+          target: <strong>paid &gt; 5</strong><br>
+          <span style="font-size:10px;">achieved: 0</span>
+        </div>
+        <div><span class="m-version-chip">archived</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="m-bottom-bar">
+    <span class="m-bottom-info">
+      <i class="ti ti-cpu" style="font-size:12px; vertical-align:-1px;" aria-hidden="true"></i>
+      &nbsp;planner: claude opus 4 &nbsp;·&nbsp; coder: sonnet 4.6 &nbsp;·&nbsp; reviewer: codex
+    </span>
+    <span class="m-repo-link">
+      <i class="ti ti-clock" style="font-size:12px; vertical-align:-1px;" aria-hidden="true"></i>
+      &nbsp;last sync 3m ago
+    </span>
+  </div>
+</div>

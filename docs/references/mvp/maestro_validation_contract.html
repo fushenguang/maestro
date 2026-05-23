@@ -1,0 +1,208 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap');
+*{box-sizing:border-box;}
+.r{font-family:'Syne',var(--font-sans);}
+.panel{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:14px;}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);}
+.ph-l{display:flex;align-items:center;gap:10px;}
+.ph-badge{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.ph-badge.v{background:#EAF3DE;color:#3B6D11;border:1.5px solid #3B6D11;}
+.ph-badge.c{background:var(--color-text-primary);color:var(--color-background-primary);border:1.5px solid var(--color-text-primary);}
+.ph-title{font-size:13px;font-weight:500;color:var(--color-text-primary);}
+.ph-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.ph-r{display:flex;gap:6px;align-items:center;}
+.btn{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);cursor:pointer;background:transparent;display:flex;align-items:center;gap:5px;}
+.btn.p{border-color:var(--color-text-primary);background:var(--color-text-primary);color:var(--color-background-primary);font-family:'Syne',var(--font-sans);font-weight:500;}
+.btn.danger{border-color:#A32D2D;background:#FCEBEB;color:#A32D2D;}
+.pb{padding:14px 16px;}
+
+.verdict{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.vc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;}
+.vc.pass{border-color:#C0DD97;}
+.vc.warn{border-color:#FAC775;}
+.vc-label{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:5px;}
+.vc-value{font-size:18px;font-weight:600;color:var(--color-text-primary);line-height:1;}
+.vc-value.pass{color:#3B6D11;}
+.vc-value.warn{color:#854F0B;}
+.vc-sub{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-top:3px;}
+
+.evidence-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.ev{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:9px 12px;display:flex;gap:10px;align-items:flex-start;}
+.ev-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.ev-body{flex:1;}
+.ev-title{font-size:11px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px;}
+.ev-desc{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);line-height:1.5;}
+.ev-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 6px;border-radius:100px;}
+.ev-badge.proof{background:#EAF3DE;color:#3B6D11;}
+.ev-badge.risk{background:#FAEEDA;color:#854F0B;}
+.ev-badge.gap{background:#FCEBEB;color:#A32D2D;}
+
+.verdict-banner{border-radius:var(--border-radius-md);padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.verdict-banner.go{background:#EAF3DE;border:0.5px solid #C0DD97;}
+.vb-text{font-size:12px;font-family:'IBM Plex Mono',monospace;color:#27500A;line-height:1.5;}
+.vb-text strong{font-weight:500;}
+
+.contract-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.cf{display:flex;flex-direction:column;gap:4px;}
+.cf-label{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.cf-val{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-primary);padding:7px 9px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);}
+.cf-val.set{border-color:var(--color-border-primary);}
+select.cf-val{cursor:pointer;outline:none;}
+input.cf-val{outline:none;}
+
+.lock-banner{background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--border-radius-md);padding:10px 13px;display:flex;gap:9px;align-items:flex-start;margin-bottom:12px;}
+.lb-text{font-size:11px;font-family:'IBM Plex Mono',monospace;color:#A32D2D;line-height:1.6;}
+.lb-text strong{font-weight:500;}
+
+.gh-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.gh-input{flex:1;font-size:12px;font-family:'IBM Plex Mono',monospace;padding:7px 9px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;}
+
+.confirm-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.confirm-row:last-child{border-bottom:none;}
+.cb{width:14px;height:14px;border:1.5px solid var(--color-border-secondary);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.cb.checked{border-color:var(--color-text-primary);background:var(--color-text-primary);}
+.confirm-text{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);}
+</style>
+
+<h2 class="sr-only">Maestro — validation gate and product contract phases: market evidence, go/no-go verdict, and locked deadline contract</h2>
+
+<div class="r">
+  <div class="panel">
+    <div class="ph">
+      <div class="ph-l">
+        <div class="ph-badge v">4</div>
+        <div>
+          <div class="ph-title">validation gate</div>
+          <div class="ph-sub">opus 4 · market research · go / no-go verdict</div>
+        </div>
+      </div>
+      <div class="ph-r">
+        <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:100px;background:#EAF3DE;color:#3B6D11;border:0.5px solid #C0DD97;">verdict: go</span>
+        <button class="btn danger" onclick="sendPrompt('关闭 maestro idea，记录证伪原因')"><i class="ti ti-x" style="font-size:11px;" aria-hidden="true"></i> close idea</button>
+        <button class="btn p" onclick="sendPrompt('接受验证结果，进入 product contract 阶段')">accept · proceed ↗</button>
+      </div>
+    </div>
+    <div class="pb">
+      <div class="verdict">
+        <div class="vc pass">
+          <div class="vc-label">market size signal</div>
+          <div class="vc-value pass">$2.1B</div>
+          <div class="vc-sub">AI dev tools TAM · 2024</div>
+        </div>
+        <div class="vc pass">
+          <div class="vc-label">competing products</div>
+          <div class="vc-value pass">7</div>
+          <div class="vc-sub">none with forced deadline</div>
+        </div>
+        <div class="vc warn">
+          <div class="vc-label">paying customers found</div>
+          <div class="vc-value warn">0</div>
+          <div class="vc-sub">no direct comp validated</div>
+        </div>
+      </div>
+
+      <div class="evidence-grid">
+        <div class="ev">
+          <i class="ti ti-chart-bar ev-icon" style="color:#3B6D11;" aria-hidden="true"></i>
+          <div class="ev-body">
+            <div class="ev-title" style="display:flex;align-items:center;gap:6px;">GitHub Copilot / Cursor adoption curve <span class="ev-badge proof">proves problem</span></div>
+            <div class="ev-desc">2024 年 AI coding 工具月活超 3M，但 ProductHunt 上「AI 产品无法上线」讨论帖平均 400+ upvotes，说明用户感知到了同样的痛点。</div>
+          </div>
+        </div>
+        <div class="ev">
+          <i class="ti ti-users ev-icon" style="color:#3B6D11;" aria-hidden="true"></i>
+          <div class="ev-body">
+            <div class="ev-title" style="display:flex;align-items:center;gap:6px;">Linear / Notion 用户调研数据 <span class="ev-badge proof">adjacent signal</span></div>
+            <div class="ev-desc">Linear 2023 用户报告：67% 团队表示「功能优先级排序」是最大挑战，但现有工具都在解决执行层，没有解决决策层。</div>
+          </div>
+        </div>
+        <div class="ev">
+          <i class="ti ti-alert-triangle ev-icon" style="color:#854F0B;" aria-hidden="true"></i>
+          <div class="ev-body">
+            <div class="ev-title" style="display:flex;align-items:center;gap:6px;">「强制关闭」机制无先例 <span class="ev-badge risk">adoption risk</span></div>
+            <div class="ev-desc">市面上没有强制惩罚机制的产品工具。用户行为改变成本高，早期需要强力的「为什么接受约束」的叙事。</div>
+          </div>
+        </div>
+        <div class="ev">
+          <i class="ti ti-x ev-icon" style="color:#A32D2D;" aria-hidden="true"></i>
+          <div class="ev-body">
+            <div class="ev-title" style="display:flex;align-items:center;gap:6px;">没有找到直接付费意愿数据 <span class="ev-badge gap">evidence gap</span></div>
+            <div class="ev-desc">建议在进入 v0.1 前做 5 个用户访谈，直接问「你愿意为这个系统付多少钱」，用真实数据填补这个 gap。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-banner go">
+        <i class="ti ti-check" style="font-size:16px;color:#3B6D11;flex-shrink:0;" aria-hidden="true"></i>
+        <div class="vb-text"><strong>opus verdict: go</strong> — 问题真实存在，市场信号明确，差异化清晰。主要风险是用户行为改变成本，建议通过「自我验证」叙事（maestro 本身用 maestro 管理）降低认知阻力。evidence gap 不是阻塞项，但需在 v0.1 deadline 前补充用户访谈。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">
+      <div class="ph-l">
+        <div class="ph-badge c">5</div>
+        <div>
+          <div class="ph-title">product contract</div>
+          <div class="ph-sub">deadline + success metric · immutable after sign</div>
+        </div>
+      </div>
+      <div class="ph-r">
+        <button class="btn" onclick="sendPrompt('查看 maestro 合约的法律条款和强制关闭流程')"><i class="ti ti-file-text" style="font-size:11px;" aria-hidden="true"></i> contract terms</button>
+        <button class="btn p" onclick="sendPrompt('签署 maestro product contract，锁定 deadline 和成功指标，正式进入开发')"><i class="ti ti-signature" style="font-size:11px;" aria-hidden="true"></i> sign contract ↗</button>
+      </div>
+    </div>
+    <div class="pb">
+      <div class="lock-banner">
+        <i class="ti ti-lock" style="font-size:14px;color:#A32D2D;flex-shrink:0;margin-top:1px;" aria-hidden="true"></i>
+        <div class="lb-text"><strong>签署后不可修改。</strong> deadline、success metric、target N 三项将被永久锁定。如需延期，须公开发布一篇文章并消耗唯一一次延期机会。到期未达成 → 强制归档。</div>
+      </div>
+
+      <div style="margin-bottom:10px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:8px;">contract terms</div>
+      <div class="contract-grid">
+        <div class="cf">
+          <div class="cf-label">product type</div>
+          <select class="cf-val set"><option>paid product</option><option>open source</option><option>internal tool</option></select>
+        </div>
+        <div class="cf">
+          <div class="cf-label">deadline</div>
+          <input class="cf-val set" type="date" value="2025-06-09"/>
+        </div>
+        <div class="cf">
+          <div class="cf-label">success metric</div>
+          <select class="cf-val set"><option>paid users > N</option><option>github stars > N</option><option>weekly downloads > N</option><option>url reachable</option></select>
+        </div>
+        <div class="cf">
+          <div class="cf-label">target N</div>
+          <input class="cf-val set" type="number" value="1" style="font-size:13px;font-weight:500;"/>
+        </div>
+      </div></div>
+
+      <div style="margin-bottom:12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:8px;">github repo</div>
+      <div class="gh-row">
+        <i class="ti ti-brand-github" style="font-size:16px;color:var(--color-text-tertiary);" aria-hidden="true"></i>
+        <input class="gh-input" value="yourteam/maestro" placeholder="org/repo or create new..."/>
+        <button class="btn"><i class="ti ti-arrows-right-left" style="font-size:11px;" aria-hidden="true"></i> verify</button>
+      </div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:8px;">pre-sign checklist</div>
+      <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;">
+        <div class="confirm-row"><div class="cb checked"><i class="ti ti-check" style="font-size:9px;color:var(--color-background-primary);" aria-hidden="true"></i></div><span class="confirm-text">boundary definition 已锁定</span></div>
+        <div class="confirm-row"><div class="cb checked"><i class="ti ti-check" style="font-size:9px;color:var(--color-background-primary);" aria-hidden="true"></i></div><span class="confirm-text">validation gate verdict: go</span></div>
+        <div class="confirm-row"><div class="cb checked"><i class="ti ti-check" style="font-size:9px;color:var(--color-background-primary);" aria-hidden="true"></i></div><span class="confirm-text">github repo 已关联并验证</span></div>
+        <div class="confirm-row"><div class="cb checked"><i class="ti ti-check" style="font-size:9px;color:var(--color-background-primary);" aria-hidden="true"></i></div><span class="confirm-text">我理解 deadline 到期未达成将强制归档此产品</span></div>
+        <div class="confirm-row"><div class="cb checked"><i class="ti ti-check" style="font-size:9px;color:var(--color-background-primary);" aria-hidden="true"></i></div><span class="confirm-text">我理解 success metric 签署后不可修改</span></div>
+      </div></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);">contract id: CTR-0041-20250609 · signed by: @yourteam</span>
+        <button class="btn p" style="gap:7px;" onclick="sendPrompt('签署 maestro product contract，生成初始 roadmap 和 MVP openspec changes')">
+          <i class="ti ti-signature" style="font-size:12px;" aria-hidden="true"></i>
+          sign &amp; start building ↗
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

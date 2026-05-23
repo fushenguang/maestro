@@ -1,0 +1,222 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap');
+*{box-sizing:border-box;}
+.r{font-family:'Syne',var(--font-sans);display:grid;grid-template-columns:168px 1fr;min-height:700px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;}
+.sl{border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;}
+.sl-top{padding:14px 14px 10px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:7px;}
+.mk{width:20px;height:20px;border:1.5px solid var(--color-text-primary);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--color-text-primary);}
+.mn{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-primary);}
+.sl-phases{padding:10px 8px;flex:1;}
+.sl-lbl{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);padding:0 6px;margin-bottom:4px;}
+.ph{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:var(--border-radius-md);margin-bottom:2px;cursor:pointer;}
+.ph:hover{background:var(--color-background-secondary);}
+.ph.active{background:var(--color-background-secondary);}
+.pd{width:18px;height:18px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'IBM Plex Mono',monospace;flex-shrink:0;margin-top:1px;}
+.pd.done{border-color:#3B6D11;background:#EAF3DE;color:#3B6D11;}
+.pd.act{border-color:var(--color-text-primary);background:var(--color-text-primary);color:var(--color-background-primary);}
+.pd.lock{border-color:var(--color-border-secondary);color:var(--color-text-tertiary);}
+.pi{flex:1;min-width:0;}
+.pt{font-size:11px;font-weight:500;color:var(--color-text-primary);line-height:1.3;}
+.ps{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-top:1px;}
+.sl-bot{padding:10px 10px 12px;border-top:0.5px solid var(--color-border-tertiary);}
+.ic{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);padding:5px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);display:flex;align-items:center;gap:5px;}
+
+.mc{display:flex;flex-direction:column;}
+.tb{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.tb-l{display:flex;flex-direction:column;gap:2px;}
+.tb-title{font-size:13px;font-weight:500;color:var(--color-text-primary);}
+.tb-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);}
+.tb-r{display:flex;gap:6px;align-items:center;}
+.btn{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);cursor:pointer;background:transparent;display:flex;align-items:center;gap:5px;}
+.btn.p{border-color:var(--color-text-primary);background:var(--color-text-primary);color:var(--color-background-primary);font-family:'Syne',var(--font-sans);font-weight:500;}
+.bd{display:grid;grid-template-columns:1fr 220px;flex:1;}
+.bm{padding:14px 16px;border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;gap:12px;}
+.bs{padding:12px 14px;display:flex;flex-direction:column;gap:12px;}
+.sl2{font-size:9px;text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;}
+.badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:100px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);}
+.badge.warn{background:#FAEEDA;color:#854F0B;border-color:#FAC775;}
+.badge.ok{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97;}
+.badge.info{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4;}
+
+.bc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.bc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;}
+.bc.editing{border-color:var(--color-border-primary);}
+.bc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.bc-type{font-size:9px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-tertiary);}
+.bc-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 6px;border-radius:100px;}
+.bc-status.conf{background:#EAF3DE;color:#3B6D11;}
+.bc-status.edit{background:#FAEEDA;color:#854F0B;}
+.bc-status.pend{background:var(--color-background-secondary);color:var(--color-text-tertiary);border:0.5px solid var(--color-border-tertiary);}
+.bc-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;line-height:1.4;}
+.bc-desc{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);line-height:1.5;}
+.bc-tags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
+.tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);}
+.tag.in{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4;}
+.tag.out{background:#FCEBEB;color:#A32D2D;border-color:#F09595;}
+
+.opus-note{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;display:flex;gap:8px;}
+.on-text{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);line-height:1.6;}
+.on-text strong{color:var(--color-text-primary);font-weight:500;}
+
+.kv{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);gap:8px;}
+.kv:last-child{border-bottom:none;}
+.kk{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);flex-shrink:0;}
+.kv2{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-primary);text-align:right;}
+.kv2.warn{color:#854F0B;}
+.kv2.ok{color:#3B6D11;}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;}
+.warn-banner{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:var(--border-radius-md);padding:9px 11px;display:flex;gap:8px;}
+.wb-text{font-size:11px;font-family:'IBM Plex Mono',monospace;color:#854F0B;line-height:1.5;}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:2px 0 8px;}
+</style>
+
+<h2 class="sr-only">Maestro — boundary definition phase: problem canvas with in/out scope cards, opus notes, and lock mechanism</h2>
+
+<div class="r">
+  <div class="sl">
+    <div class="sl-top"><div class="mk">M</div><span class="mn">Maestro</span></div>
+    <div class="sl-phases">
+      <div class="sl-lbl">idea pipeline</div>
+      <div class="ph"><div class="pd done"><i class="ti ti-check" style="font-size:9px;" aria-hidden="true"></i></div><div class="pi"><div class="pt">feed</div><div class="ps">done</div></div></div>
+      <div class="ph"><div class="pd done"><i class="ti ti-check" style="font-size:9px;" aria-hidden="true"></i></div><div class="pi"><div class="pt">intent dialogue</div><div class="ps">4 rounds · done</div></div></div>
+      <div class="ph active"><div class="pd act">3</div><div class="pi"><div class="pt">boundary definition</div><div class="ps">editing · 5/7 confirmed</div></div></div>
+      <div class="ph"><div class="pd lock">4</div><div class="pi"><div class="pt">validation gate</div><div class="ps">locked</div></div></div>
+      <div class="ph"><div class="pd lock">5</div><div class="pi"><div class="pt">product contract</div><div class="ps">locked</div></div></div>
+      <div class="divider" style="margin:6px 8px;"></div>
+      <div class="sl-lbl">after launch</div>
+      <div class="ph"><div class="pd lock">6</div><div class="pi"><div class="pt">evolution axis</div><div class="ps">locked</div></div></div>
+    </div>
+    <div class="sl-bot">
+      <div class="ic"><i class="ti ti-bulb" style="font-size:11px;flex-shrink:0;" aria-hidden="true"></i>maestro / idea #0041</div>
+      <div style="margin-top:8px;">
+        <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-bottom:3px;">boundary completeness</div>
+        <div style="height:2px;background:var(--color-border-tertiary);border-radius:1px;overflow:hidden;"><div style="height:100%;width:71%;background:var(--color-text-primary);border-radius:1px;"></div></div>
+        <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-tertiary);margin-top:3px;">71% · 2 items pending</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="tb">
+      <div class="tb-l">
+        <div class="tb-title">boundary definition</div>
+        <div class="tb-sub">opus 4 · problem canvas · lock before proceeding</div>
+      </div>
+      <div class="tb-r">
+        <span class="badge warn">2 unconfirmed</span>
+        <button class="btn" onclick="sendPrompt('让 opus 重新分析 maestro 的问题域边界，补充遗漏的 out-of-scope 项')"><i class="ti ti-refresh" style="font-size:11px;" aria-hidden="true"></i> re-analyze</button>
+        <button class="btn p" onclick="sendPrompt('确认并锁定 maestro 的边界定义，进入 validation gate 阶段')"><i class="ti ti-lock" style="font-size:11px;" aria-hidden="true"></i> lock boundary ↗</button>
+      </div>
+    </div>
+
+    <div class="bd">
+      <div class="bm">
+        <div>
+          <div class="sl2"><span>problem statement</span><span class="badge ok">confirmed</span></div>
+          <div class="bc">
+            <div class="bc-title">技术团队在 AI 编码时代「编码成本趋近于零」后，失去了对产品优先级的判断力，导致功能持续蔓延、方向漂移，最终无法 go to market。</div>
+            <div class="bc-desc" style="margin-top:6px;">根因不是能力问题，是系统缺乏「强制完成承诺」的约束机制。当编码变得足够便宜，人类需要人工引入摩擦来保持决策质量。</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sl2"><span>scope canvas</span><span class="badge">7 items</span></div>
+          <div class="bc-grid">
+            <div class="bc">
+              <div class="bc-head"><span class="bc-type">in scope</span><span class="bc-status conf">confirmed</span></div>
+              <div class="bc-title">idea → 产品方向决策</div>
+              <div class="bc-desc">从原始想法到明确问题域、边界、MVP 的完整决策流程</div>
+              <div class="bc-tags"><span class="tag in">core</span></div>
+            </div>
+            <div class="bc">
+              <div class="bc-head"><span class="bc-type">in scope</span><span class="bc-status conf">confirmed</span></div>
+              <div class="bc-title">deadline + 市场可见性合约</div>
+              <div class="bc-desc">不可修改的 deadline、成功指标锁定、强制关闭机制</div>
+              <div class="bc-tags"><span class="tag in">core</span></div>
+            </div>
+            <div class="bc">
+              <div class="bc-head"><span class="bc-type">in scope</span><span class="bc-status conf">confirmed</span></div>
+              <div class="bc-title">产品演化轴管理</div>
+              <div class="bc-desc">版本节点、openspec 触发、Opus 主动审计漂移</div>
+              <div class="bc-tags"><span class="tag in">core</span></div>
+            </div>
+            <div class="bc">
+              <div class="bc-head"><span class="bc-type">in scope</span><span class="bc-status conf">confirmed</span></div>
+              <div class="bc-title">用户反馈 → 决策信号转化</div>
+              <div class="bc-desc">反馈进来自动标注影响哪个产品假设，不是 CRM</div>
+              <div class="bc-tags"><span class="tag in">p1</span></div>
+            </div>
+            <div class="bc editing">
+              <div class="bc-head"><span class="bc-type">out of scope</span><span class="bc-status edit">needs confirm</span></div>
+              <div class="bc-title">编码执行层</div>
+              <div class="bc-desc">maestro 不写代码、不管代码质量，只触发 openspec changes 并接收结果</div>
+              <div class="bc-tags"><span class="tag out">not owned</span></div>
+            </div>
+            <div class="bc editing">
+              <div class="bc-head"><span class="bc-type">out of scope</span><span class="bc-status edit">needs confirm</span></div>
+              <div class="bc-title">项目管理 / 任务追踪</div>
+              <div class="bc-desc">不是 Linear / Jira 的替代，不管任务分配、sprint、bug 追踪</div>
+              <div class="bc-tags"><span class="tag out">not owned</span></div>
+            </div>
+            <div class="bc" style="border-style:dashed;opacity:0.6;">
+              <div class="bc-head"><span class="bc-type">open question</span><span class="bc-status pend">pending</span></div>
+              <div class="bc-title">多产品 context 共享</div>
+              <div class="bc-desc">跨产品的决策经验能否复用？是 v1 还是 v2？边界未定</div>
+              <div class="bc-tags"><span class="tag">undecided</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="opus-note">
+          <i class="ti ti-robot" style="font-size:13px;color:var(--color-text-tertiary);flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>
+          <div class="on-text"><strong>opus note ·</strong> 「多产品 context 共享」如果进入 v1 scope，会让系统复杂度增加约 40%，建议标记为 v2 并在数据模型层预留扩展点。边界越清晰，MVP 交付速度越快。</div>
+        </div>
+      </div>
+
+      <div class="bs">
+        <div>
+          <div class="sl2">intent canvas · locked</div>
+          <div class="card">
+            <div class="kv"><span class="kk">problem</span><span class="kv2" style="font-size:10px;">go-to-market failure</span></div>
+            <div class="kv"><span class="kk">root cause</span><span class="kv2" style="font-size:10px;">cost→0 · priority collapse</span></div>
+            <div class="kv"><span class="kk">mechanism</span><span class="kv2 ok" style="font-size:10px;">forced commitment</span></div>
+            <div class="kv"><span class="kk">target user</span><span class="kv2" style="font-size:10px;">internal → indie devs</span></div>
+            <div class="kv"><span class="kk">success</span><span class="kv2" style="font-size:10px;">paid users ≥ 1</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sl2">boundary rules</div>
+          <div class="card">
+            <div class="kv"><span class="kk">in scope</span><span class="kv2 ok">4 confirmed</span></div>
+            <div class="kv"><span class="kk">out of scope</span><span class="kv2 warn">2 pending</span></div>
+            <div class="kv"><span class="kk">open</span><span class="kv2 warn">1 undecided</span></div>
+            <div class="kv"><span class="kk">locked</span><span class="kv2">no</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sl2">lock requirement</div>
+          <div class="warn-banner">
+            <i class="ti ti-alert-triangle" style="font-size:13px;color:#854F0B;flex-shrink:0;margin-top:1px;" aria-hidden="true"></i>
+            <div class="wb-text">锁定前需确认所有 out-of-scope 项，并对 open questions 做出明确决策（进 or 出）</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sl2">what lock means</div>
+          <div class="card">
+            <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--color-text-secondary);line-height:1.7;">
+              锁定后边界不可修改。后续版本如需调整，须在 evolution axis 新建节点并记录变更原因。这是产品上下文的「宪法」。
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" style="width:100%;justify-content:center;" onclick="sendPrompt('导出 maestro 边界定义为 AI Agent 可读的 JSON 格式')">
+          <i class="ti ti-code" style="font-size:11px;" aria-hidden="true"></i> export as agent context
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
