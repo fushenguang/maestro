@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"Default capability for the Maestro desktop shell.","local":true,"windows":["main"],"permissions":["core:default","deep-link:default","shell:allow-open"]}}
+{"default":{"identifier":"default","description":"Default capability for the Maestro desktop shell.","local":true,"windows":["main"],"permissions":["core:default","deep-link:default","shell:allow-open","sql:allow-execute","sql:allow-select","sql:allow-load","sql:allow-close"]}}
