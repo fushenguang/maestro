@@ -1,6 +1,6 @@
 import type { Session, User } from "@supabase/supabase-js";
 import { create } from "zustand";
-import { supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 interface AuthState {
   session: Session | null;
@@ -21,15 +21,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
 }));
 
-supabase.auth.onAuthStateChange((_event, session) => {
-  useAuthStore.getState().setSession(session);
-});
+if (isSupabaseConfigured) {
+  supabase.auth.onAuthStateChange((_event, session) => {
+    useAuthStore.getState().setSession(session);
+  });
 
-void supabase.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    useAuthStore.setState({ loading: false });
-    throw error;
-  }
-
-  useAuthStore.getState().setSession(data.session);
-});
+  void supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      useAuthStore.setState({ loading: false });
+      return;
+    }
+    useAuthStore.getState().setSession(data.session);
+  });
+} else {
+  // Env vars not set — unblock the UI immediately.
+  useAuthStore.setState({ loading: false });
+}

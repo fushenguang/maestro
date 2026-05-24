@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createRoute, useNavigate } from "@tanstack/react-router";
+import { Route as RootRoute } from "./__root";
 import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import {
   Card,
@@ -10,7 +11,9 @@ import {
 } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 
-export const Route = createFileRoute("/auth/callback" as never)({
+export const Route = createRoute({
+  getParentRoute: () => RootRoute,
+  path: "/auth/callback",
   component: AuthCallbackPage
 });
 
