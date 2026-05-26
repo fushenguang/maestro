@@ -11,5 +11,12 @@ export default defineConfig({
   },
   server: {
     port: 1420
+  },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url))
+    }
   }
 });

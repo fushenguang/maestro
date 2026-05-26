@@ -20,6 +20,24 @@ import type {
 } from '@maestro/types'
 
 // ---------------------------------------------------------------------------
+// Tauri IPC helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Tauri serialises the SQLite `tags TEXT` column as a raw JSON string
+ * (e.g. `"[\"devtools\"]"`). This helper parses it back into string[].
+ */
+function parseIdea(raw: unknown): Idea {
+  const r = raw as Idea & { tags: string | string[] }
+  return {
+    ...r,
+    tags: Array.isArray(r.tags)
+      ? r.tags
+      : (() => { try { return JSON.parse(r.tags as string) } catch { return [] } })(),
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Local input types (not in @maestro/types — Rust-side only)
 // ---------------------------------------------------------------------------
 
@@ -174,16 +192,16 @@ export const db = {
 
   ideas: {
     list: (): Promise<Idea[]> =>
-      invoke<Idea[]>('get_ideas'),
+      invoke<unknown[]>('get_ideas').then(r => r.map(parseIdea)),
 
     get: (id: string): Promise<Idea> =>
-      invoke<Idea>('get_idea', { id }),
+      invoke<unknown>('get_idea', { id }).then(parseIdea),
 
     create: (data: CreateIdeaInput): Promise<Idea> =>
-      invoke<Idea>('create_idea', { data }),
+      invoke<unknown>('create_idea', { data }).then(parseIdea),
 
     update: (id: string, data: UpdateIdeaInput): Promise<Idea> =>
-      invoke<Idea>('update_idea', { id, data }),
+      invoke<unknown>('update_idea', { id, data }).then(parseIdea),
 
     delete: (id: string): Promise<void> =>
       invoke<void>('delete_idea', { id }),

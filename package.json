@@ -11,9 +11,13 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "gen:types": "supabase gen types typescript --db-url \"postgres://postgres.cogito-pooler:Cogito-092023@114.67.246.199:5432/postgres\" --schema calcifer 2>/dev/null > apps/desktop/src/types/database.types.ts && echo 'types written to apps/desktop/src/types/database.types.ts'",
+    "gen:types:no-docker": "node scripts/gen-types.mjs"
   },
   "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "pg": "^8.21.0",
     "turbo": "^2.0.14"
   }
 }
