@@ -19,6 +19,15 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
 
+            // On Windows/Linux, register the URL scheme dynamically so deep links
+            // work in dev mode. On macOS, the scheme is declared in Info.plist and
+            // only active when running as a signed .app bundle (not in tauri dev).
+            #[cfg(not(target_os = "macos"))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                let _ = app.deep_link().register("maestro");
+            }
+
             // Initialise SQLite database synchronously before the window opens.
             let pool = tauri::async_runtime::block_on(db::init_db(&handle))
                 .expect("Failed to initialise database");
