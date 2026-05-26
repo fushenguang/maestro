@@ -4,6 +4,7 @@ pub mod dialogue;
 pub mod evolution;
 pub mod ideas;
 pub mod intent;
+pub mod llm;
 pub mod profiles;
 pub mod validation;
 

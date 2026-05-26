@@ -107,13 +107,13 @@ export function Topbar() {
       {/* Right actions */}
       <div className="ml-auto flex items-center gap-2 shrink-0" ref={menuRef}>
         {/* + new idea */}
-        <button
-          disabled
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded border border-border bg-foreground text-background font-sans text-[12px] font-medium cursor-not-allowed opacity-60"
+        <Link
+          to="/ideas/new"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded border border-border bg-foreground text-background font-sans text-[12px] font-medium hover:opacity-90 transition-opacity"
         >
           <span className="text-[13px] leading-none">+</span>
           new idea
-        </button>
+        </Link>
 
         {/* Avatar */}
         <button

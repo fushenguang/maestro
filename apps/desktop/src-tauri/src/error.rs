@@ -14,6 +14,8 @@ pub enum AppError {
     ValidationError(String),
     /// Filesystem / IO error.
     Io(String),
+    /// LLM service error (config, HTTP, parsing).
+    LlmError(String),
 }
 
 impl From<sqlx::Error> for AppError {
@@ -32,6 +34,7 @@ impl std::fmt::Display for AppError {
             AppError::NotFound(id) => write!(f, "Not found: {id}"),
             AppError::ValidationError(msg) => write!(f, "Validation error: {msg}"),
             AppError::Io(msg) => write!(f, "IO error: {msg}"),
+            AppError::LlmError(msg) => write!(f, "LLM error: {msg}"),
         }
     }
 }

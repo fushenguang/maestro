@@ -9,6 +9,9 @@ import { Route as DashboardRoute } from "./routes/_app/dashboard";
 import { Route as ResourcesRoute } from "./routes/_app/resources";
 import { Route as InsightsRoute } from "./routes/_app/insights";
 import { Route as IdeasRoute } from "./routes/_app/ideas/$id";
+import { Route as NewIdeaRoute } from "./routes/_app/ideas/new";
+import { Route as FeedRoute } from "./routes/_app/ideas/$id/feed";
+import { Route as IntentRoute } from "./routes/_app/ideas/$id/intent";
 import type { Session } from "@supabase/supabase-js";
 
 export interface RouterContext {
@@ -31,7 +34,8 @@ export const routeTree = RootRoute.addChildren([
     DashboardRoute,
     ResourcesRoute,
     InsightsRoute,
-    IdeasRoute,
+    NewIdeaRoute,
+    IdeasRoute.addChildren([FeedRoute, IntentRoute]),
   ]),
 ]);
 

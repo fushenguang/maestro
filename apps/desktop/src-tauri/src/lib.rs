@@ -1,6 +1,7 @@
 mod commands;
 mod db;
 mod error;
+mod llm;
 mod sync;
 
 use tauri::Manager;
@@ -79,6 +80,10 @@ pub fn run() {
             commands::evolution::get_evolution_nodes,
             commands::evolution::create_evolution_node,
             commands::evolution::get_openspec_changes,
+            // llm
+            commands::llm::llm_chat_stream,
+            commands::llm::llm_set_config,
+            commands::llm::llm_get_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Maestro desktop shell");

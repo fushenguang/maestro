@@ -1,7 +1,13 @@
 import type { Idea } from "@maestro/types";
 import { IconLock, IconCheck } from "@tabler/icons-react";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { getPhaseStatus, PHASE_NAMES } from "@/lib/phase-utils";
 import { cn } from "@/lib/utils";
+
+const PHASE_ROUTES: Record<number, string> = {
+  0: '/ideas/$id/feed',
+  1: '/ideas/$id/intent',
+};
 
 interface PhaseSidebarProps {
   idea: Idea;
@@ -9,6 +15,8 @@ interface PhaseSidebarProps {
 }
 
 export function PhaseSidebar({ idea, onPhaseClick }: PhaseSidebarProps) {
+  const navigate = useNavigate();
+  const params = useParams({ strict: false }) as { id?: string };
   return (
     <aside className="w-[168px] shrink-0 border-r border-border flex flex-col py-4 gap-0.5">
       {PHASE_NAMES.map((name, phase) => {
@@ -19,7 +27,14 @@ export function PhaseSidebar({ idea, onPhaseClick }: PhaseSidebarProps) {
           <button
             key={phase}
             disabled={!isClickable}
-            onClick={() => isClickable && onPhaseClick?.(phase)}
+            onClick={() => {
+              if (!isClickable) return;
+              if (params.id && PHASE_ROUTES[phase]) {
+                void navigate({ to: PHASE_ROUTES[phase].replace('$id', params.id) as never });
+              } else {
+                onPhaseClick?.(phase);
+              }
+            }}
             className={cn(
               "flex items-center gap-2.5 px-4 py-2.5 text-left text-xs font-medium transition-colors rounded-sm mx-1",
               status === "active" &&
