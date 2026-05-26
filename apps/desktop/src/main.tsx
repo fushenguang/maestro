@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
+import { Toaster } from "sonner";
 import { router } from "./router";
 import { useAuthStore } from "@/store/auth";
 import "./index.css";
@@ -29,5 +30,6 @@ function AppRouter() {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AppRouter />
+    <Toaster position="bottom-right" />
   </React.StrictMode>
 );

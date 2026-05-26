@@ -20,5 +20,6 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio", "migrate", "derive"] }
 uuid = { version = "1", features = ["v4"] }
 reqwest = { version = "0.12", features = ["json"] }
+base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 tokio = { version = "1", features = ["time"] }

@@ -2,6 +2,7 @@ pub mod boundary;
 pub mod contracts;
 pub mod dialogue;
 pub mod evolution;
+pub mod github;
 pub mod ideas;
 pub mod intent;
 pub mod llm;
@@ -32,12 +33,15 @@ pub fn register<R: tauri::Runtime>(builder: Builder<R>) -> Builder<R> {
         boundary::get_scope_items,
         boundary::upsert_scope_item,
         boundary::delete_scope_item,
+        boundary::delete_scope_items_by_source,
         boundary::lock_boundary,
         // validation
         validation::get_validation_report,
         validation::upsert_validation_report,
         validation::get_evidence_items,
         validation::add_evidence_item,
+        validation::delete_evidence_items,
+        validation::delete_validation_report,
         // contracts
         contracts::get_contract,
         contracts::sign_contract,

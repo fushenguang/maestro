@@ -211,11 +211,9 @@ function IntentPage() {
   const isWaiting = isStreaming && currentQuestions.length === 0;
 
   return (
-    <div className="flex flex-1 min-h-0">
-      {/* Left panel — dialogue + A2UI form */}
-      <div className="flex-1 flex flex-col min-h-0 border-r border-border">
-        {/* Intent header bar */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border shrink-0">
+    <div className="flex h-full flex-col">
+      {/* ── Header bar — fixed, never scrolls ─────────────────────────── */}
+      <div className="shrink-0 flex items-center justify-between px-5 py-3 border-b border-border bg-background">
           <div>
             <span className="font-mono text-sm font-semibold">intent dialogue</span>
             <span className="ml-2 font-mono text-[10px] text-muted-foreground">
@@ -230,7 +228,7 @@ function IntentPage() {
               ⊙ history
             </button>
             <Button
-              onClick={() => navigate({ to: '/dashboard' })}
+              onClick={() => void navigate({ to: '/ideas/$id/boundary', params: { id } })}
               disabled={!canProceed}
               size="sm"
               className="font-mono text-xs"
@@ -239,53 +237,62 @@ function IntentPage() {
               intent clear · next ↗
             </Button>
           </div>
+      </div>
+
+      {/* ── History panel (conditional, fixed height) ──────────────────── */}
+      {showHistory && (
+        <div className="shrink-0 border-b border-border bg-muted/10 px-5 py-3 max-h-48 overflow-auto">
+          <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground mb-2">
+            Dialogue History
+          </p>
+          {Array.from(new Set(messages.map((m) => m.round)))
+            .sort((a, b) => a - b)
+            .map((round) => (
+              <div key={round} className="mb-2">
+                <button
+                  className="font-mono text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() =>
+                    setExpandedRounds((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(round)) next.delete(round);
+                      else next.add(round);
+                      return next;
+                    })
+                  }
+                >
+                  {expandedRounds.has(round) ? '▾' : '▸'} round {round}
+                </button>
+                {expandedRounds.has(round) &&
+                  messages
+                    .filter((m) => m.round === round)
+                    .map((msg) => (
+                      <div key={msg.id} className="ml-3 mt-1 font-mono text-[10px] text-muted-foreground border-l border-border pl-2">
+                        <span className={msg.role === 'opus' ? 'text-amber-500' : ''}>
+                          {msg.role === 'opus' ? 'OPUS 4' : 'PM'}
+                        </span>
+                        {': '}
+                        {msg.content.slice(0, 120)}
+                        {msg.content.length > 120 ? '…' : ''}
+                      </div>
+                    ))}
+              </div>
+            ))}
         </div>
+      )}
 
-        {/* History panel */}
-        {showHistory && (
-          <div className="border-b border-border bg-muted/10 px-5 py-3 shrink-0 max-h-48 overflow-auto">
-            <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground mb-2">
-              Dialogue History
-            </p>
-            {Array.from(
-              new Set(messages.map((m) => m.round)),
-            )
-              .sort((a, b) => a - b)
-              .map((round) => (
-                <div key={round} className="mb-2">
-                  <button
-                    className="font-mono text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() =>
-                      setExpandedRounds((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(round)) next.delete(round);
-                        else next.add(round);
-                        return next;
-                      })
-                    }
-                  >
-                    {expandedRounds.has(round) ? '▾' : '▸'} round {round}
-                  </button>
-                  {expandedRounds.has(round) &&
-                    messages
-                      .filter((m) => m.round === round)
-                      .map((msg) => (
-                        <div key={msg.id} className="ml-3 mt-1 font-mono text-[10px] text-muted-foreground border-l border-border pl-2">
-                          <span className={msg.role === 'opus' ? 'text-amber-500' : ''}>
-                            {msg.role === 'opus' ? 'OPUS 4' : 'PM'}
-                          </span>
-                          {': '}
-                          {msg.content.slice(0, 120)}
-                          {msg.content.length > 120 ? '…' : ''}
-                        </div>
-                      ))}
-                </div>
-              ))}
-          </div>
-        )}
+      {/* ── Completion hint (conditional, fixed) ───────────────────────── */}
+      {canProceed && (
+        <div className="shrink-0 px-5 py-2 border-b border-emerald-500/20 bg-emerald-500/5">
+          <p className="font-mono text-[10px] text-emerald-400">
+            ✓ intent is clear — click &quot;intent clear · next ↗&quot; to proceed
+          </p>
+        </div>
+      )}
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-auto px-5 py-4 flex flex-col gap-4">
+      {/* ── Two-column body: left scrolls, right scrolls independently ─── */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left: dialogue — scrolls independently */}
+        <div className="flex-1 overflow-auto px-5 py-4 flex flex-col gap-4 border-r border-border">
           {/* Feed context */}
           {idea?.feedRawContent && (
             <div className="rounded border border-border bg-muted/20 px-4 py-3">
@@ -298,7 +305,7 @@ function IntentPage() {
             </div>
           )}
 
-          {/* Dialogue thread (past rounds) */}
+          {/* Dialogue thread */}
           <DialogueThread messages={messages} currentRound={currentRound} />
 
           {/* Streaming indicator */}
@@ -363,19 +370,19 @@ function IntentPage() {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Right panel — Intent Canvas */}
-      <div className="w-[280px] shrink-0 flex flex-col border-l border-border overflow-hidden">
-        <IntentCanvasPanel
-          canvas={canvas}
-          clarityScore={clarityScore}
-          openQuestionsCount={openQuestionsCount}
-        />
-        <ConfirmedAssumptions
-          assumptions={assumptions}
-          negatedAssumptions={negatedAssumptions}
-        />
+        {/* Right: canvas — independent scroll, fills remaining height */}
+        <div className="w-[280px] shrink-0 overflow-y-auto border-l border-border">
+          <IntentCanvasPanel
+            canvas={canvas}
+            clarityScore={clarityScore}
+            openQuestionsCount={openQuestionsCount}
+          />
+          <ConfirmedAssumptions
+            assumptions={assumptions}
+            negatedAssumptions={negatedAssumptions}
+          />
+        </div>
       </div>
     </div>
   );

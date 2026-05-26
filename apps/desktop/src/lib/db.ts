@@ -23,18 +23,24 @@ import type {
 // Tauri IPC helpers
 // ---------------------------------------------------------------------------
 
+function parseJsonArray(v: string | string[]): string[] {
+  if (Array.isArray(v)) return v
+  try { return JSON.parse(v) as string[] } catch { return [] }
+}
+
 /**
  * Tauri serialises the SQLite `tags TEXT` column as a raw JSON string
  * (e.g. `"[\"devtools\"]"`). This helper parses it back into string[].
  */
 function parseIdea(raw: unknown): Idea {
   const r = raw as Idea & { tags: string | string[] }
-  return {
-    ...r,
-    tags: Array.isArray(r.tags)
-      ? r.tags
-      : (() => { try { return JSON.parse(r.tags as string) } catch { return [] } })(),
-  }
+  return { ...r, tags: parseJsonArray(r.tags) }
+}
+
+/** ScopeItem also has a `tags TEXT` column serialised the same way. */
+function parseScopeItem(raw: unknown): ScopeItem {
+  const r = raw as ScopeItem & { tags: string | string[] }
+  return { ...r, tags: parseJsonArray(r.tags) }
 }
 
 // ---------------------------------------------------------------------------
@@ -225,13 +231,16 @@ export const db = {
 
   boundary: {
     list: (ideaId: string): Promise<ScopeItem[]> =>
-      invoke<ScopeItem[]>('get_scope_items', { ideaId }),
+      invoke<unknown[]>('get_scope_items', { ideaId }).then(r => r.map(parseScopeItem)),
 
     upsert: (data: UpsertScopeItemInput): Promise<ScopeItem> =>
-      invoke<ScopeItem>('upsert_scope_item', { data }),
+      invoke<unknown>('upsert_scope_item', { data }).then(parseScopeItem),
 
     delete: (id: string): Promise<void> =>
       invoke<void>('delete_scope_item', { id }),
+
+    deleteOpusItems: (ideaId: string): Promise<void> =>
+      invoke<void>('delete_scope_items_by_source', { ideaId, source: 'opus' }),
 
     lock: (ideaId: string): Promise<void> =>
       invoke<void>('lock_boundary', { ideaId }),
@@ -244,11 +253,17 @@ export const db = {
     upsertReport: (data: UpsertValidationReportInput): Promise<ValidationReport> =>
       invoke<ValidationReport>('upsert_validation_report', { data }),
 
+    deleteReport: (ideaId: string): Promise<void> =>
+      invoke<void>('delete_validation_report', { ideaId }),
+
     getEvidence: (ideaId: string): Promise<EvidenceItem[]> =>
       invoke<EvidenceItem[]>('get_evidence_items', { ideaId }),
 
     addEvidence: (data: AddEvidenceItemInput): Promise<EvidenceItem> =>
       invoke<EvidenceItem>('add_evidence_item', { data }),
+
+    deleteEvidence: (ideaId: string): Promise<void> =>
+      invoke<void>('delete_evidence_items', { ideaId }),
   },
 
   contracts: {
@@ -269,4 +284,22 @@ export const db = {
     listChanges: (ideaId: string): Promise<OpenspecChange[]> =>
       invoke<OpenspecChange[]>('get_openspec_changes', { ideaId }),
   },
+}
+
+// ---------------------------------------------------------------------------
+// GitHub helpers (wrapping the Tauri github_commit_file command)
+// ---------------------------------------------------------------------------
+
+export interface GitHubCommitInput {
+  token: string;
+  owner: string;
+  repo: string;
+  path: string;
+  content: string;
+  message: string;
+}
+
+/** Commit a file to a GitHub repository. Returns commit SHA. */
+export function githubCommitFile(data: GitHubCommitInput): Promise<string> {
+  return invoke<string>('github_commit_file', { data });
 }

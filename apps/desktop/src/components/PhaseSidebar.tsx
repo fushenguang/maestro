@@ -7,6 +7,14 @@ import { cn } from "@/lib/utils";
 const PHASE_ROUTES: Record<number, string> = {
   0: '/ideas/$id/feed',
   1: '/ideas/$id/intent',
+  2: '/ideas/$id/boundary',
+  3: '/ideas/$id/validation',
+};
+
+const PHASE_LOCK_TOOLTIPS: Record<number, string> = {
+  2: 'Intent clarity must reach 85% · resolve open questions',
+  3: 'Lock boundary definition first',
+  4: 'Validation gate must return \'go\'',
 };
 
 interface PhaseSidebarProps {
@@ -27,6 +35,7 @@ export function PhaseSidebar({ idea, onPhaseClick }: PhaseSidebarProps) {
           <button
             key={phase}
             disabled={!isClickable}
+            title={status === 'locked' ? PHASE_LOCK_TOOLTIPS[phase] : undefined}
             onClick={() => {
               if (!isClickable) return;
               if (params.id && PHASE_ROUTES[phase]) {

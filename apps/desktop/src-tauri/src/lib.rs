@@ -1,6 +1,7 @@
 mod commands;
 mod db;
 mod error;
+mod github;
 mod llm;
 mod sync;
 
@@ -67,12 +68,15 @@ pub fn run() {
             commands::boundary::get_scope_items,
             commands::boundary::upsert_scope_item,
             commands::boundary::delete_scope_item,
+            commands::boundary::delete_scope_items_by_source,
             commands::boundary::lock_boundary,
             // validation
             commands::validation::get_validation_report,
             commands::validation::upsert_validation_report,
             commands::validation::get_evidence_items,
             commands::validation::add_evidence_item,
+            commands::validation::delete_evidence_items,
+            commands::validation::delete_validation_report,
             // contracts
             commands::contracts::get_contract,
             commands::contracts::sign_contract,
@@ -84,6 +88,8 @@ pub fn run() {
             commands::llm::llm_chat_stream,
             commands::llm::llm_set_config,
             commands::llm::llm_get_config,
+            // github
+            commands::github::github_commit_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Maestro desktop shell");

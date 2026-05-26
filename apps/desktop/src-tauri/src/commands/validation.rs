@@ -223,3 +223,33 @@ pub async fn add_evidence_item(
 
     Ok(item)
 }
+
+/// Delete all evidence items for an idea (for re-run validation).
+#[tauri::command]
+pub async fn delete_evidence_items(
+    pool: tauri::State<'_, SqlitePool>,
+    idea_id: String,
+) -> Result<(), AppError> {
+    sqlx::query("DELETE FROM evidence_items WHERE idea_id = ?")
+        .bind(&idea_id)
+        .execute(pool.inner())
+        .await
+        .map_err(AppError::from)?;
+
+    Ok(())
+}
+
+/// Delete the validation report for an idea (for re-run validation).
+#[tauri::command]
+pub async fn delete_validation_report(
+    pool: tauri::State<'_, SqlitePool>,
+    idea_id: String,
+) -> Result<(), AppError> {
+    sqlx::query("DELETE FROM validation_reports WHERE idea_id = ?")
+        .bind(&idea_id)
+        .execute(pool.inner())
+        .await
+        .map_err(AppError::from)?;
+
+    Ok(())
+}

@@ -115,25 +115,42 @@ pub async fn delete_scope_item(
     Ok(())
 }
 
+/// Delete all scope items with source='opus' for an idea (for re-analyze).
+#[tauri::command]
+pub async fn delete_scope_items_by_source(
+    pool: tauri::State<'_, SqlitePool>,
+    idea_id: String,
+    source: String,
+) -> Result<(), AppError> {
+    sqlx::query("DELETE FROM scope_items WHERE idea_id = ? AND source = ?")
+        .bind(&idea_id)
+        .bind(&source)
+        .execute(pool.inner())
+        .await
+        .map_err(AppError::from)?;
+
+    Ok(())
+}
+
 /// Lock the boundary for an idea.
-/// Requires all scope_items with type='in_scope' to have status='confirmed'.
+/// Requires all open questions to be resolved (not `needs_confirm`).
 #[tauri::command]
 pub async fn lock_boundary(
     pool: tauri::State<'_, SqlitePool>,
     idea_id: String,
 ) -> Result<(), AppError> {
-    // Check all in_scope items are confirmed
-    let unconfirmed: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM scope_items WHERE idea_id = ? AND type = 'in_scope' AND status != 'confirmed'",
+    // Open questions must be resolved before locking boundary.
+    let unresolved_open_questions: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM scope_items WHERE idea_id = ? AND type = 'open_question' AND status = 'needs_confirm'",
     )
     .bind(&idea_id)
     .fetch_one(pool.inner())
     .await
     .map_err(AppError::from)?;
 
-    if unconfirmed > 0 {
+    if unresolved_open_questions > 0 {
         return Err(AppError::ValidationError(format!(
-            "{unconfirmed} in-scope items are not yet confirmed"
+            "{unresolved_open_questions} open questions are not yet resolved"
         )));
     }
 

@@ -14,7 +14,7 @@ const NAV_TABS: NavTab[] = [
   { label: "products", href: "/dashboard" },
   { label: "resources", href: "/resources" },
   { label: "insights", href: "/insights" },
-  { label: "settings", href: "/settings", disabled: true },
+  { label: "settings", href: "/settings" },
 ];
 
 export function Topbar() {
