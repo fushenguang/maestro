@@ -137,69 +137,71 @@ export function ProductTable({ ideas }: ProductTableProps) {
   }
 
   return (
-    <div className="flex flex-col gap-px bg-border border border-border rounded-lg overflow-hidden">
-      {/* Header row */}
-      <div className={`${GRID} py-2 bg-secondary`}>
-        {["product", "status", "deadline", "market signal", "version"].map((col) => (
-          <span key={col} className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-            {col}
-          </span>
-        ))}
-      </div>
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-[760px] flex flex-col gap-px bg-border border border-border rounded-lg overflow-hidden">
+        {/* Header row */}
+        <div className={`${GRID} py-2 bg-secondary`}>
+          {["product", "status", "deadline", "market signal", "version"].map((col) => (
+            <span key={col} className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+              {col}
+            </span>
+          ))}
+        </div>
 
-      {/* Data rows */}
-      {ideas.map((idea) => {
-        const dotClass = STATUS_DOT[idea.status] ?? "bg-muted-foreground";
-        const badgeClass = STATUS_BADGE[idea.status] ?? "bg-muted text-muted-foreground";
-        const statusLabel = STATUS_LABEL[idea.status] ?? idea.status;
-        const subText = idea.tags.length > 0 ? idea.tags.join(" · ") : (idea.description ?? "");
+        {/* Data rows */}
+        {ideas.map((idea) => {
+          const dotClass = STATUS_DOT[idea.status] ?? "bg-muted-foreground";
+          const badgeClass = STATUS_BADGE[idea.status] ?? "bg-muted text-muted-foreground";
+          const statusLabel = STATUS_LABEL[idea.status] ?? idea.status;
+          const subText = idea.tags.length > 0 ? idea.tags.join(" · ") : (idea.description ?? "");
 
-        return (
-          <div
-            key={idea.id}
-            onClick={() =>
-              void navigate({
-                to: "/ideas/$id" as never,
-                params: { id: idea.id } as never,
-              })
-            }
-            className={`${GRID} py-3.5 bg-background hover:bg-secondary/30 cursor-pointer transition-colors`}
-          >
-            {/* Product */}
-            <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="text-[13px] font-medium truncate">{idea.name}</span>
-              {subText && (
-                <span className="font-mono text-[11px] text-muted-foreground truncate">
-                  {subText}
+          return (
+            <div
+              key={idea.id}
+              onClick={() =>
+                void navigate({
+                  to: "/ideas/$id" as never,
+                  params: { id: idea.id } as never,
+                })
+              }
+              className={`${GRID} py-3.5 bg-background hover:bg-secondary/30 cursor-pointer transition-colors`}
+            >
+              {/* Product */}
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="text-[13px] font-medium truncate">{idea.name}</span>
+                {subText && (
+                  <span className="font-mono text-[11px] text-muted-foreground truncate">
+                    {subText}
+                  </span>
+                )}
+              </div>
+
+              {/* Status badge */}
+              <div>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-[3px] rounded-full font-mono text-[10px] font-medium ${badgeClass}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
+                  {statusLabel}
                 </span>
-              )}
+              </div>
+
+              {/* Deadline */}
+              <DeadlineCell idea={idea} />
+
+              {/* Market Signal */}
+              <MarketSignalCell idea={idea} />
+
+              {/* Version */}
+              <div>
+                <span className="inline-flex items-center px-[7px] py-[2px] rounded border border-border font-mono text-[10px] text-muted-foreground">
+                  {idea.currentVersion}
+                </span>
+              </div>
             </div>
-
-            {/* Status badge */}
-            <div>
-              <span
-                className={`inline-flex items-center gap-1 px-2 py-[3px] rounded-full font-mono text-[10px] font-medium ${badgeClass}`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
-                {statusLabel}
-              </span>
-            </div>
-
-            {/* Deadline */}
-            <DeadlineCell idea={idea} />
-
-            {/* Market Signal */}
-            <MarketSignalCell idea={idea} />
-
-            {/* Version */}
-            <div>
-              <span className="inline-flex items-center px-[7px] py-[2px] rounded border border-border font-mono text-[10px] text-muted-foreground">
-                {idea.currentVersion}
-              </span>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

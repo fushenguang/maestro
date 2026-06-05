@@ -324,7 +324,7 @@ function ValidationPage() {
 
       if (report.verdict === 'go') {
         toast.success('Validation passed — proceed to contract definition');
-        // Navigate to contract when Phase 4 is implemented; for now stay
+        await navigate({ to: '/ideas/$id/contract', params: { id } });
       } else if (report.verdict === 'no_go') {
         toast.warning('Validation returned no-go. Review the findings.');
       } else {

@@ -9,12 +9,15 @@ const PHASE_ROUTES: Record<number, string> = {
   1: '/ideas/$id/intent',
   2: '/ideas/$id/boundary',
   3: '/ideas/$id/validation',
+  4: '/ideas/$id/contract',
+  5: '/ideas/$id/evolution',
 };
 
 const PHASE_LOCK_TOOLTIPS: Record<number, string> = {
   2: 'Intent clarity must reach 85% · resolve open questions',
   3: 'Lock boundary definition first',
   4: 'Validation gate must return \'go\'',
+  5: 'Sign the product contract first',
 };
 
 interface PhaseSidebarProps {

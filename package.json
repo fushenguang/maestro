@@ -12,6 +12,10 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "test:functional:e2e": "cd apps/desktop/src-tauri && cargo run --bin real_case_flow",
+    "test:functional:e2e:strict": "cd apps/desktop/src-tauri && MAESTRO_REAL_LLM_ALL=1 MAESTRO_STRICT_PARITY=1 cargo run --bin real_case_flow",
+    "test:functional:static": "node scripts/functional-e2e-check.mjs",
+    "test:functional:full": "pnpm test:functional:e2e && pnpm -C apps/desktop lint && pnpm -C apps/desktop test && (cd apps/desktop/src-tauri && cargo check)",
     "gen:types": "supabase gen types typescript --db-url \"postgres://postgres.cogito-pooler:Cogito-092023@114.67.246.199:5432/postgres\" --schema calcifer 2>/dev/null > apps/desktop/src/types/database.types.ts && echo 'types written to apps/desktop/src/types/database.types.ts'",
     "gen:types:no-docker": "node scripts/gen-types.mjs"
   },

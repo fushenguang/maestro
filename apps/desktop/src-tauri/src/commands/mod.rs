@@ -6,6 +6,7 @@ pub mod github;
 pub mod ideas;
 pub mod intent;
 pub mod llm;
+pub mod market_signals;
 pub mod profiles;
 pub mod validation;
 
@@ -45,9 +46,17 @@ pub fn register<R: tauri::Runtime>(builder: Builder<R>) -> Builder<R> {
         // contracts
         contracts::get_contract,
         contracts::sign_contract,
+        contracts::export_contract_artifact,
         // evolution
         evolution::get_evolution_nodes,
         evolution::create_evolution_node,
         evolution::get_openspec_changes,
+        evolution::get_arch_decision_logs,
+        evolution::dismiss_scope_warning,
+        evolution::complete_openspec_change_with_arch_log,
+        // market signals
+        market_signals::verify_github_repo,
+        market_signals::refresh_market_signal,
+        market_signals::refresh_due_ideas_status,
     ])
 }

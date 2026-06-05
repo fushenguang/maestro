@@ -38,12 +38,12 @@ function DashboardPage() {
   const filtered = applyFilter(ideas, filter);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       {/* Stats row — flush to top */}
       <StatsBar stats={stats} />
 
       {/* Content area */}
-      <div className="px-5 py-4">
+      <div className="flex-1 min-h-0 overflow-auto px-5 py-4">
         {loading ? (
           <p className="font-mono text-[11px] text-muted-foreground">loading…</p>
         ) : ideas.length === 0 ? (

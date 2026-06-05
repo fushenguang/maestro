@@ -43,6 +43,33 @@ function parseScopeItem(raw: unknown): ScopeItem {
   return { ...r, tags: parseJsonArray(r.tags) }
 }
 
+function parseEvolutionNode(raw: unknown): EvolutionNode {
+  const r = raw as EvolutionNode & { scopeOutOfBounds: string | string[] | null }
+  return {
+    ...r,
+    scopeOutOfBounds: r.scopeOutOfBounds == null ? null : parseJsonArray(r.scopeOutOfBounds),
+  }
+}
+
+function parseOpenspecChange(raw: unknown): OpenspecChange {
+  const r = raw as OpenspecChange & { specJson: string | Record<string, unknown> }
+  let specJson: Record<string, unknown> = {}
+  if (typeof r.specJson === 'string') {
+    try {
+      specJson = JSON.parse(r.specJson || '{}') as Record<string, unknown>
+    } catch {
+      specJson = {}
+    }
+  } else {
+    specJson = r.specJson
+  }
+
+  return {
+    ...r,
+    specJson,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Local input types (not in @maestro/types — Rust-side only)
 // ---------------------------------------------------------------------------
@@ -182,6 +209,82 @@ export interface CreateEvolutionNodeInput {
   sortOrder?: number
 }
 
+export interface ExportContractArtifactInput {
+  token: string
+  ideaId: string
+  owner: string
+  repo: string
+}
+
+export interface RepoVerifyResult {
+  ok: boolean
+  owner?: string | null
+  repo?: string | null
+  message: string
+}
+
+export interface MarketRefreshResult {
+  ideaId: string
+  successMetric: string
+  currentValue?: number | null
+  updatedStatus?: string | null
+  refreshed: boolean
+  message: string
+}
+
+export interface DueIdeasStatusResult {
+  refreshedCount: number
+  changedStatusCount: number
+}
+
+export interface ArchDecisionLog {
+  id: string
+  openspecId: string
+  ideaId: string
+  nodeId: string
+  decisions: string[]
+  depsAdded: string[]
+  depsRemoved: string[]
+  filesChanged: string[]
+  agentNotes: string | null
+  exportedToContextAt: string | null
+  contextCommitSha: string | null
+  modelUsed: string
+  writtenAt: string
+}
+
+export interface DismissScopeWarningInput {
+  nodeId: string
+  reason: string
+}
+
+export interface CompleteOpenspecChangeInput {
+  openspecId: string
+  decisions: string[]
+  depsAdded?: string[]
+  depsRemoved?: string[]
+  filesChanged?: string[]
+  agentNotes?: string | null
+  modelUsed?: string
+}
+
+function parseArchLog(raw: unknown): ArchDecisionLog {
+  const r = raw as Omit<ArchDecisionLog, 'decisions' | 'depsAdded' | 'depsRemoved' | 'filesChanged'> & {
+    decisions: string | string[]
+    depsAdded: string | string[]
+    depsRemoved: string | string[]
+    filesChanged: string | string[]
+  }
+
+  return {
+    ...r,
+    decisions: parseJsonArray(r.decisions),
+    depsAdded: parseJsonArray(r.depsAdded),
+    depsRemoved: parseJsonArray(r.depsRemoved),
+    filesChanged: parseJsonArray(r.filesChanged),
+  }
+}
+
 // ---------------------------------------------------------------------------
 // db — the exported singleton
 // ---------------------------------------------------------------------------
@@ -272,17 +375,47 @@ export const db = {
 
     sign: (ideaId: string, data: SignContractInput): Promise<Contract> =>
       invoke<Contract>('sign_contract', { ideaId, data }),
+
+    exportArtifact: (data: ExportContractArtifactInput): Promise<string> =>
+      invoke<string>('export_contract_artifact', { data }),
   },
 
   evolution: {
     listNodes: (ideaId: string): Promise<EvolutionNode[]> =>
-      invoke<EvolutionNode[]>('get_evolution_nodes', { ideaId }),
+      invoke<unknown[]>('get_evolution_nodes', { ideaId }).then((rows) => rows.map(parseEvolutionNode)),
 
     createNode: (data: CreateEvolutionNodeInput): Promise<EvolutionNode> =>
-      invoke<EvolutionNode>('create_evolution_node', { data }),
+      invoke<unknown>('create_evolution_node', { data }).then(parseEvolutionNode),
 
     listChanges: (ideaId: string): Promise<OpenspecChange[]> =>
-      invoke<OpenspecChange[]>('get_openspec_changes', { ideaId }),
+      invoke<unknown[]>('get_openspec_changes', { ideaId }).then((rows) => rows.map(parseOpenspecChange)),
+
+    listArchLogs: (ideaId: string): Promise<ArchDecisionLog[]> =>
+      invoke<unknown[]>('get_arch_decision_logs', { ideaId }).then((rows) => rows.map(parseArchLog)),
+
+    dismissWarning: (data: DismissScopeWarningInput): Promise<EvolutionNode> =>
+      invoke<unknown>('dismiss_scope_warning', { data }).then(parseEvolutionNode),
+
+    completeWithArchLog: (data: CompleteOpenspecChangeInput): Promise<ArchDecisionLog> =>
+      invoke<unknown>('complete_openspec_change_with_arch_log', {
+        data: {
+          ...data,
+          depsAdded: data.depsAdded ?? [],
+          depsRemoved: data.depsRemoved ?? [],
+          filesChanged: data.filesChanged ?? [],
+        },
+      }).then(parseArchLog),
+  },
+
+  market: {
+    verifyRepo: (repo: string): Promise<RepoVerifyResult> =>
+      invoke<RepoVerifyResult>('verify_github_repo', { repo }),
+
+    refreshSignal: (ideaId: string): Promise<MarketRefreshResult> =>
+      invoke<MarketRefreshResult>('refresh_market_signal', { ideaId }),
+
+    refreshDueIdeasStatus: (): Promise<DueIdeasStatusResult> =>
+      invoke<DueIdeasStatusResult>('refresh_due_ideas_status'),
   },
 }
 

@@ -1,6 +1,7 @@
 use sqlx::SqlitePool;
 
 use crate::error::AppError;
+use crate::github::commit_file;
 use super::profiles::{new_id, now_utc};
 use crate::sync::queue::enqueue;
 
@@ -33,6 +34,15 @@ pub struct SignContractInput {
     pub target_n: i64,
     pub github_repo: String,
     pub signed_by_user_id: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportContractArtifactInput {
+    pub token: String,
+    pub idea_id: String,
+    pub owner: String,
+    pub repo: String,
 }
 
 #[tauri::command]
@@ -155,4 +165,33 @@ pub async fn sign_contract(
     let _ = enqueue(pool.inner(), "contracts", &contract.id, "upsert", &payload).await;
 
     Ok(contract)
+}
+
+#[tauri::command]
+pub async fn export_contract_artifact(
+    pool: tauri::State<'_, SqlitePool>,
+    data: ExportContractArtifactInput,
+) -> Result<String, AppError> {
+    let contract = sqlx::query_as::<_, Contract>("SELECT * FROM contracts WHERE idea_id = ?")
+        .bind(&data.idea_id)
+        .fetch_optional(pool.inner())
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound(data.idea_id.clone()))?;
+
+    let content = serde_json::to_string_pretty(&contract)
+        .map_err(|e| AppError::ValidationError(e.to_string()))?;
+
+    let sha = commit_file(
+        &data.token,
+        &data.owner,
+        &data.repo,
+        ".maestro/contract.json",
+        &content,
+        &format!("chore(contract): export {}", contract.contract_ref),
+    )
+    .await
+    .map_err(AppError::RepoVerifyFailed)?;
+
+    Ok(sha)
 }

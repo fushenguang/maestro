@@ -15,6 +15,8 @@ import { Route as FeedRoute } from "./routes/_app/ideas/$id/feed";
 import { Route as IntentRoute } from "./routes/_app/ideas/$id/intent";
 import { Route as BoundaryRoute } from "./routes/_app/ideas/$id/boundary";
 import { Route as ValidationRoute } from "./routes/_app/ideas/$id/validation";
+import { Route as ContractRoute } from "./routes/_app/ideas/$id/contract";
+import { Route as EvolutionRoute } from "./routes/_app/ideas/$id/evolution";
 import type { Session } from "@supabase/supabase-js";
 
 export interface RouterContext {
@@ -39,7 +41,7 @@ export const routeTree = RootRoute.addChildren([
     InsightsRoute,
     SettingsRoute,
     NewIdeaRoute,
-    IdeasRoute.addChildren([FeedRoute, IntentRoute, BoundaryRoute, ValidationRoute]),
+    IdeasRoute.addChildren([FeedRoute, IntentRoute, BoundaryRoute, ValidationRoute, ContractRoute, EvolutionRoute]),
   ]),
 ]);
 

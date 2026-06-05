@@ -16,6 +16,10 @@ pub enum AppError {
     Io(String),
     /// LLM service error (config, HTTP, parsing).
     LlmError(String),
+    /// GitHub repository verification failed.
+    RepoVerifyFailed(String),
+    /// Market signal refresh failed.
+    MarketRefreshFailed(String),
 }
 
 impl From<sqlx::Error> for AppError {
@@ -35,6 +39,8 @@ impl std::fmt::Display for AppError {
             AppError::ValidationError(msg) => write!(f, "Validation error: {msg}"),
             AppError::Io(msg) => write!(f, "IO error: {msg}"),
             AppError::LlmError(msg) => write!(f, "LLM error: {msg}"),
+            AppError::RepoVerifyFailed(msg) => write!(f, "Repository verification failed: {msg}"),
+            AppError::MarketRefreshFailed(msg) => write!(f, "Market refresh failed: {msg}"),
         }
     }
 }

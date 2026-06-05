@@ -5,6 +5,8 @@ mod github;
 mod llm;
 mod sync;
 
+use std::time::Duration;
+
 use tauri::Manager;
 
 /// Runtime configuration loaded from environment variables.
@@ -46,6 +48,18 @@ pub fn run() {
             // Spawn the background sync worker (non-blocking).
             sync::worker::spawn(pool, config.supabase_url, config.supabase_anon_key);
 
+            // Run an immediate status evaluation on startup, then refresh hourly.
+            let market_pool = app.state::<sqlx::SqlitePool>().inner().clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = commands::market_signals::refresh_due_ideas_status_inner(&market_pool).await;
+
+                let mut ticker = tokio::time::interval(Duration::from_secs(60 * 60));
+                loop {
+                    ticker.tick().await;
+                    let _ = commands::market_signals::refresh_due_ideas_status_inner(&market_pool).await;
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -80,10 +94,18 @@ pub fn run() {
             // contracts
             commands::contracts::get_contract,
             commands::contracts::sign_contract,
+            commands::contracts::export_contract_artifact,
             // evolution
             commands::evolution::get_evolution_nodes,
             commands::evolution::create_evolution_node,
             commands::evolution::get_openspec_changes,
+            commands::evolution::get_arch_decision_logs,
+            commands::evolution::dismiss_scope_warning,
+            commands::evolution::complete_openspec_change_with_arch_log,
+            // market signals
+            commands::market_signals::verify_github_repo,
+            commands::market_signals::refresh_market_signal,
+            commands::market_signals::refresh_due_ideas_status,
             // llm
             commands::llm::llm_chat_stream,
             commands::llm::llm_set_config,
