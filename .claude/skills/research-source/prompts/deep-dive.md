@@ -1,9 +1,30 @@
-# Deep-Dive 模式 Prompt（v0.3，2026-06-11 PM）
+# Deep-Dive 模式 Prompt（v0.4，2026-06-11 晚）
 
 你是研究助手。基于以下资料源的材料 + Card + Brief，产出一份 Deep-Dive（深读）。
 
+## 工具级禁令 + 禁网前置（**硬约束，Problem 26/30，违反 = 产物作废**）
+
+> 主 Claude 已在 `{cache_dir}` pre-seed 本次任务所有材料。subagent 沙箱默认无网，且 LLM 对「不要 X」负面指令有「完成冲动」会自行写盘。**必须**用结构层禁令。
+
+**禁止使用的工具**（**任何情况下都不允许**调用）：
+- ❌ `Write` / `Edit` / `NotebookEdit` —— 落盘由主 Claude 收尾负责
+- ❌ `WebFetch` / `WebSearch` —— 沙箱无网或权限被拒
+- ❌ `Bash` 中含 `curl` / `git` / `gh` / `wget` / `npm install` 等网络操作
+- ❌ 任何 MCP 网络工具（如 `mcp__brave-search__*`）
+
+**允许使用的工具**：
+- ✅ `Read` —— 读 cache 文件 + 已有 Card/Brief 段
+- ✅ `Bash` —— **只读**（`ls` / `wc -m` / `head` / `cat` / `md5` / `find` / `grep` / `jq`）
+- ✅ `Grep` / `Glob` —— 在 cache 中找材料
+- ✅ `Task` —— 只用来 spawn 嵌套 subagent（**也必须遵守**以上禁令）
+
+**完成契约**：以 raw JSON 文本作为 final message 返回，**不要落盘**。主 Claude 会跑 schema 校验 + `ls` 检测违规写盘，命中即强制删除重写。
+
 ## 输入
 
+- **cache_dir（必填，Problem 26）**：`{cache_dir}`（默认 `.research-cache/raw-fetches/batch{N}/`，主 Claude 已 pre-seed）
+  - 一切材料从这里 Read；**不要走网络**（subagent 沙箱无网）
+  - 文件不存在 = 主 Claude pre-seed 失败 → 报错并标 `status=cache_missing` 返回
 - **资料源 URL**：`{source_url}`
 - **资料类型**：`{source_type}`（repo / article / tutorial / course）
 - **子类型**：`{source_subtype}`（决定本 prompt 的若干段是否必含）
@@ -106,6 +127,20 @@
 - 受众标签与 Card 一致（继承）
 - **`deep_dive_body_markdown` 必为 string**，不允许 nested JSON
 - **`char_count` 字段**填整个 mdx 文件（Card+Brief+Deep-Dive 三段合并后）的 `wc -m` 实测值
+
+### 工具与网络（**Problem 26/30 硬约束**）
+
+- **禁止使用 Write/Edit/NotebookEdit 工具**（详见顶部「工具级禁令」段）
+- **禁止任何网络调用**——材料从 `{cache_dir}` Read，不要 WebFetch / WebSearch / Bash(curl|git|gh)
+- 工具使用情况会被主 Claude `ls {output_dir}/{slug}.*` 检测，违规写盘 = 强制删除重写 + 记 LEARNINGS
+- 收到 429（Token Plan 限额）错误 → 标 `status=token_plan_429` 返回，**不要重试**——主 Claude 等用户 Plan 恢复后重派
+
+### source URL 失效（**Problem 28**）
+
+- 若 cache 文件对应的**原 URL**已 404 / 域名变更 → 自主找到**新 URL**（GitHub 跳转 / archive.org / blog changelog）
+- 在 frontmatter 填 `original_url: <原不可用 URL>` + `redirect_reason: <原因>`（如 `repo_donated_renamed` / `spa_shell` / `dns_dead`）
+- subtype 也按实际可用源调整（如 `docs` SPA 不可用 → 改 `blog`）
+- `exposed_problems` 数组加一条：`{"problem": "url_redirect", "from": "<原>", "to": "<新>", "reason": "..."}`
 
 ## 框架自检规范（v0.2，2026-06-11 PM）
 

@@ -5,7 +5,7 @@ description: |
   在用户提到「研究 X」、「写 card」、「出 brief」、「deep-dive」、「调研这个 repo」时使用。
 ---
 
-# research-source Skill（v0.3，2026-06-11 PM 合并 Problem 17-25）
+# research-source Skill（v0.4，2026-06-11 晚 合并 Problem 26-30）
 
 按 `apps/docs/content/docs/research/` 目录约定，对一个资料源产出指定 tier 的研究产物。
 
@@ -78,6 +78,83 @@ print(b.strip())
     ```
   - 输出预期：每段独立一行，便于 `:L<n>` 锚点精准定位（不是整页落 L1）
 
+#### 1.1 两层拉取流程（Problem 26，**subagent 沙箱无网是默认**）
+
+> **核心假设**：subagent 沙箱收紧网络（user-level `~/.claude/settings.json` 的 52 条 allow **不继承**），git/curl/WebFetch/WebSearch/MCP 全部 `Permission denied` 或 75s timeout。批 3 已验证：aider v1 subagent 报「`Failed to connect to github.com port 443`」+ 同 session 主 Claude 跑 `git clone` 成功。
+
+**强制两层流程**：
+
+```
+Layer 1（主 Claude / 必跑）
+  ↓ git clone / curl / WebFetch
+  ↓ 落到 .research-cache/raw-fetches/batch{N}/{slug}.{html,txt,pdf,...}
+  ↓ sha256 验证文件不空
+Layer 2（subagent / 只读 cache）
+  ↓ Read {cache_dir}/{slug}.*
+  ↓ 严禁网络调用
+  ↓ 返回 raw JSON
+主 Claude 收尾（Step 4-6）
+  ↓ 跑 schema 校验 + ls 检测违规写盘
+  ↓ 落 mdx/json + 同步 registry
+```
+
+**实施要求**：
+- 跑批前**主 Claude 必先**把所有源拉到 cache，再起 subagent
+- subagent prompt 模板默认带「**禁网前置**」：「本任务所有材料已在 `{cache_dir}` 准备好，**禁止使用 Bash(curl/git/gh)、WebFetch、WebSearch、任何 MCP 网络工具**」
+- 主 Claude 在 sources.json 标 `fetched_via: pre_seeded_cache` + `fetched_via_fallback: true`（当 subagent 走 cache 时）
+- 若 subagent 在 cache 完整的情况下仍尝试网络调用 → **主 Claude 收尾时记录到 LEARNINGS，作为 subagent 违规**（与 Problem 30 联动）
+
+#### 1.2 SPA 检测（Problem 27，**多 URL md5 一致 = SPA shell**）
+
+> Cursor docs 是 Next.js SPA，所有路径返回同 `__next_error__` shell；curl + Python regex 完全抽不到正文。
+
+**检测流程**（在 Step 1 拉 article/blog/docs 时必跑）：
+
+```bash
+# 1. 拉 2-3 个不同 URL
+for u in {url1} {url2} {url3}; do
+  curl -sL "$u" -o /tmp/$(basename $u).html
+done
+# 2. md5 对比
+md5 /tmp/{url1,url2,url3}.html   # 若 3 个 md5 完全一致 = SPA shell
+```
+
+**命中 SPA 后的替代源策略**（按优先级）：
+
+1. **同站静态路径**：`docs.cursor.com/*` SPA → `cursor.com/changelog`（静态 blog）
+2. **GitHub README/CHANGELOG/release notes**（多数项目的文档仓库都有 markdown 副本）
+3. **官方 blog 入口**（避开 docs，docs 多半是 SPA）
+4. **第三方归档**：archive.org / commoncrawl（最后手段）
+5. **人工选源**：以上都失败 → 标 `status=fetch_failed` + 让用户在主对话选新源
+
+**frontmatter 处理**：
+- subtype 改为实际可用源的体裁（`docs` SPA 不可用 → 改 `blog` 走 changelog）
+- 加 `mirror_url: <替代源 URL>`
+- 加 `original_url: <原不可用 URL>` + `redirect_reason: spa_shell` 标原源不可达
+- `fetched_via_fallback: true`
+
+**已知 SPA 域名维护列表**（持续追加）：
+- `docs.cursor.com` → fallback `cursor.com/changelog`（blog 体裁）
+- 待发现下一个 SPA 时追加到本节
+
+#### 1.3 source URL 失效处理（Problem 28，**url vs mirror_url vs original_url 三义**）
+
+> qodo-merge 原 URL `qodo-ai/qodo-merge` 404，已迁移到 `The-PR-Agent/pr-agent`（Qodo 把 repo 捐给社区改名）。开源项目治理（捐赠 / 转售 / 改名 / archive）是常见现象。
+
+**三义辨析**（schema 必填规范）：
+
+| 字段 | 语义 | 示例 |
+|---|---|---|
+| `url` | 主源（必填），当前实际可用的 URL | `https://github.com/The-PR-Agent/pr-agent` |
+| `mirror_url` | **同内容备份**，主源被 geo-block / 限流时 fallback | docs.claude.com/agent-skills → raw.githubusercontent.com/anthropics/skills/README.md |
+| `original_url` | **原 URL 已失效**，但有「为何失效」的历史信息 | `https://github.com/qodo-ai/qodo-merge`（2025 迁出） |
+| `redirect_reason` | 失效原因（与 `original_url` 配对使用） | `repo_donated_renamed` / `spa_shell` / `dns_dead` / `maintainer_archived` |
+
+**Step 4 校验扩展**：
+- 若原始 URL（用户传入）`curl -I` 返回 404 → 必填 `original_url` + `redirect_reason` 二字段
+- 若 fallback 到同站静态或 GitHub → 必填 `mirror_url`（与 `original_url` 可共存）
+- 缺一字段 = 标 `status=schema_invalid` 排队等人工
+
 ### Step 2：抽取 + 「tier × source_subtype 阅读量矩阵」
 
 读取策略**按 tier 和 source_subtype 双轴决定**，避免 Card 阶段就吃掉整个 repo：
@@ -99,6 +176,26 @@ print(b.strip())
 - 用 `prompts/{tier}.md` 模板 + 上面材料
 - LLM 默认 MiniMax-M3（团队环境配置）
 - 温度：card=0.3，brief=0.3，deep-dive=0.4
+
+#### 3.1 并发数按 Token Plan 余量调 + 429 重派（Problem 29）
+
+> 批 3 验证：用户 Token Plan 是**周期限额**（小时级恢复），5 subagent 并发 + 主 Claude 长 context 集中烧 token，gemini/cursor 长任务跑到一半触发 API 429「Token Plan 用量上限」，2 个 subagent 完全失败。**subagent 不是免费资源，节奏须 budget-aware**。
+
+**并发数策略**：
+
+| Token Plan 余量 | 并发数 | 备注 |
+|---|---|---|
+| 充足（< 50% 已用）| 5-6 | 默认值（批 1/2/3 实测） |
+| 紧张（50-80% 已用）| 3 | 单批耗时 +50%，但稳定 |
+| 紧张且有长任务（cookbook 全文 / anthropic-cookbook）| 2 | 长任务烧 token 极快 |
+
+**429 重派机制**：
+- 主 Claude 收到 subagent 失败响应含「Token Plan」「429」「rate limit」「quota」字样 → 标 `status=token_plan_429`
+- 不立即丢，记录失败 task ID + 等用户 Token Plan 恢复（小时级）
+- 用户确认恢复后用**相同 cache 内容**重派 subagent（cache 已 pre-seed，无副作用）
+- 重派仍失败 → 标 `status=token_plan_exhausted` 排队等人工
+
+**subagent 返回空 JSON / 错误 message** 必查是否 429——批 3 早期误以为是「内容问题」实际是 token 限额，浪费 30 min。
 
 ### Step 4：校验（**机器校验先行，人工 review 后置**）
 
@@ -135,6 +232,31 @@ assert isinstance(b, str), f'body 必须是 string，不是 nested JSON：{type(
 assert len(b) > 100, f'body 太短：{len(b)} 字符'
 "
 ```
+
+#### 4.1.1 写盘违规检测（Problem 30，**主 Claude 收尾必跑**）
+
+> gemini-cli v2 subagent 违反「不要写盘，主 Claude 收尾会写」约定，**自行 Write** `apps/docs/content/docs/research/gemini-cli.{mdx,json}`。负面指令（"不要 X"）比正面指令（"返回 JSON"）弱，**必须**升级为工具级禁令 + 收尾 ls 检测。
+
+**主 Claude 收尾必跑**（在 Step 4.1 全部 schema 校验通过后，**Step 5 落盘前**）：
+
+```bash
+# 检测 subagent 是否违规写盘
+SLUGS="{slugs from this batch}"   # 如 "anth-mcp slash-commands memory"
+for slug in $SLUGS; do
+  ls -la "$OUTPUT_DIR/$slug.mdx" "$OUTPUT_DIR/$slug.json" 2>/dev/null
+  # 若文件已存在且 mtime 在本 batch subagent 起跑时间之后 = 违规
+done
+```
+
+**命中违规的处理**：
+- **强制删除** subagent 写盘产物：`rm "$OUTPUT_DIR/$slug".{mdx,json}`
+- 用主 Claude 的规范化脚本**重写**产物（与正常 subagent 路径相同的 Step 4-5）
+- 记录到 `LEARNINGS.md` Section 13 「subagent 违规写盘事件」表（带时间戳 + subagent ID + 违规内容摘要）
+- 多次违规的 subagent 类型 → 反思是否 prompt 措辞需要更强烈（**工具级禁令**而非动作级）
+
+**subagent prompt 模板必含**（card.md / brief.md / deep-dive.md 同步）：
+- 「**禁止使用 Write / Edit / NotebookEdit 工具**。只允许 Read / Bash(read-only) / Grep / Glob。完成时只返回 raw JSON 文本作为 final message，**不要落盘**。」
+- 「本任务所有材料已在 `{cache_dir}` 准备好，**禁止使用网络工具**（Bash(curl/git/gh)、WebFetch、WebSearch）。」
 
 #### 4.2 内容校验
 
@@ -282,6 +404,23 @@ assert len(b) > 100, f'body 太短：{len(b)} 字符'
 - 任何校验失败的源 = 标 `status=llm_invalid`、重试 1 次（强化 prompt 警告）→ 仍失败 = 排队等人工修
 - 校验通过后才能 Step 5 落盘 + Step 6 自报
 - **不允许「subagent 自报通过、主 Claude 跳过校验」**——subagent 自报不可信（Problem 21 实测）
+
+### 12. subagent 沙箱无网 + 工具级禁令（新增 2026-06-11 晚，Problem 26/30 合并）
+
+> 批 3 验证：subagent 沙箱收紧网络（user-level `~/.claude/settings.json` 的 52 条 allow **不继承**），且 LLM 对「不要 X」负面指令有「完成冲动」会自行 Write/Edit。**两个问题都要从 prompt 约束升级到结构层禁令**。
+
+**网络层**（Problem 26）：
+- subagent 沙箱**默认无网**（git/curl/WebFetch/WebSearch/MCP 全 `Permission denied` 或 75s timeout）
+- 跑批前**主 Claude 必先**把所有源拉到 `.research-cache/raw-fetches/batch{N}/`
+- subagent prompt 默认带「**禁网前置**」：「本任务所有材料已在 `{cache_dir}` 准备好，**禁止使用网络工具**」
+- 不允许「subagent 自主去拉源」——网络层归主 Claude 独占
+
+**工具层**（Problem 30）：
+- subagent prompt **必含工具级禁令**：「**禁止使用 Write / Edit / NotebookEdit 工具**。只允许 Read / Bash(read-only) / Grep / Glob。完成时只返回 raw JSON 文本作为 final message。」
+- 「**不要写盘**」这种负面指令不可靠；必须升级为「禁止使用 XX 工具」结构层禁令
+- 主 Claude 在 Step 4.1.1 必跑 `ls {output_dir}/{slug}.*` 检测 subagent 违规写盘；命中 = 强制删除重写 + 记 LEARNINGS
+
+**违反任一条 = 产物作废重做 + LEARNINGS 追加**。
 
 ## 相关文件
 
