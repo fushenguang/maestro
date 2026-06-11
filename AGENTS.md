@@ -7,7 +7,6 @@
 | I need to… | Start here |
 |---|---|
 | Understand what this product does and its boundaries | [`openspec/specs/product.md`](./openspec/specs/product.md) |
-| Create or execute a change (feature/fix) | [`openspec/AGENTS.md`](./openspec/AGENTS.md) |
 | Read UI / data / interaction specs | [`docs/references/mvp/`](./docs/references/mvp/) |
 | Understand architecture decisions | [`docs/architecture/vision.md`](./docs/architecture/vision.md) |
 | Develop the desktop app (Tauri / React) | [`apps/desktop/AGENTS.md`](./apps/desktop/AGENTS.md) |
