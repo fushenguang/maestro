@@ -1,0 +1,49 @@
+---
+title: Claude Code 总览（官方文档）
+description: Anthropic 官方的 Claude Code 入口页：定位、5 端安装与能力矩阵
+slug: anth-claude-code-overview
+url: https://docs.claude.com/en/docs/claude-code/overview
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "10.1 KB / docs page"
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: newbie
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Claude Code 总览（官方文档）
+
+## 一句话定位
+
+> Anthropic 官方的 agentic 编码工具入口，覆盖安装、能力矩阵与多端协同。
+
+## 关键 takeaway
+
+1. Claude Code 是 agentic 编码工具，读代码库、改文件、跑命令并接入开发工具链（终端、IDE、桌面、浏览器）。锚点 `docs:L1`。
+2. 五大安装/运行环境：Terminal CLI、VS Code、Desktop、Web（claude.ai/code）、JetBrains；CLI 与 VS Code 额外支持第三方 provider。锚点 `docs:L1`。
+3. 能力分 6 块：自动化杂活、构建功能/修 bug、git 提交与 PR、MCP 工具连接、CLAUDE.md/skills/hooks 自定义、Agent SDK 与并行 agent。锚点 `docs:L1`。
+4. 通过 MCP 接入 Google Drive/Jira/Slack 等外部数据源；CLAUDE.md 作为项目级持久指令，hooks 在动作前后跑 shell。锚点 `docs:L1`。
+5. 所有 surface 共享同一 Claude Code 引擎，CLAUDE.md/设置/MCP 跨端通用，并可与 CI/CD、Slack Channels、GitHub Actions 等集成。锚点 `docs:L1`。
+
+## 与 Claude Code 教程的关联
+
+这是教程的「全景地图」源：可作为入门章节导览，引出安装方式、CLAUDE.md 配置、MCP 接入、Agent SDK 等子主题的深读链接。对「快速上手」与「多端协作」两节直接可用。
+
+## 参考锚点
+
+- `docs:L1` — "Claude Code is an agentic coding tool that reads your codebase, edits files, runs commands, and integrates with your development tools."
+- `docs:L1` — "The Model Context Protocol (MCP) is an open standard for connecting AI tools to external data sources."
+- `docs:L1` — "CLAUDE.md is a markdown file you add to your project root that Claude Code reads at the start of every session."
+- `docs:L1` — "the Agent SDK lets you build your own agents powered by Claude Code's tools and capabilities"
+- `docs:L1` — "Each surface connects to the same underlying Claude Code engine, so your CLAUDE.md files, settings, and MCP servers work across all of them."
+
+> **注**：Python 提取 HTML 后整页落在单行（`L1`），verbatim 短语在原文唯一可独立反查；Brief 阶段如升级，需按 `<h2>`/`<h3>` 切句重新生成行号锚点。

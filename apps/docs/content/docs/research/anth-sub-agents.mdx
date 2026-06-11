@@ -1,0 +1,48 @@
+---
+title: Sub-agents（官方文档）
+description: Claude Code 子智能体机制：独立上下文、工具/权限/模型可配置、自动委派与显式调用
+slug: anth-sub-agents
+url: https://docs.claude.com/en/docs/claude-code/sub-agents
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "53.8 KB / docs page"
+overflow: true
+audience_tags:
+  cs_background: yes
+  devops: low
+  cc_experience: used
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Sub-agents（官方文档）
+
+## 一句话定位
+
+> Claude Code 的子智能体（subagent）是带独立上下文窗口 + 自定义系统提示 + 受限工具/权限/模型的专用 AI 助手，主会话按 `description` 自动委派或显式 `@`-mention 调用。
+
+## 关键 takeaway
+
+1. **核心收益 = 隔离上下文 + 复用配置**：子智能体在独立 context window 中工作，把搜索结果、日志、文件内容等高噪声输出拦在子任务里，只把摘要回传主对话；同时可在 `~/.claude/agents/`（个人）或 `.claude/agents/`（项目）复用定义，配合 `memory: user/project/local` 跨会话沉淀知识。锚点 `docs:L2, L5, L11`。
+2. **配置面 = Markdown + YAML frontmatter**：`name`、`description` 必填，其余可选 `tools` / `disallowedTools` / `model` / `permissionMode` / `mcpServers` / `hooks` / `skills` / `memory` / `background` / `isolation: worktree` / `effort` / `color` 等；描述写明 `Use proactively` 之类的措辞可促进自动委派。
+3. **关键不变量 = 不能嵌套 spawn**：「subagents cannot spawn other subagents」是硬约束（防无限嵌套），需要多步链路时由主会话链式串联；Agent tool 上的 `Agent(agent_type)` 语法只对主线程生效。锚点 `docs:L26, L138`。
+4. **内置 3 + 1 类**：Explore（Haiku 只读，做代码搜索）、Plan（plan 模式下做只读研究，避免与主循环互相递归）、general-purpose（继承主会话模型与全部工具，处理多步复杂任务），另含 `statusline-setup`、`claude-code-guide` 等辅助；可经 `permissions.deny` 屏蔽单个或 `deny Agent` 全局禁用，SDK 侧可用 `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1`。锚点 `docs:L17`（Explore/Plan 跳过 CLAUDE.md 与 parent git status 的设计意图）。
+5. **Foreground vs Background & Fork 三种委派模式**：前台子任务阻塞主对话并透传权限请求；后台子任务并发执行并 auto-deny 需提示的调用；fork（`CLAUDE_CODE_FORK_SUBAGENT=1`）则继承主会话完整历史 / 系统提示 / 模型 / 权限，但自己的工具调用仍隔离，并通过共享 prompt cache 降低成本。锚点 `docs:L165, L208`。
+
+## 与 Claude Code 教程的关联
+
+本卡片是 sub-agents 机制的官方速览；理解它能贯通教程里的 Explore 自动委派、`/agents` 配置 UI、CLAUDE.md 加载范围（Explore/Plan 跳过）、`/fork` 并行实验、以及 Agent SDK 程序化调用——所有多智能体场景的根基都在这里。
+
+## 参考锚点
+
+- `docs:L2, L5, L11` — 定义与核心收益（独立 context、复用、专精、cost routing）。
+- `docs:L15-28` — 内置子智能体 + Explore/Plan 跳过 CLAUDE.md 的设计意图。
+- `docs:L26, L138` — 不能嵌套 spawn 的硬约束。
+- `docs:L165` — persistent memory 字段。
+- `docs:L208` — foreground 子任务阻塞主对话。

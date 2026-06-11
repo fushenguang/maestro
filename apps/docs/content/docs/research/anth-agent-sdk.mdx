@@ -1,0 +1,54 @@
+---
+title: Claude Agent SDK（官方文档）
+description: 把 Claude Code 作为可编程库（TS/Python），在你的进程 + 基础设施里跑生产级 agent
+slug: anth-agent-sdk
+url: https://docs.claude.com/en/api/agent-sdk/overview
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "13.6 KB / docs page"
+overflow: true
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: advanced
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Claude Agent SDK（官方文档）
+
+## 一句话定位
+
+> Agent SDK 把 Claude Code 整套能力（工具执行、agent loop、context 管理）封装成 Python / TypeScript 库，让你在自己的进程 + 自己的基础设施里跑生产 agent，无需重新实现 tool 循环。
+
+## 关键 takeaway
+
+1. **三条 agent 路径**：Client SDK（你自己写 tool loop）vs **Agent SDK（库 + 你的进程 + 你的基础设施）** vs Managed Agents（Anthropic 托管 REST + 沙箱）。典型路径：Agent SDK 原型 → Managed Agents 生产。锚点 `docs:L1`。
+2. **双语言对称**：`npm install @anthropic-ai/claude-agent-sdk`（TS，**捆绑平台原生 Claude Code binary** 作为 optional dependency）vs `pip install claude-agent-sdk`（Python 3.10+）；API 平行，示例可一一对照。锚点 `docs:L1`（"The TypeScript SDK bundles a native Claude Code binary"）。
+3. **认证 5 种**：`ANTHROPIC_API_KEY` + 4 个第三方 provider 经环境变量开关——`CLAUDE_CODE_USE_BEDROCK=1` / `CLAUDE_CODE_USE_ANTHROPIC_AWS=1`（+ `ANTHROPIC_AWS_WORKSPACE_ID`）/ `CLAUDE_CODE_USE_VERTEX=1` / `CLAUDE_CODE_USE_FOUNDRY=1`。
+4. **开箱工具 10 个 + 6 类 hook + Subagent + MCP**：Read / Write / Edit / Bash / **Monitor**（后台脚本按行事件流，新工具）/ Glob / Grep / WebSearch / WebFetch / AskUserQuestion；hook 类型 `PreToolUse` / `PostToolUse` / `Stop` / `SessionStart` / `SessionEnd` / `UserPromptSubmit` 经 `HookMatcher(matcher="Edit|Write", hooks=[...])` 匹配；Subagent 委派经 `AgentDefinition(description, prompt, tools)` 注册 + `parent_tool_use_id` 字段追踪；MCP integration 一行 `mcp_servers: {"playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]}}` 接外部 server。
+5. **复用 Claude Code 配置 + session 连续性 + 订阅变更**：默认从 `.claude/`（项目）和 `~/.claude/`（用户）加载 Skills / Commands / Memory / Plugins，可用 `setting_sources`（Python）/ `settingSources`（TS）限制；`session_id` + `ClaudeAgentOptions(resume=session_id)` 跨查询 context 延续或 fork。**重要**：自 2026-06-15 起，Agent SDK 与 `claude -p` 在订阅 plan 上扣新的「Agent SDK credit」，独立于交互用量额度。锚点 `docs:L1`（"Starting June 15, 2026..."）。
+
+## 与 Claude Code 教程的关联
+
+- 教程「AI agent 工程化」章的官方底座参考——核心教点：(1) 库 vs 托管 API 的取舍；(2) 内置工具与 MCP 扩展边界；(3) hook / subagent 治理层；(4) 跨查询 session 连续性 / forking。
+- demo agent 最小组合：`query(prompt, options)` + `allowed_tools` 白名单（实现只读 agent）+ `mcp_servers` 扩展外部工具。
+- 品牌约束：教程引用 SDK 集成时允许「Claude Agent」「Powered by Claude」措辞，**禁用** 「Claude Code / Claude Code Agent」品牌名与 ASCII art。
+
+## 参考锚点
+
+- `docs:L1` — "Build AI agents that autonomously read files, run commands, search the web, edit code, and more"
+- `docs:L1` — "Starting June 15, 2026, Agent SDK and claude -p usage on subscription plans will draw from a new monthly Agent SDK credit"
+- `docs:L1` — "The TypeScript SDK bundles a native Claude Code binary for your platform as an optional dependency"
+- `docs:L1` — "Monitor: Watch a background script and react to each output line as an event"
+- `docs:L1` — "Messages from within a subagent's context include a parent_tool_use_id field"
+- `docs:L1` — "To restrict which sources load, set setting_sources (Python) or settingSources (TypeScript) in your options"
+- `docs:L1` — Brand: "Allowed: 'Claude Agent' (preferred); Not permitted: 'Claude Code' or 'Claude Code Agent'"
+
+> **未解决问题（待 Brief / Deep-Dive）**：2026-06-15 Agent SDK credit 配额具体细节、Monitor 事件流协议（vs Bash 长进程）、subagent 嵌套上限、MCP 在 SDK vs CLI 一致性、session forking 是否能合并、`setting_sources` 可选值与默认安全模型。

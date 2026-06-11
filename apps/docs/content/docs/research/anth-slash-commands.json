@@ -1,0 +1,24 @@
+{
+  "slug": "anth-slash-commands",
+  "url": "https://docs.claude.com/en/docs/claude-code/slash-commands",
+  "source_type": "article",
+  "source_subtype": "docs",
+  "fetched_at": "2026-06-11T11:30:00+08:00",
+  "fetched_via": "curl + python regex-strip",
+  "raw_path": ".research-cache/raw-fetches/batch2/anth-slash-commands.txt",
+  "size_bytes": 42792,
+  "size_human": "43 KB",
+  "anchors_extracted": 16,
+  "primary_author": "Anthropic",
+  "license": "proprietary (docs)",
+  "overflow": true,
+  "issues_encountered": [
+    "subagent 返回了 nested JSON 结构（card.tldr/key_takeaways/concepts/details/patterns/gotchas/links）而非 card_body_markdown 字符串——主 Claude 收尾时整理为标准 markdown body 并精简至 5 条核心 takeaway",
+    "原文信息密度极高：12+8+5 = 25 个 takeaway-class 信息，Card 阶段精选 5 条最关键的（commands=skills 等价 / 4 级加载 / 16 frontmatter / 动态 context / bundled skills），其余推至 Brief"
+  ],
+  "cross_check_anchors": [
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-slash-commands.txt:L1", "verbatim": "A file at .claude/commands/deploy.md and a skill at .claude/skills/deploy/SKILL.md both create /deploy and work the same way."},
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-slash-commands.txt:L1", "verbatim": "disable-model-invocation: true"},
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-slash-commands.txt:L1", "verbatim": "context: fork"}
+  ]
+}

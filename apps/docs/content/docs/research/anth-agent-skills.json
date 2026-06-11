@@ -1,0 +1,26 @@
+{
+  "slug": "anth-agent-skills",
+  "url": "https://docs.claude.com/en/docs/agents-and-tools/agent-skills",
+  "mirror_url": "https://github.com/anthropics/skills",
+  "source_type": "article",
+  "source_subtype": "docs",
+  "fetched_at": "2026-06-11T11:00:00+08:00",
+  "fetched_via": "curl + python (docs.claude.com geo-blocked at this region) -> fallback raw.githubusercontent.com/anthropics/skills/main/README.md",
+  "raw_path": "/tmp/research-batch1/anth-agent-skills.txt",
+  "size_bytes": 5552,
+  "size_human": "5.5 KB",
+  "anchors_extracted": 3,
+  "primary_author": "Anthropic",
+  "license": "MIT (anthropics/skills repo); docs page proprietary",
+  "issues_encountered": [
+    "docs.claude.com / docs.anthropic.com / platform.claude.com 在本机所在 region 均返回 'App unavailable in region' splash 页（HTTP 200，450 KB HTML，但 body 是 geo-block 页）",
+    "web.archive.org 超时",
+    "回退到 raw.githubusercontent.com/anthropics/skills/main/README.md 作为权威源——docs 页本身指向此仓库（'How to create custom skills' 路径）",
+    "Brief 阶段需补一次 docs 页直抓（通过 VPN / 代理）+ 与 README 内容差异比对"
+  ],
+  "cross_check_anchors": [
+    {"anchor": "/tmp/research-batch1/anth-agent-skills.txt:L6", "verbatim": "Skills are folders of instructions, scripts, and resources that Claude loads dynamically to improve performance on specialized tasks."},
+    {"anchor": "/tmp/research-batch1/anth-agent-skills.txt:L18", "verbatim": "Each skill is self-contained in its own folder with a `SKILL.md` file containing the instructions and metadata that Claude uses."},
+    {"anchor": "/tmp/research-batch1/anth-agent-skills.txt:L78-81", "verbatim": "The frontmatter requires only two fields:\n- `name` - A unique identifier for your skill (lowercase, hyphens for spaces)\n- `description` - A complete description of what the skill does and when to use it"}
+  ]
+}

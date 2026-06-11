@@ -1,0 +1,51 @@
+---
+title: Slash Commands（官方文档）
+description: Claude Code 自定义命令机制 — 已并入 Skills 体系（commands/foo.md 与 skills/foo/SKILL.md 等价）
+slug: anth-slash-commands
+url: https://docs.claude.com/en/docs/claude-code/slash-commands
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "43 KB / docs page"
+overflow: true
+audience_tags:
+  cs_background: yes
+  devops: low
+  cc_experience: used
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Slash Commands（官方文档）
+
+## 一句话定位
+
+> 官方将原 Slash Commands 文档重写为 Skills 体系：自定义命令已并入 Skills（`.claude/commands/foo.md` 与 `.claude/skills/foo/SKILL.md` 等价），通过 SKILL.md YAML frontmatter 控制行为、可见性、工具权限、动态上下文与子代理执行。
+
+## 关键 takeaway
+
+1. **Custom commands = Skills（同名等价）**：`.claude/commands/deploy.md` 与 `.claude/skills/deploy/SKILL.md` 都创建 `/deploy`，二者作用一致；旧 `.claude/commands/` 文件仍可用但已被并入 Skills 体系。锚点 `docs:L1`。
+2. **四级加载范围**：`enterprise > personal (~/.claude/skills/) > project (.claude/skills/) > plugin`（`plugin-name:skill-name` 命名空间）；冲突按层级解析。
+3. **Frontmatter 16 字段**：`name`、`description`、`when_to_use`、`argument-hint`、`arguments`、`disable-model-invocation`（user-only）、`user-invocable`（Claude-only）、`allowed-tools` / `disallowed-tools`（工具门控）、`model`、`effort`、`context: fork`（subagent 隔离）、`agent: Explore|Plan|general-purpose|<custom>`、`hooks`、`paths`、`shell`。
+4. **动态 context 注入**：`` `!cmd` `` 在加载时跑、stdout 替换占位符进入 prompt（fenced 形式 ``` ```! ```）；可在 settings 用 `disableSkillShellExecution: true` 关闭（不影响 bundled / managed）。`$ARGUMENTS` / `$ARGUMENTS[N]` / `$N` / 命名参数支持，加 `${CLAUDE_SESSION_ID}` / `${CLAUDE_EFFORT}` / `${CLAUDE_SKILL_DIR}` 环境变量。
+5. **内置 bundled skills**：`/code-review` / `/batch` / `/debug` / `/loop` / `/claude-api` 默认可用；`/run` / `/verify` / `/run-skill-generator` 需 v2.1.145+，按项目类型（CLI、server、TUI、browser-driven）自动推断启动方式。
+
+## 与 Claude Code 教程的关联
+
+- 「写自己的 Skill」是教程「自定义工作流」章的核心：本卡片定义 SKILL.md 的完整 frontmatter 契约。
+- `disable-model-invocation: true` 与 `user-invocable: false` 的对立场景（部署命令 = user-only / Claude 写工具调用 = model-only）是 review 章的练手好例。
+- 与本仓库 `.claude/skills/research-source/SKILL.md` 直接对照——可验证我们的 frontmatter 是否覆盖官方所有 16 字段；同时本卡片让我们意识到「commands 已被 Skills 替代」是 6 月份的最新变化，需要更新教程叙事。
+
+## 参考锚点
+
+- `docs:L1` — "A file at .claude/commands/deploy.md and a skill at .claude/skills/deploy/SKILL.md both create /deploy and work the same way."
+- `docs:L1` — 4 级加载范围（enterprise > personal > project > plugin）+ plugin namespace。
+- `docs:L1` — 16 个 frontmatter 字段定义。
+- `docs:L1` — `disable-model-invocation` / `user-invocable` 对立 + `allowed-tools` 预批。
+- `docs:L1` — Dynamic context（`` `!cmd` ``）+ `disableSkillShellExecution`。
+- `docs:L1` — Bundled skills 列表 + v2.1.145+ 版本要求。

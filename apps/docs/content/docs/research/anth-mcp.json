@@ -1,0 +1,26 @@
+{
+  "slug": "anth-mcp",
+  "url": "https://docs.claude.com/en/docs/claude-code/mcp",
+  "source_type": "article",
+  "source_subtype": "docs",
+  "fetched_at": "2026-06-11T11:30:00+08:00",
+  "fetched_via": "curl + python regex-strip",
+  "raw_path": ".research-cache/raw-fetches/batch2/anth-mcp.txt",
+  "size_bytes": 46164,
+  "size_human": "44 KB",
+  "anchors_extracted": 15,
+  "primary_author": "Anthropic",
+  "license": "proprietary (docs)",
+  "overflow": true,
+  "issues_encountered": [
+    "subagent 主动用按 heading/p/li/pre 边界插换行的方式让原本单行的 HTML 抽取结果变成 891 行（Python 改进版抽取），解决了批 1 Problem 20 的「单行 L1」",
+    "原文信息量大；card body 实测 2410 chars，触发 overflow=true"
+  ],
+  "cross_check_anchors": [
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-mcp.txt:L44", "verbatim": "Claude Code can connect to hundreds of external tools and data sources through the Model Context Protocol (MCP) , an open source standard for AI-tool integrations. MCP servers give Claude Code access to your tools, databases, and APIs."},
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-mcp.txt:L80", "verbatim": "HTTP servers are the recommended option for connecting to remote MCP servers."},
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-mcp.txt:L98", "verbatim": "The SSE (Server-Sent Events) transport is deprecated. Use HTTP servers instead, where available."},
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-mcp.txt:L681", "verbatim": "claude mcp serve"},
+    {"anchor": ".research-cache/raw-fetches/batch2/anth-mcp.txt:L717", "verbatim": "Output warning threshold : Claude Code displays a warning when any MCP tool output exceeds 10,000 tokens"}
+  ]
+}

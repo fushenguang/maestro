@@ -1,0 +1,24 @@
+{
+  "slug": "anth-claude-code-overview",
+  "url": "https://docs.claude.com/en/docs/claude-code/overview",
+  "source_type": "article",
+  "source_subtype": "docs",
+  "fetched_at": "2026-06-11T11:00:00+08:00",
+  "fetched_via": "curl + python (regex-strip HTML)",
+  "raw_path": "/tmp/research-batch1/anth-claude-code-overview.txt",
+  "size_bytes": 10077,
+  "size_human": "10.1 KB",
+  "anchors_extracted": 5,
+  "primary_author": "Anthropic",
+  "license": "proprietary (docs)",
+  "issues_encountered": [
+    "Python 提取 HTML 后整页落在单行 L1：所有 cross_check_anchors 共用 L1，但每条 verbatim 短语在文件中唯一可独立反查。Brief 阶段如升级，需按 H2/H3 重新切句生成行号锚点。"
+  ],
+  "cross_check_anchors": [
+    {"anchor": "/tmp/research-batch1/anth-claude-code-overview.txt:L1", "verbatim": "Claude Code is an agentic coding tool that reads your codebase, edits files, runs commands, and integrates with your development tools."},
+    {"anchor": "/tmp/research-batch1/anth-claude-code-overview.txt:L1", "verbatim": "The Model Context Protocol (MCP) is an open standard for connecting AI tools to external data sources."},
+    {"anchor": "/tmp/research-batch1/anth-claude-code-overview.txt:L1", "verbatim": "CLAUDE.md is a markdown file you add to your project root that Claude Code reads at the start of every session."},
+    {"anchor": "/tmp/research-batch1/anth-claude-code-overview.txt:L1", "verbatim": "the Agent SDK lets you build your own agents powered by Claude Code's tools and capabilities"},
+    {"anchor": "/tmp/research-batch1/anth-claude-code-overview.txt:L1", "verbatim": "Each surface connects to the same underlying Claude Code engine, so your CLAUDE.md files, settings, and MCP servers work across all of them."}
+  ]
+}

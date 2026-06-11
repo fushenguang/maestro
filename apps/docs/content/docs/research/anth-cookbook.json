@@ -1,0 +1,28 @@
+{
+  "slug": "anth-cookbook",
+  "url": "https://github.com/anthropics/anthropic-cookbook",
+  "source_type": "repo",
+  "source_subtype": "cookbook",
+  "fetched_at": "2026-06-11T11:30:00+08:00",
+  "fetched_via": "git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 -c core.compression=0 clone --depth=1 --single-branch (per Problem 6 fallback + 额外 HTTP/2 framing retry)",
+  "local_cache": ".research-cache/anthropic-cookbook",
+  "size_bytes": 377991168,
+  "size_human": "~360 MB（含 .git），裸内容 ~200 MB",
+  "anchors_extracted": 3,
+  "primary_author": "Anthropic",
+  "license": "MIT",
+  "last_commit": "2026-06-09T16:53:19-04:00",
+  "last_commit_sha": "34022c5",
+  "stars": 45263,
+  "notebook_count": 87,
+  "registry_yaml_entries": 83,
+  "issues_encountered": [
+    "首次 gh repo clone 与默认 git clone 均因 github.com:443 HTTP/2 framing / curl 28 timeout 失败。第三次尝试加 http.version=HTTP/1.1 + postBuffer=524M + core.compression=0 成功（574 文件全量同步）",
+    "Card body 1503 chars 恰好 ≤ 1500（仅 3 chars 超）；接受为「内」而非 overflow"
+  ],
+  "cross_check_anchors": [
+    {"anchor": ".research-cache/anthropic-cookbook/README.md:L3", "verbatim": "The Claude Cookbooks provide code and guides designed to help developers build with Claude, offering copy-able code snippets that you can easily integrate into your own projects."},
+    {"anchor": ".research-cache/anthropic-cookbook/CLAUDE.md:L9", "verbatim": "uv sync --all-extras"},
+    {"anchor": ".research-cache/anthropic-cookbook/tool_use/calculator_tool.ipynb:cell0", "verbatim": "# Using a Calculator Tool with Claude\nIn this recipe, we'll demonstrate how to provide Claude with a simple calculator tool that it can use to perform arithmetic operations based on user input."}
+  ]
+}

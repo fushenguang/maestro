@@ -1,0 +1,28 @@
+{
+  "slug": "anth-sub-agents",
+  "url": "https://docs.claude.com/en/docs/claude-code/sub-agents",
+  "source_type": "article",
+  "source_subtype": "docs",
+  "fetched_at": "2026-06-11T11:00:00+08:00",
+  "fetched_via": "curl + python (regex-strip HTML) + python 句切生成 lines.txt",
+  "raw_path": "/tmp/research-batch1/anth-sub-agents.txt",
+  "lines_path": "/tmp/research-batch1/anth-sub-agents-lines.txt",
+  "size_bytes": 53755,
+  "size_human": "53.8 KB",
+  "anchors_extracted": 8,
+  "primary_author": "Anthropic",
+  "license": "proprietary (docs)",
+  "issues_encountered": [
+    "源 HTML 抽取后正文亦落在单行，subagent 自行用 Python 按句号 + 大写字母切分生成 anth-sub-agents-lines.txt（340 行），所有锚点已用 grep -n 在该 lines 文件中反查通过"
+  ],
+  "cross_check_anchors": [
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L2", "verbatim": "Subagents are specialized AI assistants that handle specific types of tasks."},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L5", "verbatim": "Each subagent runs in its own context window with a custom system prompt, specific tool access, and independent permissions."},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L11", "verbatim": "Subagents help you: Preserve context by keeping exploration and implementation out of your main conversation Enforce constraints by limiting which tools a subagent can use Reuse configurations across projects with user-level subagents Specialize behavior with focused system prompts for specific domains Control costs by routing tasks to faster, cheaper models like Haiku"},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L17", "verbatim": "Explore and Plan skip your CLAUDE.md files and the parent session's git status to keep research fast and inexpensive."},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L26", "verbatim": "This prevents infinite nesting (subagents cannot spawn other subagents) while still gathering necessary context."},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L138", "verbatim": "Subagents cannot spawn other subagents, so Agent(agent_type) has no effect in subagent definitions."},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L165", "verbatim": "The memory field gives the subagent a persistent directory that survives across conversations."},
+    {"anchor": "/tmp/research-batch1/anth-sub-agents-lines.txt:L208", "verbatim": "Foreground subagents block the main conversation until complete."}
+  ]
+}

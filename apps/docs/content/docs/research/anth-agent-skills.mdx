@@ -1,0 +1,49 @@
+---
+title: Agent Skills（官方文档）
+description: Anthropic 官方 Skills 定义、SKILL.md frontmatter 与仓库结构（docs 页 geo-block 时回退至 anthropics/skills README）
+slug: anth-agent-skills
+url: https://docs.claude.com/en/docs/agents-and-tools/agent-skills
+mirror_url: https://github.com/anthropics/skills
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "5.5 KB (anthropics/skills README，docs 页本机 region 触发 geo-block，已回退)"
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Agent Skills（官方文档）
+
+## 一句话定位
+
+> Anthropic 官方对 Skills 的定义、仓库结构与 SKILL.md 写法权威说明。
+
+## 关键 takeaway
+
+1. Skills 是「指令 + 脚本 + 资源」的目录，Claude 按需动态加载以提升专门任务表现（`README.md:L6`）。
+2. 每个 skill 自包含在一个文件夹里，核心是 `SKILL.md`（frontmatter + instructions）（`README.md:L18`）。
+3. 最小 `SKILL.md` 只需 `name` 和 `description` 两个 frontmatter 字段（`README.md:L78-81`）。
+4. 仓库分三类：`./skills` 示例、`./spec` 规范、`./template` 模板（`README.md:L27-29`）。
+5. 接入途径：Claude Code plugin marketplace、Claude.ai 付费计划、Claude API Skills endpoint（`README.md:L33-61`）。
+
+## 与 Claude Code 教程的关联
+
+- Claude Code 教程的 `/plugin marketplace add anthropics/skills` 命令直接对应本文「Try in Claude Code」段落（`README.md:L36`）。
+- `SKILL.md` 的 frontmatter schema 是本仓库其他 Claude Code skill（如 `.claude/skills/`）的事实标准，可作为本项目 `research-source` skill 的对照参考。
+
+## 参考锚点
+
+- `README.md:L6` — Skills 定义与作用。
+- `README.md:L18` — 每个 skill 自包含、`SKILL.md` 角色。
+- `README.md:L78-81` — frontmatter 仅需 `name` + `description`。
+
+> **注**：原 docs.claude.com URL 在本机所在 region 触发 geo-block splash 页（所有 Claude 域名均失败），已回退到 [anthropics/skills](https://github.com/anthropics/skills) 仓库 README 作为权威源（docs 页的「How to create custom skills」路径最终指向同一处）。Brief 阶段如升级需补一次 docs 页直抓 + 与 README 内容差异比对。

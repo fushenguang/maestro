@@ -1,0 +1,52 @@
+---
+title: MCP（Model Context Protocol，官方文档）
+description: Claude Code 接入外部工具的开源标准（HTTP/stdio/SSE/WS 四种 transport）
+slug: anth-mcp
+url: https://docs.claude.com/en/docs/claude-code/mcp
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "44 KB / docs page"
+overflow: true
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# MCP（Model Context Protocol，官方文档）
+
+Anthropic 官方把 MCP 定位为把 Claude Code 接到外部工具/数据库/API 的「开源标准」，本页是 Claude Code 视角的完整参考（quickstart 之外的速查 + 操作指南）。
+
+## 关键 takeaway
+
+- **四种 transport 任选**：HTTP（推荐，支持 OAuth）、SSE（已 deprecated）、本地 stdio（子进程，可读 `CLAUDE_PROJECT_DIR`）、WebSocket（仅服务端主动 push 用，要写 `.mcp.json`）。
+- **三种 scope + 插件/连接器覆盖**：`local`（私）、`project`（提交 `.mcp.json` 给团队）、`user`（跨项目私）。重复时按 `Local > Project > User > Plugin > claude.ai` 唯一胜出，**整条 entry 胜出，不跨 scope 合并字段**。
+- **Tool Search 默认开启**：MCP 工具描述默认 defer 到检索时（Haiku 不支持），用 `ENABLE_TOOL_SEARCH=auto:N` 改阈值；`alwaysLoad: true` 绕过 deferral（阻塞启动，受 5s connect timeout 约束）；输出默认 25k token、超过 10k token 警告，可用 `MAX_MCP_OUTPUT_TOKENS` 或服务端 `_meta["anthropic/maxResultSizeChars"]`（上限 500k chars）放宽。
+- **资源 / prompts 暴露为内建 UX**：resources 用 `@server:protocol://resource/path` 引用，prompts 以 `/mcp__<server>__<prompt>` 命令形式执行。
+- **认证与跨客户端复用**：HTTP server 401/403 自动弹 OAuth；`--callback-port` 锁端口匹配预注册 redirect URI；`claude mcp add-from-claude-desktop`（仅 macOS/WSL）与 claude.ai connectors（仅 Claude.ai 订阅登录时）可拉已配 server；M365 / Gmail / Google Calendar 只能从 claude.ai 连。
+
+## 与 Claude Code 教程的关联
+
+本仓库 `apps/desktop` 的 Tauri 后端走 `#[tauri::command]` 暴露能力给 React 前端，与「用 Rust 写一个 stdio MCP server 把本地 CLI 工具接给 Claude Code」模式同构（stdin/stdout 走 JSON-RPC 2.0）。把 desktop 的 phase 命令包成 stdio MCP server 即可被 Claude Code 反向调用；反之 `claude mcp serve` 把 Claude Code 自身当 stdio MCP server 暴露给其它客户端，是把 LLM 当工具节点嵌入宿主的标准做法。
+
+## 参考锚点
+
+- `docs:L44` — "Claude Code can connect to hundreds of external tools and data sources through the Model Context Protocol (MCP)."
+- `docs:L80` — HTTP 为推荐 transport。
+- `docs:L98` — "The SSE (Server-Sent Events) transport is deprecated."
+- `docs:L108-114` — stdio 注入 `CLAUDE_PROJECT_DIR` 与 `${CLAUDE_PROJECT_DIR:-.}` 兜底。
+- `docs:L296-303` — 三个 scope 表格。
+- `docs:L356-363` — scope 优先级与「整条 entry 胜出、不合并」原则。
+- `docs:L428-452` — 401/403 自动触发 OAuth、token 存 keychain。
+- `docs:L678-713` — `claude mcp serve` 反向暴露。
+- `docs:L715-749` — 输出限流（25k token / 10k token 警告 / `_meta` 500k chars）。
+- `docs:L784-835` — Tool Search 默认开启与 `ENABLE_TOOL_SEARCH` 取值。
+- `docs:L883-887` — 企业 `managed-mcp.json` + allow/deny 列表。

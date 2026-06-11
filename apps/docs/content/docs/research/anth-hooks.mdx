@@ -1,0 +1,48 @@
+---
+title: Hooks（官方文档）
+description: Claude Code 自动化钩子机制、事件分层、决策模式与作用域链速览
+slug: anth-hooks
+url: https://docs.claude.com/en/docs/claude-code/hooks
+source_type: article
+source_subtype: docs
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+size_estimate: "140 KB / docs page"
+overflow: true
+audience_tags:
+  cs_background: yes
+  devops: high
+  cc_experience: used
+primary_author: Anthropic
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Hooks（官方文档）
+
+## 一句话定位
+
+> Hooks 是 Claude Code 生命周期特定时点自动触发的用户定义处理器（shell 命令、HTTP 端点、MCP 工具、LLM prompt、agent），用于拦截、改写或拒绝 agent 行为。
+
+## 关键 takeaway
+
+1. **事件三层**：会话级（SessionStart / Stop / Notification）、轮次级（UserPromptSubmit / SubagentStart）、工具调用级（PreToolUse / PostToolUse）——全部事件与 JSON schema 见原文 `Hook events` 索引。锚点 `docs:L1`（"Hooks are user-defined shell commands, HTTP endpoints, or LLM prompts..."）。
+2. **配置三层**：事件 → matcher group → hook handler；handler 五类 `command` / `http` / `mcp_tool` / `prompt` / `agent`。
+3. **执行契约**：command hook 经 stdin 收 JSON——`exit 0` 成功、`exit 2` 阻塞、其它非阻塞；HTTP 用 2xx + JSON body 表达决策；PreToolUse 用 `hookSpecificOutput.permissionDecision`（`allow` / `deny` / `ask` / `defer`）+ `updatedInput`，其它事件用 `decision: "block"` + `reason`。
+4. **作用域链**：`~/.claude/settings.json` > `.claude/settings.json` > `.claude/settings.local.json`（gitignore）> 插件 `hooks/hooks.json` > skill / agent frontmatter；企业可用 `allowManagedHooksOnly` 强制只跑托管 hook。锚点 `docs:L1`（"allowManagedHooksOnly to block user, project, and plugin hooks"）。
+5. **关键陷阱**：hooks 以系统用户全权限跑——校验输入、`"$VAR"` 引用、阻断 `..`、用 `${CLAUDE_PROJECT_DIR}` 绝对路径、跳过 `.env` / `.git` / 密钥；自 v2.1.139 起 command hook 无 controlling terminal，通知/响铃/改标题必须走 `terminalSequence` 字段（OSC 0/1/2/9/99/777 + BEL）而非直写 `/dev/tty`。锚点 `docs:L1`（"Hooks run without a controlling terminal..."）。
+
+## 与 Claude Code 教程的关联
+
+Hooks 是教程「自动化与治理」章的核心：可用作 lint / format / 注入 secret / 审计日志 / 权限闸口；教程应配套讲清「五种 handler 类型 + 三层事件 + 作用域链 + 安全基线」四件套，避免读者把 hook 写成「能跑但不安全」的形态。
+
+## 参考锚点
+
+- `docs:L1` — "Hooks are user-defined shell commands, HTTP endpoints, or LLM prompts that execute automatically at specific points in Claude Code's lifecycle"
+- `docs:L1` — "Enterprise administrators can use allowManagedHooksOnly to block user, project, and plugin hooks"
+- `docs:L1` — "Hooks run without a controlling terminal, so writing escape sequences directly to /dev/tty fails. Instead, return the escape sequence in the terminalSequence field"
+
+> **注**：Python 提取 HTML 后整页落在单行（`L1`），verbatim 短语在原文唯一可独立反查；Brief 阶段如升级，需按事件分层重新切句生成行号锚点。

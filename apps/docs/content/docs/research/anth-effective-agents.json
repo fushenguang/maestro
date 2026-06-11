@@ -1,0 +1,24 @@
+{
+  "slug": "anth-effective-agents",
+  "url": "https://www.anthropic.com/research/building-effective-agents",
+  "source_type": "article",
+  "source_subtype": "blog",
+  "fetched_at": "2026-06-11T11:00:00+08:00",
+  "fetched_via": "curl + python (regex-strip HTML)",
+  "raw_path": "/tmp/research-batch1/anth-effective-agents.txt",
+  "size_bytes": 18044,
+  "size_human": "18 KB / 118 lines extracted",
+  "anchors_extracted": 6,
+  "primary_author": "Anthropic Engineering（Erik Schluntz / Barry Zhang）",
+  "license": "proprietary (blog)",
+  "publish_year_note": "2024 末发布，多智能体设计哲学奠基文",
+  "issues_encountered": [],
+  "cross_check_anchors": [
+    {"anchor": "/tmp/research-batch1/anth-effective-agents.txt:L5", "verbatim": "Workflows are systems where LLMs and tools are orchestrated through predefined code paths."},
+    {"anchor": "/tmp/research-batch1/anth-effective-agents.txt:L6", "verbatim": "Agents , on the other hand, are systems where LLMs dynamically direct their own processes and tool usage, maintaining control over how they accomplish tasks."},
+    {"anchor": "/tmp/research-batch1/anth-effective-agents.txt:L83", "verbatim": "When implementing agents, we try to follow three core principles:"},
+    {"anchor": "/tmp/research-batch1/anth-effective-agents.txt:L86", "verbatim": "Carefully craft your agent-computer interface (ACI) through thorough tool documentation and testing ."},
+    {"anchor": "/tmp/research-batch1/anth-effective-agents.txt:L54", "verbatim": "Workflow: Orchestrator-workers"},
+    {"anchor": "/tmp/research-batch1/anth-effective-agents.txt:L61", "verbatim": "Workflow: Evaluator-optimizer"}
+  ]
+}
