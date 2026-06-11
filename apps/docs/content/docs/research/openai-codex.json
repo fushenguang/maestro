@@ -1,0 +1,69 @@
+{
+  "slug": "openai-codex",
+  "frontmatter": {
+    "title": "openai-codex（OpenAI 本地 coding agent CLI/TUI）",
+    "description": "OpenAI 出品的 Rust workspace 本地 coding agent，把 sandbox 与 approval policy 解耦成两条独立轴；hooks / skills / MCP / memory / sub-agent 全套生态。",
+    "slug": "openai-codex",
+    "url": "https://github.com/openai/codex",
+    "source_type": "repo",
+    "source_subtype": "methodology",
+    "tier": "card",
+    "tiers_present": [
+      "card"
+    ],
+    "status": "card_complete",
+    "last_checked": "2026-06-11",
+    "last_commit": "598125109dd2e098486884d8fb563ebe90bc24da",
+    "stars": null,
+    "license": "Apache-2.0",
+    "size_estimate": "~100 Rust crates in codex-rs/ workspace, CLI main.rs 3960 LoC, 67M clone",
+    "audience_tags": {
+      "cs_background": "yes",
+      "devops": "mid",
+      "cc_experience": "advanced"
+    },
+    "primary_author": "OpenAI",
+    "char_count": 2356,
+    "overflow": true,
+    "promote_to_brief": null,
+    "promote_to_deep_dive": null,
+    "fetched_via": "git_clone_http1.1",
+    "fetched_via_fallback": false,
+    "mirror_url": null,
+    "batch": 3,
+    "tier_group": "MCP 生态 + 同类工具"
+  },
+  "cross_check_anchors": [
+    {
+      "anchor": ".research-cache/openai-codex/README.md:L1-7",
+      "verbatim": "Codex CLI is a coding agent from OpenAI that runs locally on your computer."
+    },
+    {
+      "anchor": ".research-cache/openai-codex/codex-rs/protocol/src/protocol.rs:L789-820",
+      "verbatim": "pub enum AskForApproval { UnlessTrusted (untrusted), OnFailure, OnRequest (default), Granular(GranularApprovalConfig), Never }"
+    },
+    {
+      "anchor": ".research-cache/openai-codex/codex-rs/utils/cli/src/sandbox_mode_cli_arg.rs:L14-18",
+      "verbatim": "pub enum SandboxModeCliArg { ReadOnly, WorkspaceWrite, DangerFullAccess }"
+    },
+    {
+      "anchor": ".research-cache/openai-codex/codex-rs/hooks/src/lib.rs:L23-30",
+      "verbatim": "pub const HOOK_EVENT_NAMES: [&str; 10] = [\"PreToolUse\", \"PermissionRequest\", \"PostToolUse\", \"PreCompact\", \"PostCompact\", \"SessionStart\", \"UserPromptSubmit\", \"SubagentStart\", \"SubagentStop\", \"Stop\"];"
+    },
+    {
+      "anchor": ".research-cache/openai-codex/codex-rs/memories/README.md:L29-38",
+      "verbatim": "The pipeline is triggered when a root session starts, and only if: the session is not ephemeral, the memory feature is enabled, the session is not a sub-agent session, the state DB is available."
+    },
+    {
+      "anchor": ".research-cache/openai-codex/AGENTS.md:L45-58",
+      "verbatim": "Avoid large modules: Prefer adding new modules instead of growing existing ones. Target Rust modules under 500 LoC, excluding tests."
+    }
+  ],
+  "audience_judgment_basis": "Codex 是面向 Rust 工程师 + 企业 admin 的 CLI；Rust workspace 体量（~100 crate、AGENTS.md 强制 module size 治理）说明读者需要 cs_background=yes；sandbox × approval 双轴设计面向运维/企业部署（devops=mid）；直接对标 CC 但概念命名高度相似，要求读者已是 CC advanced 用户才能看透对比价值（cc_experience=advanced）。",
+  "fetched_via_log": "git -c http.version=HTTP/1.1 clone --depth=1 https://github.com/openai/codex → 67M shallow clone, HEAD=598125109d",
+  "exposed_problems": [],
+  "_validation_issues_at_subagent_return": [
+    "P23: card_body_markdown 含 HTML entity &gt; &amp; 需 unescape",
+    "P21: char_count 2356 超 methodology × Card 上限 1800 → overflow:true ✓ 标了"
+  ]
+}

@@ -1,0 +1,68 @@
+---
+title: qodo-merge (PR-Agent) — Card
+description: 单一垂直 PR 自动化 Agent：把 LLM 包装成 Git 平台原生命令（/review /describe /improve /ask），每命令一次 LLM 调用（~30s），覆盖 GitHub/GitLab/Bitbucket/Azure DevOps/Gitea + CLI + Action + Docker 多形态。
+slug: qodo-merge
+url: 'https://github.com/The-PR-Agent/pr-agent'
+source_type: repo
+source_subtype: methodology
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+last_commit: 2026-06-06
+stars: 11561
+license: Apache-2.0
+size_estimate: 中等（~5k 行 Python，含 prompts 14k 字符）
+audience_tags:
+  cs_background: partial
+  devops: high
+  cc_experience: used
+primary_author: Qodo AI（原 CodiumAI，2025 捐给社区；现仓库 The-PR-Agent/pr-agent）
+char_count: 1778
+overflow: false
+promote_to_brief: null
+promote_to_deep_dive: null
+fetched_via: git_clone_http1.1
+fetched_via_fallback: false
+mirror_url: null
+batch: 3
+tier_group: MCP 生态 + 同类工具
+notes: 原 URL qodo-ai/qodo-merge 已 404；迁移到 The-PR-Agent/pr-agent（2025 Qodo 捐赠社区，原 Codium-AI/pr-agent 改名）
+---
+
+# qodo-merge（PR-Agent）— Card
+
+## 一句话定位
+
+> 单一垂直 PR 自动化 Agent：把 LLM 包装成 Git 平台原生命令（`/review` `/describe` `/improve` `/ask`），每命令一次 LLM 调用（~30s），跑在 GitHub App / GitLab Webhook / Bitbucket / Azure DevOps / Gitea + CLI + Action + Docker。
+
+## 关键 takeaway
+
+- **vertical agent，不做 generalist**。`pr_agent/agent/pr_agent.py` 用 `command2class` dict 把命令路由到 14 个 `PR*` 工具类；与 CC 的 long-running generalist 形成对比 (methodology:agent/pr_agent.py:L24-L44)。
+- **Prompt 即配置**。可调行为落在 `pr_agent/settings/*.toml` + `.pr_agent.toml`（Dynaconf 加载），`apply_repo_settings` 链式覆盖 (methodology:settings/configuration.toml)。
+- **多 Provider LLM 抽象**。`pr_agent/algo/ai_handlers/` 提供 `LiteLLMAIHandler / OpenAI / LangChain`，支持 `fallback_models` / `model_weak` / `model_reasoning` + Claude extended-thinking。
+- **PR 压缩策略**。`PR Compression` + `Adaptive token-aware patch fitting`：把超大 PR 切成适配 model context 的 patch 序列。
+- **多平台部署**。11 个 git_providers + 7 个 servers 形态。
+- **SDK 化入口**。`PRAgent(ai_handler=LangChainAIHandler)` 支持注入 handler；GitHub Action YAML 12 行。
+- **治理走向**。2025 Qodo 捐给社区，repo 迁到 `The-PR-Agent/pr-agent`，Qodo 转向付费 Qodo 2.0。
+
+## 与 Claude Code 的对比
+
+- 范式：vertical single-task vs generalist long-running。
+- 节奏：每工具 1 次（~30s）vs 长时多轮 streaming。
+- 部署：App / webhook / Docker / CLI / Action vs 本地 CLI + IDE。
+- 配置：`.pr_agent.toml` + Dynaconf vs `settings.json` + skills + CLAUDE.md。
+- 多模型：LiteLLM + fallback vs Anthropic 原生 + Bedrock/Vertex。
+
+## 与 Claude Code 教程的关联
+
+- `effective-agents` / `agent-skills` 强调「小而专 subagent + 清晰接口」，PR-Agent 是工业级范例。
+- `command2class` 字典模式可类比 CC 的 slash commands / skills registry。
+
+## 参考锚点
+
+- `(methodology:agent/pr_agent.py:L24-L44)` — command2class 14 工具路由
+- `(methodology:settings/configuration.toml:L379)` — 配置层级
+- `(methodology:settings/pr_reviewer_prompts.toml)` — 14k 字符评审 prompt
+

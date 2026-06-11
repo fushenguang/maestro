@@ -1,0 +1,73 @@
+{
+  "slug": "aider",
+  "frontmatter": {
+    "title": "aider",
+    "description": "开源 terminal 配对编程 agent，git-first + 多 edit format + pluggable LLM。",
+    "slug": "aider",
+    "url": "https://github.com/Aider-AI/aider",
+    "source_type": "repo",
+    "source_subtype": "methodology",
+    "tier": "card",
+    "tiers_present": [
+      "card"
+    ],
+    "status": "card_complete",
+    "last_checked": "2026-06-11",
+    "last_commit": "5dc9490",
+    "stars": null,
+    "license": "Apache License 2.0",
+    "size_estimate": "70M (aider/ package)",
+    "audience_tags": {
+      "cs_background": "yes",
+      "devops": "mid",
+      "cc_experience": "used"
+    },
+    "primary_author": "Paul Gauthier (Aider-AI)",
+    "char_count": 2326,
+    "overflow": true,
+    "promote_to_brief": null,
+    "promote_to_deep_dive": null,
+    "fetched_via": "pre_seeded_cache",
+    "fetched_via_fallback": true,
+    "mirror_url": null,
+    "batch": 3,
+    "tier_group": "MCP 生态 + 同类工具",
+    "notes": "subagent v2：主 Claude pre-seed cache（v1 因 subagent 沙箱无网络失败）。Card 含 7 个 takeaway + 6 维 CC 对比 + 3 段教程关联。char_count 2327 超出 methodology×Card 1800 限，标 overflow:true。"
+  },
+  "cross_check_anchors": [
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/aider-README.md:L11",
+      "verbatim": "Aider lets you pair program with LLMs to start a new project or build on your existing codebase."
+    },
+    {
+      "anchor": ".research-cache/aider/aider/coders/__init__.py:L18-34",
+      "verbatim": "__all__ = [HelpCoder, AskCoder, Coder, EditBlockCoder, EditBlockFencedCoder, WholeFileCoder, PatchCoder, UnifiedDiffCoder, UnifiedDiffSimpleCoder, ArchitectCoder, EditorEditBlockCoder, EditorWholeFileCoder, EditorDiffFencedCoder, ContextCoder,]"
+    },
+    {
+      "anchor": ".research-cache/aider/aider/main.py:L32",
+      "verbatim": "from aider.llm import litellm  # noqa: F401; properly init litellm on launch"
+    },
+    {
+      "anchor": ".research-cache/aider/aider/website/docs/usage/modes.md:L9-14",
+      "verbatim": "Aider has a few different chat modes: code / ask / architect / help"
+    },
+    {
+      "anchor": ".research-cache/aider/LICENSE.txt:L1",
+      "verbatim": "Apache License"
+    },
+    {
+      "anchor": ".research-cache/aider/aider/website/docs/usage.md:L30",
+      "verbatim": "Repo-map: using 1024 tokens"
+    }
+  ],
+  "audience_judgment_basis": "cs_background=yes 因 Aider 面向写代码工程师；devops=mid 因依赖 git/pipx/uv/Docker 但非 K8s；cc_experience=used 因把 Aider 当作 CC 的对照组——都用过才能做平行评估",
+  "fetched_via_log": "pre-seeded cache; ls + cat + grep only, no network",
+  "exposed_problems": [
+    "stars / exact PyPI install count 来自 README badge 而非 GitHub API，未能 cross-check",
+    "website/docs 路径在 cache 中实际位于 aider/aider/website/docs/ 而非 aider/website/docs/"
+  ],
+  "_validation_issues_at_subagent_return": [
+    "P23: body 含 HTML entity &gt; 需 unescape",
+    "P21: char_count 2327 超 methodology × Card 1800 → overflow:true ✓ 标了"
+  ]
+}

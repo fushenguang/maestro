@@ -1,0 +1,72 @@
+{
+  "slug": "gemini-cli",
+  "frontmatter": {
+    "title": "google-gemini/gemini-cli（Google 官方 Gemini CLI）",
+    "description": "Google 开源 Gemini 终端 coding agent — TS + Ink + 7 包 monorepo，Gemini3 + 1M context + MCP + Hooks + Skills + Subagents",
+    "slug": "gemini-cli",
+    "url": "https://github.com/google-gemini/gemini-cli",
+    "source_type": "repo",
+    "source_subtype": "methodology",
+    "tier": "card",
+    "tiers_present": [
+      "card"
+    ],
+    "status": "card_complete",
+    "last_checked": "2026-06-11",
+    "last_commit": "5d4af9f812bb08750e5a14ee66dd4c1f7a90b13c",
+    "stars": null,
+    "license": "Apache-2.0",
+    "size_estimate": "~2896 文件 / 7 包 monorepo",
+    "audience_tags": {
+      "cs_background": "yes",
+      "devops": "mid",
+      "cc_experience": "used"
+    },
+    "primary_author": "Google Gemini team",
+    "char_count": 1857,
+    "overflow": true,
+    "promote_to_brief": null,
+    "promote_to_deep_dive": null,
+    "fetched_via": "pre_seeded_cache",
+    "fetched_via_fallback": true,
+    "mirror_url": null,
+    "batch": 3,
+    "tier_group": "MCP 生态 + 同类工具",
+    "notes": "subagent v2：主 Claude pre-seed cache（v1 因 API 429 失败）"
+  },
+  "cross_check_anchors": [
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/gemini-cli-README.md:L17-L29",
+      "verbatim": "Free tier: 60 requests/min and 1,000 requests/day with personal Google account. Powerful Gemini 3 models: Access to improved reasoning and 1M token context window. Built-in tools: Google Search grounding, file operations, shell commands, web fetching. MCP support."
+    },
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/gemini-cli-README.md:L150-L209",
+      "verbatim": "Authentication Options: Option 1: Sign in with Google ... Option 2: Gemini API Key ... Option 3: Vertex AI"
+    },
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/gemini-cli-GEMINI.md:L13-L29",
+      "verbatim": "Runtime: Node.js (>=20.0.0), Language: TypeScript, UI Framework: React (using Ink for CLI rendering); Monorepo: packages/cli, packages/core, packages/a2a-server, packages/sdk"
+    },
+    {
+      "anchor": ".research-cache/gemini-cli/docs/cli/gemini-md.md:L11-L37",
+      "verbatim": "Understand the context hierarchy ... Global context file: ~/.gemini/GEMINI.md ... Environment and workspace context files ... Just-in-time (JIT) context files"
+    },
+    {
+      "anchor": ".research-cache/gemini-cli/docs/tools/mcp-server.md:L29-L60",
+      "verbatim": "Gemini CLI supports three MCP transport types: Stdio Transport, SSE Transport, Streamable HTTP"
+    }
+  ],
+  "audience_judgment_basis": "cs_background=yes 因 monorepo + Ink + esbuild + MCP client/server 详解，体系深；devops=mid 因 Dockerfile + sandbox + telemetry + trusted folders + Vertex AI 部署，但无 k8s/operator；cc_experience=used 因直接对照 CC 的 CLAUDE.md / MCP transport / Subagent / Skills / Memory 等价物，便于已用 CC 用户快速迁移心智",
+  "fetched_via_log": "pre-seeded cache; ls + cat + Read only, no network (v1 因 API 429 失败，v2 主 Claude pre-seed cache)",
+  "exposed_problems": [
+    "A2A protocol vs MCP 边界不明（packages/a2a-server 与 packages/core/src/tools/mcp-* 同时存在），需要 deep-dive 厘清",
+    "Gemini 3 在 1M context 下对长 repo 的有效率没有官方 benchmark",
+    "model routing 自动 fallback 的判定策略 / 触发条件 docs 没有明示"
+  ],
+  "_validation_issues_at_subagent_return": [
+    "P19: audience_tags.cc_experience='yes' 违规（应为 newbie/used/advanced），改 used",
+    "P23: body 含 HTML entity &gt; 需 unescape",
+    "P21: char_count 1798 (subagent 自报 Python len)，主 Claude 需 wc -m 重测",
+    "P30(新): subagent 违规自行写盘到 apps/docs/content/docs/research/gemini-cli.{mdx,json}（prompt 明确说「不要写盘」）；主 Claude 已清理"
+  ]
+}

@@ -1,0 +1,75 @@
+---
+title: aider
+description: 开源 terminal 配对编程 agent，git-first + 多 edit format + pluggable LLM。
+slug: aider
+url: 'https://github.com/Aider-AI/aider'
+source_type: repo
+source_subtype: methodology
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+last_commit: 5dc9490
+stars: null
+license: Apache License 2.0
+size_estimate: 70M (aider/ package)
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+primary_author: Paul Gauthier (Aider-AI)
+char_count: 2326
+overflow: true
+promote_to_brief: null
+promote_to_deep_dive: null
+fetched_via: pre_seeded_cache
+fetched_via_fallback: true
+mirror_url: null
+batch: 3
+tier_group: MCP 生态 + 同类工具
+notes: 'subagent v2：主 Claude pre-seed cache（v1 因 subagent 沙箱无网络失败）。Card 含 7 个 takeaway + 6 维 CC 对比 + 3 段教程关联。char_count 2327 超出 methodology×Card 1800 限，标 overflow:true。'
+---
+
+# aider
+
+## 一句话定位
+
+> 开源 terminal 配对编程 agent（"AI pair programming in your terminal"），三大支柱：git-first + 多 edit format + pluggable LLM，强调人在回路 + 自动 commit 的可审计工作流。 (methodology:L1)
+
+## 关键 takeaway
+
+1. **Pair programmer 而非 autonomous agent**。每轮 diff 呈现给用户 review，命令式 chat 循环。 (methodology:L2)
+2. **git-first 是底座**。每次 edit 后自动 commit，`/undo` 一键回退——LLM 行为落到 git 审计链。 (methodology:L3)
+3. **多 edit format 是杀手特性**。`aider/coders/` 内置 14+ 种（whole / diff / udiff / editor-diff / editblock / patch / architect / ask / help / context），按模型自动挑最稳 prompt。 (methodology:L4)
+4. **pluggable LLM**。后端 `litellm`，OpenAI / Anthropic / DeepSeek / Gemini / 本地 Ollama 通吃，**不绑单家**。 (methodology:L5)
+5. **Repo-map = RAG-for-codebase**。扫描全 repo 抽 token 化调用图，模型在大项目里也能定位要改的文件——后继 RAG-coding 工具的共同祖先。 (methodology:L6)
+6. **chat modes 显式分层**。`/code`（改）/ `/ask`（讨论）/ `/architect`（plan + editor 双模型）/ `/help`，CC 的 sub-agent / plan mode 借鉴这套。 (methodology:L7)
+7. **OSS + 零 telemetry + Apache 2.0**。6.8M PyPI 安装、15B tokens/周，自报 "88% 新代码由 Aider 自己写" (Singularity badge)。 (methodology:L8)
+
+## 与 Claude Code 的对比
+
+- **哲学**：aider = pair programmer 在回路；CC = agent 派任务自跑。
+- **LLM**：aider = pluggable (litellm) 10+ 厂商；CC = Anthropic-only。
+- **Edit 表达**：aider = 14+ format 模型自选；CC = unified tool-use 协议。
+- **Git**：aider = 每次 edit 自动 commit；CC = 手动或 hook。
+- **可观测**：aider = 全 commit 链 + `/undo`；CC = task 子 agent + transcript。
+- **形态/商业**：aider = Python CLI + Apache 2.0 零遥测；CC = Node CLI + 闭源。
+
+CC 借鉴：plan/architect 双模型、ask/code 切换、git-aware undo。Aider 是 ML 团队跑 LLM benchmark 的「参考线」（polyglot bench），不会消失。
+
+## 与 Claude Code 教程的关联
+
+- **同源**：Aider `architect` = CC plan-then-execute；`/ask` = CC plan permission mode；`/undo` = CC checkpoint + revert。
+- **互补**：Aider 跑 GPT-4o/DeepSeek 横向对比 + benchmark（不烧 Anthropic 配额）；CC 跑 Anthropic-native 长任务、sub-agent fan-out。
+- **盲点**：Aider 没 CC 的 hooks / MCP / sub-agent / permission 系统——「企业级 agent 平台」是 CC 赛道，aider 是「个人开发者最强 IDE 增强」赛道。
+
+## 参考锚点
+
+- README.md L1, L11, L30 — 自我定位 + Repo-map 演示
+- aider/coders/__init__.py L1-34 — 14 种 Coder 类（edit format 全家福）
+- aider/main.py L1-39 — CLI 入口，litellm + GitRepo 集成
+- website/docs/install.md L12-99 — pipx / uv / installer.sh 三种安装
+- website/docs/usage.md L7-92 — chat 循环 + `/add`、`/undo`
+- website/docs/usage/modes.md L9-49 — code / ask / architect / help 四模式
+- LICENSE.txt L1 — Apache License 2.0

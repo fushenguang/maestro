@@ -1,0 +1,88 @@
+---
+title: Cursor Changelog（2026-06 节选）
+description: Cursor 2026-06 发布动态：Bugbot / Composer 2.5 / Canvas / Design Mode / Enterprise / SDK / Shared Canvases
+slug: cursor-changelog
+url: 'https://cursor.com/changelog'
+source_type: article
+source_subtype: blog
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+last_commit: null
+stars: null
+license: null
+size_estimate: 7 post ~12 KB
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+primary_author: Cursor (Anysphere)
+char_count: 3801
+overflow: true
+promote_to_brief: null
+promote_to_deep_dive: null
+fetched_via: pre_seeded_cache
+fetched_via_fallback: true
+mirror_url: 'https://docs.cursor.com（原 docs SPA 不可 curl，已 fallback 到 changelog 静态页）'
+batch: 3
+tier_group: MCP 生态 + 同类工具
+notes: subagent v3：主 Claude pre-seed changelog（v1 SPA 失败 / v2 API 429）；原 cursor.com/docs 是 SPA，本源用 cursor.com/changelog 替代
+---
+
+# cursor-changelog
+
+## 一句话定位
+
+> Cursor 是 IDE-native 商业 coding agent（Anysphere 出品）；2026-05 至 2026-06 一系列 changelog 显示其走向：Composer 2.5 提速 / Bugbot 自动评审 / Canvas 多人协作 / Design Mode 视觉标注 / Enterprise Org 多团队治理 / SDK 工具生态扩展。
+
+## 关键 takeaway
+
+1. **Composer 2.5 提速 + 降价**：训练进展让 Bugbot 提速 3x（90s vs 5min）、便宜 22%、多抓 10% bug（0.62 vs 0.56） (blog:L5) (blog:L7)。
+2. **/review 推送前自检**：`/review` 可在 git push 前跑 Bugbot + Security Review，GitHub/GitLab 上同一 diff 不会重复审 (blog:L11) (blog:L13)；Cursor 3.7+ 可用，CLI 即将上线 (blog:L15)。
+3. **Canvas Design Mode 视觉化编辑**：在 canvas 上点选/标注 UI 元素代替文字描述，agent 看到选中元素 + 代码 + 布局关系 (blog:L13)。
+4. **Context Usage Report**：在 canvas 中以可交互报表拆解 token 来源（system prompt / tool defs / rules / skills），可点 "Debug with Agent" 让 agent 找削减点 (blog:L19) (blog:L21)。
+5. **Design Mode 多选 + 语音**：浏览器端多选元素让 agent 一次性改一组；mic 在 agent 运行中保持可用，可排队下一条语音指令 (blog:L9) (blog:L15)。
+6. **Enterprise Organizations GA**：组织→团队→组三层结构；用户可跨多团队，最宽松权限生效 (blog:L9) (blog:L19)；含多团队成员、Org 级 IDP / 用量分析 / 跨团队调人 / 新人继承设置 (blog:L25-L33)。
+7. **SDK 自定义工具 + auto-review**：`local.customTools` 走内置 MCP server `custom-user-tools`，无需自建 stdio/HTTP MCP (blog:L9) (blog:L11)；`local.autoReview` 用自然语言 `permissions.json` 描述 allow/block (blog:L19-L28)。
+8. **SDK 持久化与子代理**：JSONL store 可读/diff/进版本控制；自定义 `LocalAgentStore` 接口可接 Postgres 或内存；subagent 可任意嵌套 (blog:L32) (blog:L38)。
+9. **Shared Canvases + /loop**：canvases 可生成只读链接供团队浏览（Pro/Teams/Enterprise） (blog:L11)；`/loop` 让 agent 按本地调度重复跑直到达成目标 (blog:L17)。
+
+## 与 Claude Code 的对比
+
+- **载体差异**：Cursor IDE-native（编辑器内 Canvas + 可视化）+ 浏览器；Claude Code terminal-native + 文件工具。Cursor 把产物做成「可分享的工件」，CC 仍以 transcript + 文件为主。
+- **多文件编辑**：Composer 2.5 一次任务可跨文件编排并改 UI（点选/语音驱动） (blog:L7) (blog:L13)；CC 用 Edit/Write 工具串联 + sub-agent 分任务，靠 prompt 工程协调。
+- **评审闭环**：Bugbot = `/review`（推送前 + PR 上识别同 diff 跳过） + Composer 2.5 提速 + Enterprise 可治理；CC 靠 review skill / sub-agent prompt / hook（PostToolUse 跑 lint/test），无产品化「评审 agent」概念。
+- **多人协作**：Cursor Canvas 链接 + Dashboard 只读 (blog:L11)；CC 无原生多人 UI，协作靠 git / PR。
+- **企业治理**：Cursor Enterprise 提供 Org/Team/Group 三层 + IDP + 用量钻取 (blog:L25-L33)；CC Enterprise 主要靠 SSO + usage policy + audit log，无 Canvas/Dashboard 共享层。
+- **工具生态**：SDK `customTools` 走 MCP server `custom-user-tools` (blog:L9)，与 CC 的 MCP 客户端地位对等；但 CC 的 MCP 客户端是用户在 settings 里挂载，Cursor 把 MCP server 内置化以简化 onboarding。
+
+## 与 Claude Code 教程的关联
+
+- 教程第 3 章 sub-agent 与第 5 章 hooks，可对照 Cursor 的 `/review` 推送前 hook + Bugbot subagent 思路（CC 用 hook 实现同效）。
+- 教程第 6 章 MCP，对照 `customTools` 自动走 MCP server 的设计——CC 用户需要显式 `claude mcp add`，Cursor 把它包成 SDK 默认路径。
+- 教程第 7 章 企业部署，对照 Enterprise Organizations 的三层 RBAC，CC 企业版目前主要靠 SSO + 策略文件，没有等价 Dashboard。
+
+## 参考锚点
+
+- `(blog:L5)` — Bugbot 提速/降价/多抓 bug 数据：cursor-changelog-bugbot-updates-june-2026.txt
+- `(blog:L7)` — Composer 2.5 驱动 Bugbot + model block list：同上
+- `(blog:L11)` — `/review` 推送前 + GitHub/GitLab 同步：同上
+- `(blog:L15)` — Cursor 3.7+ / CLI coming soon：同上
+- `(blog:L13)` — Canvas Design Mode 点选/标注：cursor-changelog-canvas-improvements.txt
+- `(blog:L19)` — Context Usage Report 拆解 token 来源：同上
+- `(blog:L21)` — Debug with Agent 按钮：同上
+- `(blog:L9)` — Design Mode 多选元素：cursor-changelog-design-mode-improvements.txt
+- `(blog:L15)` — Design Mode 语音输入 + 排队下一条：同上
+- `(blog:L9)` — Enterprise Organizations GA：cursor-changelog-enterprise-organizations.txt
+- `(blog:L19)` — Groups 跨团队 + 最宽松权限生效：同上
+- `(blog:L25-L33)` — Enterprise 5 项改进（多团队 / IDP / 用量 / 调人 / 继承）：同上
+- `(blog:L9)` — SDK `customTools` 走 `custom-user-tools` MCP：cursor-changelog-sdk-updates-jun-2026.txt
+- `(blog:L11)` — Custom tools 透传给子代理：同上
+- `(blog:L19-L28)` — `autoRun.allow/block_instructions` 示例：同上
+- `(blog:L32)` — JSONL store + 自定义 LocalAgentStore：同上
+- `(blog:L38)` — Subagent 任意嵌套：同上
+- `(blog:L11)` — Shared Canvases 链接 + Dashboard：cursor-changelog-shared-canvases.txt
+- `(blog:L17)` — `/loop` 本地长跑 skill：同上
+

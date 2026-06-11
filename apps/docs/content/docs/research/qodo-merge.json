@@ -1,0 +1,50 @@
+{
+  "slug": "qodo-merge",
+  "frontmatter": {
+    "title": "qodo-merge (PR-Agent) — Card",
+    "description": "单一垂直 PR 自动化 Agent：把 LLM 包装成 Git 平台原生命令（/review /describe /improve /ask），每命令一次 LLM 调用（~30s），覆盖 GitHub/GitLab/Bitbucket/Azure DevOps/Gitea + CLI + Action + Docker 多形态。",
+    "slug": "qodo-merge",
+    "url": "https://github.com/The-PR-Agent/pr-agent",
+    "source_type": "repo",
+    "source_subtype": "methodology",
+    "tier": "card",
+    "tiers_present": [
+      "card"
+    ],
+    "status": "card_complete",
+    "last_checked": "2026-06-11",
+    "last_commit": "2026-06-06",
+    "stars": 11561,
+    "license": "Apache-2.0",
+    "size_estimate": "中等（~5k 行 Python，含 prompts 14k 字符）",
+    "audience_tags": {
+      "cs_background": "partial",
+      "devops": "high",
+      "cc_experience": "used"
+    },
+    "primary_author": "Qodo AI（原 CodiumAI，2025 捐给社区；现仓库 The-PR-Agent/pr-agent）",
+    "char_count": 1778,
+    "overflow": false,
+    "promote_to_brief": null,
+    "promote_to_deep_dive": null,
+    "fetched_via": "git_clone_http1.1",
+    "fetched_via_fallback": false,
+    "mirror_url": null,
+    "batch": 3,
+    "tier_group": "MCP 生态 + 同类工具",
+    "notes": "原 URL qodo-ai/qodo-merge 已 404；迁移到 The-PR-Agent/pr-agent（2025 Qodo 捐赠社区，原 Codium-AI/pr-agent 改名）"
+  },
+  "cross_check_anchors": [],
+  "audience_judgment_basis": "cs_background=partial 因 agent 编排 / LLM 抽象是中等概念，需会 Python OOP；devops=high 因 11 个 git provider + 7 个 server 形态是 CI 工程师材料；cc_experience=used 因与 generalist agent 对照价值高，适合有 CC 基础的读者",
+  "fetched_via_log": "qodo-ai/qodo-merge 404 → 自主迁移到 The-PR-Agent/pr-agent；clone --depth=1 HTTP/1.1 成功",
+  "exposed_problems": [
+    "P28(新)：原 source URL 失效需要 mirror_url 之外的字段表达（如 redirect_url / canonical_url）"
+  ],
+  "_validation_issues_at_subagent_return": [
+    "P19: audience_tags 全部带自由文本，需规范化到 enum (cs_background: 中 → partial, devops: 高 → high, cc_experience: 中 → used)",
+    "P22: cross_check_anchors 是 string 数组，应为 [{anchor, verbatim}] 对象数组",
+    "P22: card_body_markdown 内锚点用文件路径而非 (methodology:L<n>) 形态",
+    "P23: card_body_markdown 含 HTML entity &gt; &amp; 需 unescape",
+    "url 字段：原 qodo-ai/qodo-merge 404，subagent 自主迁移到 The-PR-Agent/pr-agent（合理；notes 需保留迁移说明）"
+  ]
+}

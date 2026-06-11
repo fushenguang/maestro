@@ -1,0 +1,62 @@
+---
+title: mcp-servers — MCP 官方参考实现集合
+description: Anthropic 官方维护的 MCP 参考实现集合（7 个 small server）
+slug: mcp-servers
+url: 'https://github.com/modelcontextprotocol/servers'
+source_type: repo
+source_subtype: skill_collection
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+last_commit: 275175c
+stars: null
+license: MIT (legacy) + Apache-2.0 (new)
+size_estimate: 2.1M
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+primary_author: Anthropic / MCP team
+char_count: 1773
+overflow: false
+promote_to_brief: null
+promote_to_deep_dive: null
+fetched_via: git_clone_http1.1
+fetched_via_fallback: false
+mirror_url: null
+batch: 3
+tier_group: MCP 生态 + 同类工具
+---
+
+# mcp-servers
+
+## 一句话定位
+
+> Anthropic 官方维护的 MCP **参考实现集合**——7 个 small server（4 TS + 3 Py），演示 Tools/Resources/Prompts/Roots 用法并作 SDK 样板；生产集成请去 MCP Registry。
+
+## 关键 takeaway
+
+1. **reference，不是产品目录**——README 显式「not production-ready」(skill_collection:L9)；完整 server 列表走 MCP Registry (skill_collection:L6)。
+2. **monorepo 装 7 个 server**（4 TS + 3 Py），各自独立 npm/PyPI 包：everything / fetch / filesystem / git / memory / sequentialthinking / time (skill_collection:L29-L35)。
+3. **13 个老 server 已归档**到 servers-archived（含 github、postgres、gdrive、puppeteer、redis、sentry、slack、sqlite、brave-search 等）(skill_collection:L41-L53)。
+4. **零 clone 跑**：`npx -y @modelcontextprotocol/server-memory` 或 `uvx mcp-server-git` (skill_collection:L61-L75)。
+5. **真用靠 MCP client config**——`mcpServers` 写 `command`+`args`+`env`；Windows 用 `cmd /c` 包 npx (skill_collection:L80-L134)。
+6. **CI/SDK 范式**——TS：`npm workspaces` + `tsc` + `vitest`（Node 22）；Py：`uv` + `hatchling` + `pyright` + `ruff`（Py ≥ 3.10）(skill_collection:CLAUDE.md)。
+7. **Tool annotations**——filesystem server 在 tool 上声明 `readOnlyHint` / `idempotentHint` / `destructiveHint` (skill_collection:filesystem/README.md:L189-L205)。
+8. **License 双轨**：MIT（旧）+ Apache-2.0（新），文档 CC-BY-4.0 (skill_collection:L154, LICENSE:L1-L5)。
+
+## 与 Claude Code 教程的关联
+
+- 教程「MCP 自定义 server」用 `src/filesystem/` 与 `src/memory/` 作**最小可跑样板**。
+- `mcpServers` JSON 与 README 范例一致 (skill_collection:L84-L132)。
+- 「MCP server 安全设计」可整表抄 filesystem README 的 Tool annotations 矩阵 (skill_collection:filesystem/README.md:L189-L205)。
+- 反面教材：建 server 走 Registry，别 PR 到本仓库。
+
+## 参考锚点
+
+- L1 仓库定位 / L9 警告 / L29-L35 7 server / L41-L53 13 archived
+- L61-L75 npx uvx / L80-L134 mcpServers JSON / L154 License
+- CLAUDE.md monorepo+CI+SDK / filesystem/README L189-L205 Tool annotations / LICENSE L1-L5
+

@@ -1,0 +1,70 @@
+{
+  "slug": "cursor-changelog",
+  "frontmatter": {
+    "title": "Cursor Changelog（2026-06 节选）",
+    "description": "Cursor 2026-06 发布动态：Bugbot / Composer 2.5 / Canvas / Design Mode / Enterprise / SDK / Shared Canvases",
+    "slug": "cursor-changelog",
+    "url": "https://cursor.com/changelog",
+    "source_type": "article",
+    "source_subtype": "blog",
+    "tier": "card",
+    "tiers_present": [
+      "card"
+    ],
+    "status": "card_complete",
+    "last_checked": "2026-06-11",
+    "last_commit": null,
+    "stars": null,
+    "license": null,
+    "size_estimate": "7 post ~12 KB",
+    "audience_tags": {
+      "cs_background": "yes",
+      "devops": "mid",
+      "cc_experience": "used"
+    },
+    "primary_author": "Cursor (Anysphere)",
+    "char_count": 3801,
+    "overflow": true,
+    "promote_to_brief": null,
+    "promote_to_deep_dive": null,
+    "fetched_via": "pre_seeded_cache",
+    "fetched_via_fallback": true,
+    "mirror_url": "https://docs.cursor.com（原 docs SPA 不可 curl，已 fallback 到 changelog 静态页）",
+    "batch": 3,
+    "tier_group": "MCP 生态 + 同类工具",
+    "notes": "subagent v3：主 Claude pre-seed changelog（v1 SPA 失败 / v2 API 429）；原 cursor.com/docs 是 SPA，本源用 cursor.com/changelog 替代"
+  },
+  "cross_check_anchors": [
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/cursor-changelog-bugbot-updates-june-2026.txt:L5",
+      "verbatim": "The average review time for Bugbot is now ~90 seconds, down from ~5 minutes."
+    },
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/cursor-changelog-canvas-improvements.txt:L13",
+      "verbatim": "Select and annotate UI elements directly in a canvas to guide Cursor's edits"
+    },
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/cursor-changelog-enterprise-organizations.txt:L9",
+      "verbatim": "An organization is the top-level container for your company's identity, administration, and membership"
+    },
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/cursor-changelog-sdk-updates-jun-2026.txt:L9",
+      "verbatim": "You can now hand the local agent your own tools by passing function definitions through local.customTools"
+    },
+    {
+      "anchor": ".research-cache/raw-fetches/batch3/cursor-changelog-shared-canvases.txt:L11",
+      "verbatim": "View your team's shared canvases in the Cursor Dashboard with read-only access"
+    }
+  ],
+  "audience_judgment_basis": "cs_background=yes 因 Cursor 面向工程师，受众熟读 SDK / MCP / IDE 扩展；devops=mid 因 SDK customTools / JSONL store / Enterprise IDP 涉及 CI 但非深 K8s；cc_experience=used 因对比价值需要已用过 CC",
+  "fetched_via_log": "pre-seeded cache; cat-only, no network; mirror_url 标注因 cursor.com/docs SPA 替代到 changelog",
+  "exposed_problems": [
+    "P19 复发：subagent 不严格遵循 audience enum 白名单（即使 prompt 列了全部值）；prompt 内强调「不接受自由发挥」不够，需要 LLM 外层 assertion 拦截"
+  ],
+  "_validation_issues_at_subagent_return": [
+    "P19 严重: audience_tags 全部不在 enum — 改 cs_background intermediate→yes / devops useful→mid / cc_experience useful_for_comparison→used",
+    "P23: body 含 HTML entity &gt; 需 unescape",
+    "P21: subagent 自报 char_count 1342 偏低，body 实际 4000+ char（9 takeaway + 6 对比 + 锚点 20 行）；主 Claude 落盘时实测 wc -m 后修正",
+    "P19/P23 再次印证: subagent 自报 「strict」「no HTML entities」全不可信，必须主 Claude assertion 拦截"
+  ]
+}

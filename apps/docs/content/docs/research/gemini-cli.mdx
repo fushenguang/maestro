@@ -1,0 +1,70 @@
+---
+title: google-gemini/gemini-cli（Google 官方 Gemini CLI）
+description: Google 开源 Gemini 终端 coding agent — TS + Ink + 7 包 monorepo，Gemini3 + 1M context + MCP + Hooks + Skills + Subagents
+slug: gemini-cli
+url: 'https://github.com/google-gemini/gemini-cli'
+source_type: repo
+source_subtype: methodology
+tier: card
+tiers_present:
+  - card
+status: card_complete
+last_checked: 2026-06-11
+last_commit: 5d4af9f812bb08750e5a14ee66dd4c1f7a90b13c
+stars: null
+license: Apache-2.0
+size_estimate: ~2896 文件 / 7 包 monorepo
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+primary_author: Google Gemini team
+char_count: 1857
+overflow: true
+promote_to_brief: null
+promote_to_deep_dive: null
+fetched_via: pre_seeded_cache
+fetched_via_fallback: true
+mirror_url: null
+batch: 3
+tier_group: MCP 生态 + 同类工具
+notes: subagent v2：主 Claude pre-seed cache（v1 因 API 429 失败）
+---
+
+# gemini-cli
+
+## 一句话定位
+
+> Google 开源 Gemini 终端 coding agent：TS + Ink + 7 包 monorepo，Gemini3 + 1M context + MCP + Hooks + Skills + Subagents。
+
+## 关键 takeaway
+
+1. **栈与包**：Node >= 20 + TS + React Ink；7 包 monorepo：`cli` / `core` / `a2a-server`(A2A) / `sdk` / `devtools` / `test-utils` / `vscode-ide-companion`。(methodology:L21)
+2. **三认证**：Google OAuth 免费 60 req/min + Gemini3 + 1M / `GEMINI_API_KEY` 1k/day / Vertex AI。(methodology:L150-L209)
+3. **三层 GEMINI.md**：全局 → workspace → JIT 工具访问时向上扫到 trusted root。(methodology:L11-L37)
+4. **MCP + Hooks**：stdio / SSE / Streamable HTTP + 独立 Hooks。(methodology:L29-L60)
+5. **差异化**：Gemini3 + 1M context；multimodal（PDF / image / sketch → app）；Google Search grounding；Checkpointing + `/rewind`；Plan mode；Headless + `stream-json`。
+
+## 与 Claude Code 的对比
+
+- **Context 文件**：`CLAUDE.md` ↔ `GEMINI.md`。
+- **模型 / 认证**：CC 单家族手动 `-m` + API key；Gemini 跨 Gemini3 + Vertex + **自动 model routing fallback** + Google OAuth 零摩擦。
+- **Context 长度**：CC 200k ↔ Gemini **1M token**。
+- **MCP transport**：CC 4 ↔ Gemini 3。
+- **多 agent**：CC Subagent + Skills ↔ Gemini Subagents + Skills + Remote subagents + **`a2a-server` 包**（CC 无对应）。
+- **UI / Action**：CC pure CLI ↔ Gemini Ink + `vscode-ide-companion` + run-gemini-cli Action。
+
+## 与 Claude Code 教程的关联
+
+「同类工具横向」章必引——对照 Codex CLI / Cursor / Aider 验证 CC 设计是行业共识还是特例；MCP 教学：Gemini 3 transport 是 MCP 另一参考实现；「模型选择」章：引 Gemini CLI model-routing 自动 fallback。
+
+## 参考锚点
+
+- `(methodology:README:L17-L29)` — Free tier + Gemini3 + 1M context + Apache 2.0
+- `(methodology:README:L150-L209)` — 3 种认证
+- `(methodology:GEMINI:L13-L29)` — Node >= 20 + 7 包 monorepo
+- `(methodology:gemini-md:L11-L37)` — 三层 GEMINI.md
+- `(methodology:mcp-server:L29-L60)` — `mcp-client.ts` + 3 transport
+- `packages/a2a-server/` — A2A server（CC 无对应）
+
+> **未解决**：A2A vs MCP 边界；Gemini 3 vs Opus 4 实测；1M 长 repo 有效率；model-routing fallback 判定。
