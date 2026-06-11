@@ -1,4 +1,6 @@
-# pdf-extract Reference（v0.1）
+# pdf-extract Reference（v0.2）
+
+补充 SKILL.md 没说清的：备选工具、字体坑、扫描 PDF 排查、调优参数、pdfplumber 反直觉行为。
 
 补充 SKILL.md 没说清的：备选工具、字体坑、扫描 PDF 排查、调优参数。
 
@@ -59,9 +61,30 @@ with pdfplumber.open("scan.pdf") as pdf:
 ### pdfplumber
 | 参数 | 默认 | 调优场景 |
 |---|---|---|
-| `x_tolerance` | 3 | 公式字符间距大 → 调到 5 |
-| `y_tolerance` | 3 | 表格行间距大 → 调到 5 |
+| `x_tolerance` | 3 | **反直觉**：值大 = 字符间允许距离大 = **更激进合并**为同一 word。学术 PDF 建议 1；CJK 字符可能需要 0 |
+| `y_tolerance` | 3 | 表格行间距大 → 调到 5；宽行距双栏 → 调到 8 |
 | `keep_blank_chars` | False | 想保留空白做版面分析 → True |
+
+### pdfplumber 反直觉行为详解（**P37 沉淀**）
+
+pdfplumber 文档说「x_tolerance is the tolerance for grouping characters into words」——读起来值小=严格=不合并。**实际相反**：
+
+- 值大 = 字符间允许距离更大 = **更激进合并**为同一 word
+- 值小 = 字符间允许距离更小 = **更激进分词**
+
+**实测**（constitutional-ai-paper.pdf）：
+| `x_tolerance` | 实际效果 |
+|---|---|
+| **1**（默认） | "Yuntao Bai∗, Saurav Kadavath"（正确）|
+| 3（pdfplumber 默认）| "YuntaoBai∗, SauravKadavath"（合并）|
+| 5 | "YuntaoBai∗,SauravKadavath"（更合并，连逗号后空格都吞）|
+| 10 | "YuntaoBai∗,SauravKadavath,SandipanKundu,..."（激进合并）|
+
+**调优建议**：
+- **西文学术 PDF / Letter**：`x_tolerance=1`
+- **CJK（中文 / 日文 / 韩文）**：保持 `x_tolerance=0`（避免合并相邻汉字）
+- **等宽字体（typewriter）**：`x_tolerance=2`（字符等距，单词间空格也等距，需要严格点）
+- **公式 / 表格**：不需要调，layout_parser 处理
 
 ### pypdfium2
 | 参数 | 默认 | 调优场景 |

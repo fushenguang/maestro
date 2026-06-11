@@ -7,7 +7,7 @@ description: |
   不做 PDF 编辑 / 表单 / 合并（用 Anthropic 官方 pdf skill）。
 ---
 
-# pdf-extract Skill（v0.1，2026-06-11）
+# pdf-extract Skill（v0.2，2026-06-11 晚）
 
 > 把 PDF 抽到 markdown，**唯一目标**：输出能被 research-source skill 当 cache 读、有锚点可反查。
 
@@ -32,6 +32,7 @@ python3 scripts/extract.py --input {pdf} --output {cache_dir}/{slug}.md [--mode 
 | `--mode` | 否 | `auto` | 见下「4 种模式」 |
 | `--max-bytes` | 否 | 80000 | 单文件字节上限；超过按页拆分 |
 | `--ocr-lang` | 否 | `eng` | OCR 模式语言（`eng` / `chi_sim` / `eng+chi_sim`） |
+| `--x-tolerance` | 否 | `1` | simple 模式 x_tolerance（pdfplumber **反直觉**：值大=更激进合并为同一 word；学术 PDF 建议 1） |
 
 ## 4 种模式
 
@@ -93,11 +94,12 @@ The field of...
 - subagent 走 cache-first（沿用 research-source 硬约束 #12）
 - 锚点格式 `(p5:L23)` 直接被 research-source cross-check 接受
 
-## 硬约束（**v0.1**）
+## 硬约束（**v0.2**）
 
 1. **P31 库选择**：仅用 pdfplumber (MIT) + pypdfium2 (Apache) + pytesseract (Apache)。**禁用** pymupdf (AGPL 风险) / nougat / marker（首次装 2GB+ 模型，批 4 预算冲突）
 2. **P32 大 PDF 分块**：> 80KB 自动按页拆 + 子文件命名 `{slug}-p{N}.md` + `-index.md` 索引
 3. **P33 扫描 PDF 显式 opt-in**：OCR 模式必须 `--mode ocr`；`auto` 模式 fallback 用 OCR 但**不默认启用**
+4. **P37 x_tolerance 反直觉**（v0.2 加 CLI 参数）：pdfplumber 的 `x_tolerance` 值**大=更激进合并**为同一 word。**默认 1** 适配西文学术 PDF；CJK / 紧排版可能需要不同值（参考 `reference.md` 「pdfplumber 反直觉行为」段）
 
 ## 已知坑
 
@@ -126,4 +128,9 @@ The field of...
 
 ## 变更日志
 
+- **v0.2（2026-06-11 晚）**：修 P34-P37
+  - P34：layout_parser 改「行 x 坐标众数法」+ 多 gap 支持
+  - P35：layout_parser 接收 image_bboxes 过滤图区域 word
+  - P36：quality_check 加 column_coverage + chart_text_ratio 2 维；auto 阈值 0.6 → 0.75
+  - P37：x_tolerance 暴露为 CLI 参数 + 文档化反直觉行为
 - **v0.1（2026-06-11）**：初版，3 模式 + auto fallback + 大文件分块

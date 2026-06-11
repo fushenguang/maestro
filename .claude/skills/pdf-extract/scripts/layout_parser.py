@@ -1,10 +1,35 @@
 """
-layout_parser: 双栏 / 多栏检测 + 按逻辑段落重组
-输入：word-level 字典（含 text + bbox）
-输出：按阅读顺序（先左栏后右栏）排列的文本
+layout_parser v0.2: 双栏 / 多栏检测 + 按逻辑段落重组
+v0.2 改进（P34 + P35 修复）：
+- 接收 image_bboxes 参数，过滤图区域内的 word（修 P35）
+- 用「行 x 坐标众数」替代「最左 x0」找栏（修 P34）
+- 多 gap 检测支持三栏 / 异形栏
 """
 
-from collections import defaultdict
+from collections import Counter, defaultdict
+
+
+def filter_words_in_images(words: list[dict], image_bboxes: list[tuple],
+                           padding: float = 2.0) -> list[dict]:
+    """过滤图区域内的 word（修 P35）。
+    image_bboxes: [(x0, y0, x1, y1), ...]
+    Returns: 过滤后的 words
+    """
+    if not image_bboxes:
+        return words
+
+    def in_any_image(w_bbox):
+        wx0, wy0, wx1, wy1 = w_bbox
+        for (ix0, iy0, ix1, iy1) in image_bboxes:
+            # word 中心点在图 bbox 内（含 padding）即视为图内容
+            cx = (wx0 + wx1) / 2
+            cy = (wy0 + wy1) / 2
+            if (ix0 - padding <= cx <= ix1 + padding and
+                    iy0 - padding <= cy <= iy1 + padding):
+                return True
+        return False
+
+    return [w for w in words if not in_any_image(w["bbox"])]
 
 
 def cluster_lines(words, y_tolerance: float = 3.0):
@@ -33,51 +58,87 @@ def cluster_lines(words, y_tolerance: float = 3.0):
     return lines
 
 
-def detect_columns(lines, page_width: float, min_gap_ratio: float = 0.15):
-    """检测栏数。
-    方法：统计每行最左 word 的 x 坐标分布，找大 gap。
+def detect_columns(lines, page_width: float, min_gap_ratio: float = 0.15,
+                   min_lines_per_col: int = 3):
+    """v0.2 改进：行 x 坐标聚类找栏（修 P34）。
+    方法：
+      1. 收集每行的 x 中点（不是最左 x0，更稳健）
+      2. 找 top-N 大 gap
+      3. 至少 min_lines_per_col 行才认作一栏
     Returns: {"columns": int, "column_boundaries": [(x0, x1), ...]}
     """
     if not lines:
         return {"columns": 1, "column_boundaries": [(0, page_width)]}
 
-    # 收集所有行最左 word 的 x0
-    x_starts = []
+    # 1. 每行 x 中点（更代表「栏中心」）
+    line_x_mids = []
     for line in lines:
         if not line:
             continue
-        x_starts.append(round(line[0]["bbox"][0], 1))
+        xs = [(w["bbox"][0] + w["bbox"][2]) / 2 for w in line]
+        line_x_mids.append(sum(xs) / len(xs))
 
-    if len(x_starts) < 2:
+    if len(line_x_mids) < 2:
         return {"columns": 1, "column_boundaries": [(0, page_width)]}
 
-    # 找最大 gap（按 x 起点聚类）
-    x_starts_sorted = sorted(set(x_starts))
-    if len(x_starts_sorted) < 2:
-        return {"columns": 1, "column_boundaries": [(0, page_width)]}
-
-    gaps = [(x_starts_sorted[i + 1] - x_starts_sorted[i],
-             x_starts_sorted[i], x_starts_sorted[i + 1])
-            for i in range(len(x_starts_sorted) - 1)]
+    # 2. 找 gap
+    sorted_mids = sorted(line_x_mids)
+    gaps = []
+    for i in range(len(sorted_mids) - 1):
+        gap_size = sorted_mids[i + 1] - sorted_mids[i]
+        gap_center = (sorted_mids[i] + sorted_mids[i + 1]) / 2
+        gaps.append((gap_size, gap_center))
     gaps.sort(reverse=True)
-    max_gap, gap_start, gap_end = gaps[0]
 
-    if max_gap < page_width * min_gap_ratio:
+    # 3. 找所有「显著」gap（> min_gap_ratio * page_width）
+    significant_gaps = [
+        (gap_size, gap_center) for gap_size, gap_center in gaps
+        if gap_size >= page_width * min_gap_ratio
+    ]
+
+    if not significant_gaps:
+        return {"columns": 1, "column_boundaries": [(0, page_width)]}
+
+    # 4. 用 gap 中心分栏
+    boundaries = [0.0] + [g[1] for g in significant_gaps] + [page_width]
+    boundaries = sorted(set(boundaries))
+    column_boundaries = [(boundaries[i], boundaries[i + 1])
+                         for i in range(len(boundaries) - 1)]
+
+    # 5. 过滤：每栏至少 min_lines_per_col 行
+    # 统计每栏实际包含的行数
+    column_line_counts = [0] * len(column_boundaries)
+    for line in lines:
+        if not line:
+            continue
+        x_mid = sum((w["bbox"][0] + w["bbox"][2]) / 2 for w in line) / len(line)
+        for i, (cx0, cx1) in enumerate(column_boundaries):
+            if cx0 <= x_mid < cx1:
+                column_line_counts[i] += 1
+                break
+
+    # 保留行数足够的栏
+    valid_boundaries = [
+        b for i, b in enumerate(column_boundaries)
+        if column_line_counts[i] >= min_lines_per_col
+    ]
+
+    if len(valid_boundaries) <= 1:
         return {"columns": 1, "column_boundaries": [(0, page_width)]}
 
     return {
-        "columns": 2,
-        "column_boundaries": [(0, gap_start), (gap_end, page_width)],
+        "columns": len(valid_boundaries),
+        "column_boundaries": valid_boundaries,
     }
 
 
 def assign_to_column(line, column_boundaries):
-    """判断一行属于哪一栏（按最左 word 的 x0）。"""
+    """判断一行属于哪一栏（按行 x 中点）。"""
     if not line:
         return 0
-    x0 = line[0]["bbox"][0]
+    x_mid = sum((w["bbox"][0] + w["bbox"][2]) / 2 for w in line) / len(line)
     for i, (cx0, cx1) in enumerate(column_boundaries):
-        if cx0 <= x0 < cx1:
+        if cx0 <= x_mid < cx1:
             return i
     return 0
 
@@ -86,28 +147,36 @@ def line_to_text(line) -> str:
     """一行 words → 文本（words 间加空格）。"""
     if not line:
         return ""
-    parts = []
-    for w in line:
-        # word text 已含可能的小空格（如 "Smith,"），直接拼接即可
-        parts.append(w["text"])
-    return " ".join(parts)
+    return " ".join(w["text"] for w in line)
 
 
 def parse_columns_from_words(words: list[dict], page_width: float,
                              page_height: float, y_tolerance: float = 3.0,
-                             min_gap_ratio: float = 0.15) -> dict:
-    """主入口（word-level，比字符级稳健）。
+                             min_gap_ratio: float = 0.15,
+                             image_bboxes: list[tuple] | None = None,
+                             min_lines_per_col: int = 3) -> dict:
+    """主入口 v0.2。
     words: [{"text": str, "bbox": (x0, y0, x1, y1)}, ...]
-    Returns: {"text": str, "lines": list, "columns": int}
+    image_bboxes: 图表 bbox 列表（修 P35）
+    Returns: {"text": str, "lines": list, "columns": int, "column_boundaries": [...]}
     """
     if not words:
-        return {"text": "", "lines": [], "columns": 1}
+        return {"text": "", "lines": [], "columns": 1, "column_boundaries": [(0, page_width)]}
+
+    # 0. 过滤图区域 word（修 P35）
+    if image_bboxes:
+        words = filter_words_in_images(words, image_bboxes)
+
+    if not words:
+        return {"text": "", "lines": [], "columns": 1, "column_boundaries": [(0, page_width)]}
 
     # 1. 按行聚类
     lines = cluster_lines(words, y_tolerance=y_tolerance)
 
-    # 2. 检测栏数
-    col_info = detect_columns(lines, page_width, min_gap_ratio=min_gap_ratio)
+    # 2. 检测栏数（v0.2 众数法 + 多 gap）
+    col_info = detect_columns(lines, page_width,
+                              min_gap_ratio=min_gap_ratio,
+                              min_lines_per_col=min_lines_per_col)
     columns = col_info["columns"]
     column_boundaries = col_info["column_boundaries"]
 
@@ -117,7 +186,7 @@ def parse_columns_from_words(words: list[dict], page_width: float,
         col_idx = assign_to_column(line, column_boundaries)
         column_lines[col_idx].append(line)
 
-    # 4. 重组文本（左栏 top→bottom，右栏 top→bottom...）
+    # 4. 重组文本
     text_parts = []
     for col_idx, col_lines in enumerate(column_lines):
         if columns > 1 and col_lines:
@@ -130,6 +199,7 @@ def parse_columns_from_words(words: list[dict], page_width: float,
         "text": text,
         "lines": text.split("\n"),
         "columns": columns,
+        "column_boundaries": column_boundaries,
     }
 
 
@@ -137,9 +207,10 @@ def parse_columns_from_words(words: list[dict], page_width: float,
 
 def parse_columns(bboxes, page_size: tuple, y_tolerance: float = 3.0,
                   min_gap_ratio: float = 0.15) -> dict:
-    """旧入口（character-level bbox）。已弃用，保留以防回归。"""
+    """旧入口（character-level bbox）。已弃用。"""
+    import sys
     print("WARN: parse_columns（字符级）已弃用，请用 parse_columns_from_words",
-          __import__("sys").stderr)
+          file=sys.stderr)
     return parse_columns_from_words(
         [{"text": b.get("char", ""), "bbox": b["bbox"]} for b in bboxes],
         page_size[0], page_size[1], y_tolerance, min_gap_ratio
@@ -158,4 +229,3 @@ def parse_with_pdfplumber_chars(pdf_path: str, page_num: int) -> list[dict]:
                 "bbox": (char["x0"], char["top"], char["x1"], char["bottom"]),
             })
     return bboxes
-
