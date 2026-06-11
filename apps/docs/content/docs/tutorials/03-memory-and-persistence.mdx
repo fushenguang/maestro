@@ -1,0 +1,189 @@
+---
+title: "记忆系统：让 Claude Code 跨会话记得你"
+description: "配置 4 级 CLAUDE.md 加载链 + auto memory 自动笔记，让 Claude Code 每次开新 session 都记得你是谁、项目规范、踩过的坑"
+slug: "03-memory-and-persistence"
+audience_tags:
+  cs_background: partial
+  devops: mid
+  cc_experience: used
+---
+
+## 记忆系统：让 Claude Code 跨会话记得你
+
+> 本章目标：配好 4 级 CLAUDE.md + auto memory，CC 每次醒来都认识你
+> 解决的问题：每次开新 session，CC 都像失忆一样——你反复教它同一件事
+
+### 1. 两张嘴，一个脑子
+
+「我问你——昨天我让你记住的项目命名规范，还记得吗？」
+
+小李盯着终端，Claude Code 刚开的新 session。三秒前他发了一句「继续昨天的重构」，CC 回：「请问您指的是哪个重构？」
+
+小李深吸一口气。这是他本周第四次重讲同一个规范。
+
+CC 的「记忆」不是你想的那样。它不会自动记住。你得给它两张嘴吃饭：
+
+| | CLAUDE.md | auto memory |
+|---|---|---|
+| **谁写** | 你（人）| CC（自动）|
+| **存哪** | 项目目录 / `~/.claude/` | `~/.claude/projects/.../memory/` |
+| **怎么加载** | 整段注入 | 索引前 200 行，详细按需读 |
+| **能同步吗** | ✅ commit 进 git | ❌ 只在本机 |
+
+(docs:L1:14)
+
+一句话：**CLAUDE.md 是你写给 CC 的"员工手册"，auto memory 是 CC 自己记的"工作笔记"。** 两个都进 context，两个都是"建议"——想让 CC 强制执行，那是上一章 Hooks 的事。
+
+### 2. 四层手册，从上往下读
+
+CLAUDE.md 不是放一个文件就完事。它有四层——从公司到个人，层层叠加：
+
+```
+Managed policy    ← IT 部署，你不能改
+    ↓
+User              ← ~/.claude/CLAUDE.md，你的全局偏好
+    ↓
+Project           ← ./CLAUDE.md，团队的工程规约（commit 进 git）
+    ↓
+Local             ← ./.claude/CLAUDE.local.md，你在这项目的私货（gitignore）
+```
+
+(docs:L1:80)
+
+**关键规则**：四层是 **concatenate**（拼接），不是 override（覆盖）。你写在 Project 里的不会覆盖 Managed——全部叠在一起喂给 CC。
+
+> 「那 Managed 写错了怎么办？」小李问。
+>
+> 「没辙，」陈工说，「Managed 没有例外开关。所以 IT 配 managed 的时候，必须当 production 代码审——code review、版本化、灰度。写错一条『禁止在 commit message 加 emoji』，全公司都得遵守。」
+>
+> 「……谁会写这种规则？」
+>
+> 「你永远不知道。但这就是 0 信任的代价。」
+
+(docs:L1:424)
+
+### 3. 子目录懒加载：monorepo 的救星
+
+你有个 monorepo：
+
+```
+monorepo/
+├── CLAUDE.md              ← 启动就注入
+├── packages/
+│   ├── api/CLAUDE.md      ← 只在你改 api 代码时才挂
+│   ├── web/CLAUDE.md      ← 只在你改 web 代码时才挂
+│   └── db/CLAUDE.md       ← 同理
+```
+
+CC 不会一口气把 4 个 CLAUDE.md 全塞进 context。它只在**读到某个子目录的文件时**，才挂那个子目录的 CLAUDE.md。
+
+更进一步——`.claude/rules/` 支持 `paths:` glob：
+
+```yaml
+# .claude/rules/api-design.md
+---
+paths: src/api/**/*.ts
+---
+- 所有 API 用 Zod schema 校验
+- 每个 endpoint 必须有 OpenAPI 注解
+```
+
+加了 `paths:`，这条规则**只在 CC 碰匹配文件时才注入**。不加 `paths:`，默认全量加载。
+
+(docs:L1:172)
+
+**效益**：root + 1 个子目录被读 → 只挂 root + 1 个子目录 CLAUDE.md。三个子目录的规则安静躺着，不占 context。
+
+### 4. auto memory：让 CC 自己记笔记
+
+CLAUDE.md 是你写的。auto memory 是 CC 自己记的。
+
+它存在 `~/.claude/projects/<project>/memory/`。CC 每次发现一个值得记住的东西——你的偏好、踩过的坑、特殊的构建步骤——就往里写一个文件。`MEMORY.md` 是索引，列出所有 topic 文件的标题和一句话描述。
+
+但有个坑：**MEMORY.md 只截前 200 行（或 25KB）注入**。超出部分，CC 看不到——除非它自己主动 `Read` topic 文件。
+
+(docs:L1:551)
+
+这意味着你的 auto memory 越长，CC 忘得越多。
+
+**维护策略**：
+- 每 2-3 周让 CC 整理一次 MEMORY.md——删过期、合重复、拆长 topic
+- 团队级知识（"这个项目的 API key 不能硬编码"）→ **手动搬到项目 CLAUDE.md**
+- 个人偏好（"我喜欢用 async/await 不喜 .then()"）→ 留在 auto memory
+
+(docs:L1:19465)
+
+### 5. /compact 陷阱：最常踩的坑
+
+session 太长 → context 满了 → `/compact`。
+
+压缩完，CC 重新读盘。但有个行为你不一定知道：
+
+| 文件 | compact 后 |
+|---|---|
+| 根 CLAUDE.md | ✅ 重新读盘，重新注入 |
+| 子目录 CLAUDE.md | ❌ **不会**自动重新注入 |
+
+(docs:L1:24563)
+
+> 「就是说，我之前依赖的子目录规则，compact 后就没了？」
+>
+> 「对。而且 CC 不会告诉你。它只是突然不守那条规则了。」
+>
+> 「那怎么办？」
+>
+> 「**关键指令必须放根 CLAUDE.md**。'不要动 secrets'、'永远不 rm -rf'——这种要命的规则，不能放在子目录。」
+
+这条记住——你迟早会踩。
+
+### 6. 团队记忆：什么共享，什么私藏
+
+auto memory 不跨机。同事 A 踩的坑，同事 B 在自己机器上永远看不到。
+
+(docs:L1:551)
+
+**分流策略**：
+
+| 知识类型 | 放哪 | 谁能看到 |
+|---|---|---|
+| 安全基线、合规规则 | Managed policy | 全员强制 |
+| 工程规约、架构决策 | 项目 CLAUDE.md (git) | 团队共享 |
+| 个人快捷键、偏好 | auto memory / CLAUDE.local.md | 只有你 |
+
+(docs:L1:14, L1:80)
+
+实操：每个月花 10 分钟，翻翻自己的 auto memory——把团队级知识提到项目 CLAUDE.md，把个人偏好留下。
+
+### 7. 横向对比：不是只有 CC 有"记忆"
+
+| 维度 | CC | Cursor | Aider | Codex |
+|---|---|---|---|---|
+| 配置文件 | CLAUDE.md (4 级) | `.cursorrules` | `CONVENTIONS.md` | `AGENTS.md` |
+| path-scoped | ✅ `.claude/rules/` | ✅ `.cursor/rules/*.mdc` | ❌ | ❌ |
+| 自动笔记 | ✅ auto memory | ❌ | ❌ | ❌ |
+| 企业强控 | ✅ managed policy | RBAC | ❌ | approval policy |
+| 子目录懒加载 | ✅ | ❌ | ❌ | ❌ |
+
+(docs:L1:80, docs:L1:172)
+
+CC 的记忆系统在这四个里最复杂——但复杂意味着颗粒度。Cursor 的 `.cursorrules` 简单粗暴整段注入，CC 的四层链加上懒加载，能在大项目里省大量 context。
+
+### 8. 本章小结 + 下一章预告
+
+**你带走的：**
+- CLAUDE.md = 你写的"员工手册"，auto memory = CC 记的"工作笔记"——两套都进 context
+- 4 级加载链是 concatenate，不是 override——Managed > User > Project > Local
+- **关键指令放根 CLAUDE.md**——`/compact` 后子目录规则不 re-inject
+- auto memory 有 200 行 / 25KB 截断——每 2-3 周整理一次
+- 团队知识提进项目 CLAUDE.md (git)，个人偏好留 auto memory
+
+**下一章**：现在 CC 守规矩了（Hooks），也记得你是谁了（Memory）。但它每次干活的方式还是靠你一句句指挥。第四章讲 **Skill 哲学**——怎么把反复教 CC 的"经验"写成一个可复用的 Skill 文件，让它自己按流程干活。
+
+---
+
+**参考源**：
+- (docs:L1:14) — CLAUDE.md vs auto memory 对比（谁写、范围、加载方式）
+- (docs:L1:80) — CLAUDE.md 4 级加载链（Managed > User > Project > Local）
+- (docs:L1:172) — `.claude/rules/` + `paths:` frontmatter path-scoped 触发
+- (docs:L1:551) — auto memory 存储路径 + 200 行 / 25KB 截断
+- (docs:L1:24563) — `/compact` 后子目录 CLAUDE.md 不 re-inject
