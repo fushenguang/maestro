@@ -39,7 +39,7 @@ tier_group: MCP 生态 + 同类工具
 
 ## 关键 takeaway
 
-1. **同源竞品**：CC TS 单体；Codex Rust workspace（~100 crate、CLI main.rs 3960 行、AGENTS.md 强制 module <500 LoC）。`(methodology:L1)`
+1. **同源竞品**：CC TS 单体；Codex Rust workspace（~100 crate、CLI main.rs 3960 行、AGENTS.md 强制 module &lt;500 LoC）。`(methodology:L1)`
 2. **Sandbox × Approval 双轴**：sandbox 三档 `read-only`/`workspace-write`/`danger-full-access`；approval 五态含 `granular`（按 prompt 来源分项开关）——比 CC 单维 `--permission-mode` 细。`(methodology:L2)`
 3. **多模型一等公民**：`ollama`/`lmstudio`/`models-manager` 独立 crate；本地模型 first-class。
 4. **Hooks 对标 CC**：10 个 event 命名一致，每 event 独立 JSON schema。
@@ -76,7 +76,7 @@ tier_group: MCP 生态 + 同类工具
 ### Codex 定位：OpenAI 出品的 CC 同源竞品
 
 - **栈差异**：CC Node/TS 单体 vs Codex Rust workspace（~100 crate）
-- **CLI 体量**：main.rs 3960 行；**AGENTS.md 强制 module <500 LoC**（CC 没这个限制）
+- **CLI 体量**：main.rs 3960 行；**AGENTS.md 强制 module &lt;500 LoC**（CC 没这个限制）
 - **License**：Apache-2.0
 
 ### Sandbox × Approval 双轴（核心设计）
