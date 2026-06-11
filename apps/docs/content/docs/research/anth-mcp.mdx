@@ -5,19 +5,21 @@ slug: anth-mcp
 url: https://docs.claude.com/en/docs/claude-code/mcp
 source_type: article
 source_subtype: docs
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 size_estimate: "44 KB / docs page"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: mid
   cc_experience: used
 primary_author: Anthropic
-promote_to_brief: null
+char_count: 5244
+overflow: false
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -50,3 +52,78 @@ Anthropic 官方把 MCP 定位为把 Claude Code 接到外部工具/数据库/AP
 - `docs:L715-749` — 输出限流（25k token / 10k token 警告 / `_meta` 500k chars）。
 - `docs:L784-835` — Tool Search 默认开启与 `ENABLE_TOOL_SEARCH` 取值。
 - `docs:L883-887` — 企业 `managed-mcp.json` + allow/deny 列表。
+
+## Brief（梳理）
+
+### MCP 定位：连接 AI 与外部世界的开放标准
+
+- **MCP（Model Context Protocol）** = Anthropic 推出的**开源标准**，让 Claude Code 接入外部工具 / 数据库 / API
+- **不是 Claude Code 专属**：是**协议级**标准，理论上任何 LLM 客户端都能用
+- **MCP server = 工具 / 数据源**（如 GitHub / Slack / Postgres）；MCP client = LLM 客户端（CC / Cursor / OpenAI 等）
+
+### 4 种 Transport
+
+| Transport | 状态 | 适用 |
+|---|---|---|
+| **HTTP** | ✅ 推荐 | 支持 OAuth；远端 server；推荐生产用 |
+| **stdio** | ✅ 常用 | 本地子进程；可读 `CLAUDE_PROJECT_DIR` 环境变量；本地 CLI 工具首选 |
+| **SSE** | ⚠️ deprecated | 服务端推送（已被 HTTP 替代）|
+| **WebSocket** | ⚠️ niche | 仅服务端主动 push 场景；需写 `.mcp.json` |
+
+### 3 种 Scope
+
+| Scope | 配置位置 | 提交给团队？|
+|---|---|---|
+| **`local`** | `~/.claude/...` 或 `.mcp.json` + `local` 字段 | ❌ 私 |
+| **`project`** | `.mcp.json`（commit 进 git）| ✅ 团队共享 |
+| **`user`** | 用户级配置 | ❌ 跨项目私 |
+
+- **优先级**：`Local > Project > User > Plugin > claude.ai`
+- **重要原则**：**整条 entry 胜出，不跨 scope 合并字段**——避免「局部覆盖」导致的歧义
+
+### Tool Search 默认开启
+
+- **默认行为**：MCP 工具描述 defer 到检索时（节约 context）
+- **不兼容**：Haiku 不支持 Tool Search
+- **调节阈值**：`ENABLE_TOOL_SEARCH=auto:N`（N = 阈值）
+- **绕过**：`alwaysLoad: true`（启动时加载，**阻塞启动 + 5s connect timeout**）
+- **输出限流**：
+  - 默认 25k token
+  - 超 10k token 警告
+  - 放宽：`MAX_MCP_OUTPUT_TOKENS` env 或服务端 `_meta["anthropic/maxResultSizeChars"]`（上限 500k chars）
+
+### Resources 与 Prompts
+
+- **Resources**（数据资源）：用 `@server:protocol://resource/path` 引用
+- **Prompts**（预设 prompt）：以 `/mcp__<server>__<prompt>` 命令形式执行
+- 这两个概念是 MCP 把「**工具 + 数据 + prompt 模板**」三件套都纳入协议的体现
+
+### 认证与跨客户端复用
+
+- **HTTP server 401/403** → 自动弹 OAuth
+- **`--callback-port`** 锁端口匹配预注册 redirect URI
+- **跨客户端**：
+  - `claude mcp add-from-claude-desktop`（仅 macOS / WSL）—— 拉 Claude Desktop 已配 server
+  - `claude.ai` connectors（仅 Claude.ai 订阅登录）—— 拉云端已配 server
+- **平台限制**：M365 / Gmail / Google Calendar 只能从 `claude.ai` 连（其他 LLM 客户端不行）
+
+### 企业级管控
+
+- `managed-mcp.json` —— 企业统一下发 MCP server 列表
+- `allow` / `deny` 列表 —— 屏蔽风险 server
+- 与 hooks 的 `allowManagedHooksOnly` 形成**企业 0 信任组合**
+
+### 跨源关联
+
+- vs `mcp-servers`（已跑批 3）：MCP 官方 reference servers 集合——本节给协议，本仓库给 7 个 ready-to-use server
+- vs `codex`：codex CLI 也支持 MCP——**沿用协议** + 错位（Anthropic 是协议制定者；OpenAI 是协议采纳者）
+- vs `gemini-cli`：Gemini CLI 有 a2a-server 包（MCP-over-a2a 扩展）——**错位实验**：Anthropic 主推标准；Google 试探扩展
+
+### 教程章节候选
+
+1. **「MCP 入门」章**：4 transport + 3 scope 概览
+2. **「写第一个 stdio MCP server」章**：用 Python / Node / Rust 写 1 个本地 server
+3. **「HTTP MCP server + OAuth」章**：生产部署（docker / k8s / 域名 + TLS）
+4. **「Tool Search 调优」章**：`ENABLE_TOOL_SEARCH` + `alwaysLoad` 决策
+5. **「MCP Resources 与 Prompts」章**：三件套（工具 + 数据 + 模板）
+6. **「企业 MCP 治理」章**：`managed-mcp.json` + allow/deny + 与 hooks 组合

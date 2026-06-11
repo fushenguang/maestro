@@ -5,19 +5,21 @@ slug: anth-hooks
 url: https://docs.claude.com/en/docs/claude-code/hooks
 source_type: article
 source_subtype: docs
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 size_estimate: "140 KB / docs page"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: high
   cc_experience: used
 primary_author: Anthropic
-promote_to_brief: null
+char_count: 4896
+overflow: false
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -46,3 +48,78 @@ Hooks 是教程「自动化与治理」章的核心：可用作 lint / format / 
 - `docs:L1` — "Hooks run without a controlling terminal, so writing escape sequences directly to /dev/tty fails. Instead, return the escape sequence in the terminalSequence field"
 
 > **注**：Python 提取 HTML 后整页落在单行（`L1`），verbatim 短语在原文唯一可独立反查；Brief 阶段如升级，需按事件分层重新切句生成行号锚点。
+
+## Brief（梳理）
+
+### Hooks 定位：生命周期时点拦截器
+
+- **核心定位**：Claude Code 生命周期特定时点的「用户定义处理器」
+- **5 类 handler 形态**：
+  - `command`：shell 命令（stdin 收 JSON）
+  - `http`：HTTP 端点（2xx + JSON body 表达决策）
+  - `mcp_tool`：调 MCP server
+  - `prompt`：用 LLM 做决策
+  - `agent`：让独立 subagent 判断
+- **与 cron / Makefile 区别**：hooks 是「CC 内部事件驱动」，触发时机严格耦合生命周期
+
+### 事件三层分类
+
+| 层级 | 事件 | 典型用途 |
+|---|---|---|
+| **会话级** | SessionStart / SessionEnd / Stop / Notification | 注入 context / 清理 / 通知 |
+| **轮次级** | UserPromptSubmit / SubagentStart / SubagentStop | 输入验证 / subagent 监管 |
+| **工具级** | PreToolUse / PostToolUse / PermissionRequest | 权限闸口 / 输出验证 / 自动重试 |
+
+- 完整事件清单与 JSON schema 见原文 `Hook events` 索引
+- **PreToolUse 是「最重」事件**：可做权限决策 + 改写输入（`updatedInput`）
+
+### 执行契约
+
+**command hook**：
+- `exit 0` = 成功
+- `exit 2` = 阻塞（stderr 进 agent context）
+- 其它非 0 = 非阻塞（错误进 stderr）
+
+**HTTP hook**：2xx + JSON body `{decision, reason}`
+
+**PreToolUse 特化字段**：
+- `hookSpecificOutput.permissionDecision`：`allow` / `deny` / `ask` / `defer`
+- `hookSpecificOutput.updatedInput`：改写 tool 输入
+
+### 作用域链（5 层优先级）
+
+```
+~/.claude/settings.json     → user 级（个人跨项目）
+.claude/settings.json       → project 级（commit 进 git）
+.claude/settings.local.json → project 本地（gitignore）
+插件 hooks/hooks.json        → plugin 级
+skill / agent frontmatter   → skill/agent 内联
+```
+
+- **企业管控**：`allowManagedHooksOnly` 强制只跑托管 hook，**完全屏蔽 user/project/plugin**——给企业「员工带自己 hook 进公司仓库」的 0 信任能力
+
+### 关键陷阱（8 条安全基线）
+
+| 陷阱 | 解决 |
+|---|---|
+| Hook 以**系统用户全权限**跑 | 输入校验 + 权限收敛 |
+| 字符串拼接未加引号 → 命令注入 | 永远 `"$VAR"` |
+| 未阻断 `..` 路径 → 跨目录写 | 校验路径前缀 |
+| 路径相对 → 不同 cwd 行为不同 | 用 `${CLAUDE_PROJECT_DIR}` 绝对路径 |
+| 直读 `.env` / `.git` / 密钥 | 显式排除 |
+| v2.1.139+ 无 controlling terminal → 通知失败 | 用 `terminalSequence` 字段（OSC 0/1/2/9/99/777 + BEL） |
+
+### 跨源关联
+
+- vs `superpowers`：hooks 扮演「工作流内强制点」——**互补**：skill 是「什么流程」、hooks 是「流程的强制点」
+- vs `anth-memory`：hooks 与 CLAUDE.md 同属「项目配置」层——**错位**：CLAUDE.md 给指南；hooks 给强制
+- vs `codex`：codex CLI 也有 hooks（OpenAI 跟进）——**横向对比**：Anthropic 设计更细（5 类 handler + matcher + 作用域链）
+
+### 教程章节候选
+
+1. **「Hooks 入门」章**：3 层事件 + 5 类 handler 概览
+2. **「PreToolUse 权限闸口」章**：`permissionDecision` 做「只读仓库临时提权」/「禁 rm -rf」/「secret 注入」
+3. **「PostToolUse 自动验证」章**：format-on-save / lint-after-edit / 自动 commit
+4. **「SessionStart 注入 context」章**：动态加载项目状态 / CI 结果 / team 知识
+5. **「企业级 Hook 治理」章**：`allowManagedHooksOnly` + hook 审计 + 灾难回滚
+6. **「Hook 安全」章**：8 条陷阱 + 防御模板

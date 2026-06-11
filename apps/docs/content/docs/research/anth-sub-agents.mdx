@@ -5,19 +5,21 @@ slug: anth-sub-agents
 url: https://docs.claude.com/en/docs/claude-code/sub-agents
 source_type: article
 source_subtype: docs
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 size_estimate: "53.8 KB / docs page"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: low
   cc_experience: used
 primary_author: Anthropic
-promote_to_brief: null
+char_count: 4491
+overflow: false
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -46,3 +48,67 @@ promote_to_deep_dive: null
 - `docs:L26, L138` — 不能嵌套 spawn 的硬约束。
 - `docs:L165` — persistent memory 字段。
 - `docs:L208` — foreground 子任务阻塞主对话。
+
+## Brief（梳理）
+
+### Sub-agents 核心收益
+
+- **隔离上下文**：子任务在独立 context window 跑，把搜索 / 日志 / 文件等高噪声输出拦在子任务里，只摘要回传主对话
+- **复用配置**：`~/.claude/agents/`（个人）或 `.claude/agents/`（项目）跨项目复用
+- **持久化记忆**：`memory: user / project / local` 跨会话沉淀知识（如「本项目用 uv 不用 pip」）
+- **cost routing**：子任务用小模型（Haiku）做廉价检索，主对话用大模型做关键决策
+
+### 配置面：Markdown + YAML frontmatter
+
+**必填**：`name`、`description`（**描述写明 `Use proactively` 可促进自动委派**）
+
+**可选字段**：
+- `tools` / `disallowedTools`：限定可用工具
+- `model`：sonnet / opus / haiku
+- `permissionMode`：plan / bypassPermissions / default
+- `mcpServers`：子任务可用的 MCP server
+- `hooks`：子任务内的 hook 配置
+- `skills`：子任务可调 skill
+- `memory` / `background` / `isolation: worktree` / `effort` / `color`
+
+### 关键不变量：不能嵌套 spawn
+
+- **硬约束**：「subagents cannot spawn other subagents」——防无限嵌套
+- **解决**：需要多步链路时由主会话**链式串联**多个子任务
+- **Agent tool 上的 `Agent(agent_type)` 语法只对主线程生效**——子任务内不能调 Agent 工具
+
+### 内置 3 + 1 类
+
+| 类型 | 用途 | 关键设计 |
+|---|---|---|
+| **Explore** | 代码搜索（只读）| Haiku 模型；**跳过 CLAUDE.md 与父 git status**（防干扰）|
+| **Plan** | plan 模式下只读研究 | 避免与主循环互相递归 |
+| **general-purpose** | 多步复杂任务 | 继承主会话模型与全部工具 |
+| **辅助** | statusline-setup / claude-code-guide | UI 辅助 + 文档检索 |
+
+- **屏蔽**：`permissions.deny` 屏蔽单个；`deny Agent` 全局禁；SDK 用 `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1`
+
+### 3 种委派模式
+
+| 模式 | 行为 | 适用 |
+|---|---|---|
+| **Foreground** | 阻塞主对话；透传权限请求 | 短任务；强依赖子任务结果 |
+| **Background** | 并发执行；auto-deny 需提示的调用 | 长任务；多任务并行 |
+| **Fork** | 继承主会话完整历史 / 系统提示 / 模型 / 权限；工具调用隔离；**共享 prompt cache 降本** | 「实验性 / 探索性」分支 |
+
+- **Fork 触发**：`CLAUDE_CODE_FORK_SUBAGENT=1` env var
+
+### 跨源关联
+
+- vs `anth-agent-sdk`：SDK 在 agent 进程内**可**用 `Agent(agent_type)`——但子任务内仍不能嵌套 spawn——**沿用不变量** + 错位（SDK 给「程序化编排」、sub-agents 给「声明式配置」）
+- vs `superpowers`：superpowers 的 14 skill 体系可作为 sub-agent 配置——**互补**：skill 是「工作流」、subagent 是「跑工作流的隔离进程」
+- vs `codex`：codex 用 Rust 实现 multi-agent orchestration——**横向对比**：Anthropic 声明式 YAML；OpenAI 命令式 Rust
+
+### 教程章节候选
+
+1. **「Sub-agents 入门」章**：3 内置类型 + 配置面概览
+2. **「自定义 Sub-agent 实战」章**：写 1 个 `code-reviewer` agent（含 tools / hooks / memory）
+3. **「Foreground vs Background vs Fork」章**：3 种委派模式决策表
+4. **「Explore 自动委派」章**：主会话怎么自动路由到 Explore
+5. **「Sub-agent 持久化记忆」章**：memory 字段 + 跨会话沉淀实战
+6. **「Sub-agent 与 hooks / MCP / skills 组合」章**：4 件套治理

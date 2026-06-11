@@ -5,19 +5,21 @@ slug: anth-memory
 url: https://docs.claude.com/en/docs/claude-code/memory
 source_type: article
 source_subtype: docs
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 size_estimate: "25.5 KB / docs page"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: mid
   cc_experience: used
 primary_author: Anthropic
-promote_to_brief: null
+char_count: 5932
+overflow: false
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -51,3 +53,88 @@ promote_to_deep_dive: null
 - `docs:L1:551, L1:19465` — auto memory 200 行/25KB 上限 + worktree 共享同一 memory dir。
 - `docs:L1:1736, L1:23808` — CLAUDE.md user message 注入 + `PreToolUse` hook 才能硬阻断。
 - `docs:L1:24563` — `/compact` 根目录 re-inject vs 子目录不 re-inject 差异。
+
+## Brief（梳理）
+
+### Memory 双层机制
+
+- **CLAUDE.md = 人写、整段注入**（指南；硬约束要用 hook）
+- **auto memory = Claude 写、按行截断注入**（学习笔记）
+- **两者都进 context**（user message，**不是** system prompt）
+- 都不强制——硬阻断动作用 `PreToolUse` hook
+
+### CLAUDE.md 4 级加载链（从广到窄）
+
+```
+Managed policy  >  User  >  Project  >  Local
+（IT 部署）         (~/.claude/)  (./CLAUDE.md)  (./CLAUDE.local.md)
+                                   提交 git      gitignore
+```
+
+- **多文件**：从根到 cwd **concatenate**（不是 override）
+- **Managed policy 不可个人 exclude**——IT 部署的最高级
+
+### 子目录懒加载 + HTML 注释剥离
+
+- **cwd 之上**：启动即注入
+- **cwd 之下**（子目录 CLAUDE.md）：**仅在 Claude 读该子目录文件时挂入**——monorepo 噪声控制关键
+- `<!-- maintainer notes -->` 这种 HTML 注释在注入前被剥掉（code 块内保留）
+
+### `.claude/rules/` 拆分大文件
+
+- `testing.md` / `api-design.md` 等小文件加 `paths: src/api/**/*.ts` glob 后，**仅在 Claude 处理匹配文件时挂入**
+- 不加 `paths` 则全量加载
+- **跨文件引用**：`@path/to/import`（递归深度上限 4 跳）
+- **AGENTS.md 桥接**：`@AGENTS.md` 或 symlink
+
+### auto memory 存哪
+
+- `~/.claude/projects/<project>/memory/`（机器本地，**不跨机同步**）
+- 所有 worktree 与子目录共享同一 memory dir
+- **MEMORY.md 是索引**（前 200 行 / 25KB 注入）
+- 详细 topic 文件不预载，按需 Read
+- 关闭：`autoMemoryEnabled: false` 或 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`
+- 改路径：`autoMemoryDirectory`
+
+### `/memory` vs `/compact` 行为差异
+
+| 命令 | 行为 |
+|---|---|
+| `/memory` | 列当前 session 加载的所有 CLAUDE.md / rules + 切 auto memory 开关 |
+| `/compact` 后 | **根目录 CLAUDE.md 重新读盘 re-inject**；**子目录 CLAUDE.md 不会自动 re-inject** |
+
+> 「compact 后某指令消失」基本是这两种情况之一
+
+### 与其他源的关系
+
+- **sub-agents**（`memory: user / project / local` 字段）：sub-agent 自己的 memory，与本节 CLAUDE.md / auto memory 是**两套并存**
+- **Agent Skills**：按需挂载（与 CLAUDE.md 加载时机不同）
+- **Settings**：`autoMemoryEnabled` / `claudeMdExcludes` 控制开关
+- **hooks**：本节是「指南」、hook 是「强制」——核心区分
+
+### 实战组合（推荐默认配置）
+
+```text
+managed policy        → 锁安全基线（IT 部署）
+项目 CLAUDE.md         → 工程规约（commit 进 git）
+.claude/CLAUDE.local.md → 个人 sandbox（gitignore）
+auto memory           → 沉淀踩坑笔记
+.claude/rules/        → path-scoped 拆 API / DB / testing 规则
+                       降 context 占用
+```
+
+### 跨源关联
+
+- vs `anth-hooks`：本 = 指南；hooks = 强制——**错位互补**（CLAUDE.md 给「应该怎么做」、hooks 给「必须怎么做」）
+- vs `anth-sub-agents`：sub-agent 有自己的 `memory: user/project/local` 字段——**并列存在**（不与本节共享）
+- vs `superpowers`：superpowers 的 14 skill 体系用 auto memory 路径做知识沉淀——**互补**：auto memory 跨会话 + skill 按需挂载
+
+### 教程章节候选
+
+1. **「跨会话持久化」章**：双层机制总览（CLAUDE.md + auto memory）
+2. **「CLAUDE.md 4 级加载实战」章**：从 managed 到 local 完整配置
+3. **「`.claude/rules/` 拆分大文件」章**：`paths:` glob + 跨文件 `@import`
+4. **「auto memory 实战」章**：`MEMORY.md` 索引 + topic 文件按需 Read
+5. **「指南 vs 强制」章**：CLAUDE.md 与 hook 的边界
+6. **「monorepo 场景」章**：子目录懒加载 + path-scoped rules 降 context 占用
+7. **「企业 / 团队部署」章**：managed policy + claudeMdExcludes + claude.ai 配置
