@@ -1,0 +1,200 @@
+---
+title: Superpowers
+description: 一套可组合的「Skills」框架 + 软件开发方法论，让 Claude Code 等 AI 编码代理自动按正确流程工作
+slug: superpowers
+url: https://github.com/obra/superpowers
+source_type: repo
+tiers_present: [card, brief, deep-dive]
+status: deep-dive_complete
+last_checked: 2026-06-11
+last_commit: 2026-05-29
+stars: 223001
+license: MIT
+size_estimate: 5.4MB / 14 skills / 3318 行 SKILL.md
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: newbie
+primary_author: obra (Jesse Vincent)
+promote_to_brief: true
+promote_to_deep_dive: true
+---
+
+# Superpowers
+
+## Card（速览）
+
+### 一句话定位
+
+> 一套可组合的「Skills」框架 + 软件开发方法论，让 Claude Code / Codex / Cursor 等 AI 编码代理自动按正确流程工作。
+
+### 关键 takeaway
+
+1. **Skill 本质是一个 `.md` 文件 + frontmatter**，描述「在什么情况下自动触发 → 要做什么」。`SKILL.md` 是核心交付物。
+2. **7 步核心工作流**：`brainstorming` → `using-git-worktrees` → `writing-plans` → `subagent-driven-development` (或 `executing-plans`) → `test-driven-development` → `requesting-code-review` → `finishing-a-development-branch`。
+3. **强制而非建议**：agent 启动即检查相关 skill，user 不必手动调用——这是它和「命令式插件」最本质的区别。
+4. **TDD 是底线**：`test-driven-development` 强制 RED-GREEN-REFACTOR 循环 + 反模式库（`testing-anti-patterns.md`）；写代码前先写测试，测试前先看它红。
+5. **跨 7 个 coding agent**：Claude Code、Codex CLI / App、Cursor、OpenCode、Gemini CLI、GitHub Copilot CLI、Factory Droid——同一份 skill 7 处可用。
+
+### 与 Claude Code 教程的关联
+
+- 团队已通过 `/plugin install superpowers@claude-plugins-official` 装上 superpowers，本次「为 Claude Code 写教程」的工作流本身就是它（brainstorming → writing-plans → subagent-driven-development）的实践产物，**最有说服力的对照案例**。
+- 教程应展示：**「我们自己写一个 Skill 是什么样的」**——SKILL.md 的 frontmatter 结构、触发条件描述、references 目录组织、scripts/ 配套。可以拿本仓库的 `openspec/AGENTS.md` 和本 Skill（`research-source`）作为本地反例。
+- 进阶章节可对比「superpowers 的 skill」 vs「Claude Code 原生的 `/skill` 命令 + 自定义 skill」——两者的能力模型差异（自动触发 vs 显式调用）是教程必讲的关键。
+
+---
+
+## Brief（梳理）
+
+### 14 个 Skill 全景
+
+**Testing（1）**
+- `test-driven-development`（371 行）：RED-GREEN-REFACTOR 循环 + 反模式库（`testing-anti-patterns.md`）
+
+**Debugging（2）**
+- `systematic-debugging`（296 行）：4 阶段根因定位 + `root-cause-tracing` / `defense-in-depth` / `condition-based-waiting` 配套
+- `verification-before-completion`（139 行）：修完必须验证，不可凭感觉宣布完成
+
+**Collaboration（9）**
+- `brainstorming`（164 行）：设计前的苏格拉底式澄清 + HARD-GATE 防"简单就跳过"反模式
+- `writing-plans`（152 行）：把设计拆成 2-5 分钟的小任务，每个有文件路径、完整代码、验证步骤
+- `executing-plans`（70 行）：批量执行带 human checkpoints
+- `dispatching-parallel-agents`（182 行）：并发 subagent 调度
+- `subagent-driven-development`（279 行）：每 task 派新 subagent + 两阶段 review（spec 合规 → 代码质量）
+- `requesting-code-review`（103 行）：review 前清单 + 按严重度报告
+- `receiving-code-review`（213 行）：怎么接 review 反馈
+- `using-git-worktrees`（215 行）：在新分支上建独立工作区，验证 baseline 干净
+- `finishing-a-development-branch`（251 行）：完成时给选项（merge / PR / keep / discard），清 worktree
+
+**Meta（2）**
+- `using-superpowers`（117 行）：bootstrap——"agent 启动即检查相关 skill"的具体实现
+- `writing-skills`（655 行，最大 SKILL.md）：「如何写一个 skill」的元流程，含测试方法论
+
+### 7 步工作流在不同 harness 上的触发差异
+
+| 步骤 | Claude Code | Codex | Cursor | OpenCode | Gemini |
+|---|---|---|---|---|---|
+| brainstorming | hook 启动自动 | plugin 启动自动 | agent chat 自动 | 同 Claude Code | extensions update 自动 |
+| using-git-worktrees | 自动（hook） | 自动 | 部分自动 | 自动 | 手动 |
+| writing-plans | 自动 | 自动 | 自动 | 自动 | 手动 |
+| subagent-driven-development | Task tool | subagent API | Composer | Task tool | 手动 |
+| test-driven-development | Bash + 测试运行 | 集成 | 集成 | Bash | 集成 |
+| code review | Task tool | subagent | 集成 | Task tool | 手动 |
+| finishing-a-development-branch | Bash（git 命令） | Bash | Bash | Bash | Bash |
+
+### 与 Claude Code 原生 `/skill` 的能力差异
+
+| 维度 | superpowers skill | Claude Code 原生 `/skill` |
+|---|---|---|
+| 触发方式 | 描述匹配，**自动** | `/skill-name` **手动**调用 |
+| 文件结构 | 文件夹（可含 scripts/assets/hooks） | 单 .md 文件 |
+| Hooks | 全套（on-demand PreToolUse 等） | 基础 hooks |
+| 跨 harness | 7 个 coding agent 通用 | 仅 Claude Code |
+| 写作自由 | 自由（自己的 frontmatter 规范） | 官方规范 |
+| 适用场景 | 团队方法论 / 企业级 | 个人快速自定义 |
+
+### 跨源关联
+
+- 与同站 `claude-skills-blog` 互补：superpowers 讲「skill 体系的工作流」（何时触发哪个 skill），claude-skills-blog 讲「单个 skill 的设计」（怎么把它写好）。
+- 与 `Everything Claude Code`（待研究）有重叠：都提供 skill 集，但 ECC 是「场景化 examples 集合」，superpowers 是「强制方法论框架」。
+
+---
+
+## Deep-Dive（深读）
+
+### SKILL.md 的解剖（以 `brainstorming` 为样板）
+
+```yaml
+---
+name: brainstorming
+description: "You MUST use this before any creative work..." 
+---
+```
+
+**Frontmatter 三个核心字段**：
+
+| 字段 | 必填 | 职责 | 写法要点 |
+|---|---|---|---|
+| `name` | 是 | kebab-case 标识 | 与目录名一致 |
+| `description` | 是 | **触发器不是摘要** | 写「在什么请求下激活我」+ 触发关键词 + 强制语气（"MUST" / "use this before"） |
+| 其它（`allowed-tools` 等） | 否 | 由 harness 决定 | 参考各 harness 文档 |
+
+### Body 必备的 5 个段
+
+| 段 | 职责 | 反例 |
+|---|---|---|
+| **Hard Gate** | 明确禁止跳过该 skill 的边界条件 | 「简单项目可以跳过」 |
+| **Anti-Patterns** | 列出常见错误 + 后果 | 「这个项目太简单不需要设计」 |
+| **Checklist** | 步骤清单（顺序、强约束） | 没有顺序感的散文 |
+| **Process Flow** | 用图（dot/mermaid）表示分支 | 纯文字描述 |
+| **Spec Section** | 产出物标准（写到哪、含什么） | 模糊「写个文档」 |
+
+**实际例子**（brainstorming 顶部）：
+- HARD-GATE：禁止 implementation 行动直到 design 被 user 批准
+- Anti-Pattern："This Is Too Simple To Need A Design"——简单项目也必须过 design
+- 9 步 Checklist：Explore context → Visual companion offer → Clarifying questions → 2-3 approaches → Present design → Write spec → Self-review → User review → Writing-plans
+
+### 文件夹组织（progressive disclosure）
+
+```
+skills/my-skill/
+├── SKILL.md              # 入口 frontmatter + 主体
+├── references/           # 详细文档（按需读，不一次全加载）
+│   ├── api.md
+│   ├── gotchas.md
+│   └── examples.md
+├── scripts/              # 可执行代码（Claude 可调用）
+│   ├── helper.py
+│   └── verify.sh
+└── assets/               # 模板、配置等
+    └── template.md
+```
+
+**为什么用文件夹**：
+- 大 skill 一次全塞 SKILL.md 会撑爆 context
+- 引用文件 + 给 Claude 描述「何时读什么」= 渐进式信息披露
+- 配合 scripts：给 Claude 工具而不是给 Claude 文档——「Store scripts and generate code」（claude-skills-blog 第 8 条 tip）
+
+### writing-skills 元流程（5 步）
+
+`writing-skills/SKILL.md`（655 行，最大 SKILL.md）规定：
+
+1. **写第一版**——最小可用 + 1 个 gotcha
+2. **跑对抗性测试**——多次会话，red team 找漏洞
+3. **改 skill**——按 gotchas 增补
+4. **A/B 评估**——前/后对比，给出 eval evidence（这是 CLAUDE.md 强制要求，没有 eval 的 skill 修改会被拒绝）
+5. **贡献**——如果值得共享，参考 [Anthropic 官方 9 大分类](https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills)（同站 `claude-skills-blog`）
+
+### 教程可直接复用的 4 件事
+
+1. **「写一个 Skill」checklist** = writing-skills 第 1-5 步简化版（300 字内）
+2. **SKILL.md 5 段模板** = 直接给读者一个填空骨架
+3. **Description 写作指南** = "You MUST use this before..." 模板 + 触发关键词清单
+4. **9 大分类决策树**（参考 claude-skills-blog）：读者想「我要写一个 skill」→ 先问「它属于哪一类？」
+
+### 本仓库反例（待改进）
+
+我们自己的 `research-source` Skill 写于 2026-06-10，作为 audit 对象：
+- ❌ description 没写「You MUST use this when...」——只是描述用途
+- ❌ 没有 Hard Gate 段
+- ❌ 没有 Anti-Patterns 段
+- ❌ 没有 Process Flow 图
+- ⚠️ Checklist 有但顺序不强
+- ✓ 7 步行为描述清楚
+- ⚠️ prompts/ 是分文件（不直接符合 writing-skills 推荐的分层）
+
+→ Deep-Dive 下一步：用本卡的「教程可直接复用的 4 件事」改一版 `research-source/SKILL.md`，再 A/B 评估触发率。
+
+---
+
+## 参考锚点
+
+- `README.md:L1-30` — 项目定位、Quickstart、各 harness 安装入口
+- `README.md:L156-170` — 7 步核心工作流（The Basic Workflow）
+- `README.md:L176-197` — Skills Library 完整清单（14 个 skill 分 Testing / Debugging / Collaboration / Meta）
+- `README.md:L200-204` — 4 条核心哲学（TDD / Systematic / 复杂度优先 / Evidence over claims）
+- `CLAUDE.md:L1-111` — 贡献者规则：94% PR 拒绝率、禁止 agent 批量 PR、skill 修改要 eval——说明「Skill 是行为塑造的代码，不是散文」
+- `skills/brainstorming/SKILL.md` — 典型 SKILL.md 范本（164 行 + 配套 references、scripts）
+- `skills/writing-skills/SKILL.md` — 「如何写一个 skill」的元文档（655 行，最大 SKILL.md）
+- `skills/using-superpowers/SKILL.md` — bootstrap 说明：「agent 启动即检查相关 skill」的具体实现入口
+

@@ -1,0 +1,47 @@
+{
+  "version": "0.1.0",
+  "schema_version": "2026-06-10",
+  "updated_at": "2026-06-10",
+  "audience_axes": {
+    "cs_background": ["yes", "partial", "no"],
+    "devops": ["low", "mid", "high"],
+    "cc_experience": ["newbie", "used", "advanced"]
+  },
+  "tiers": ["card", "brief", "deep-dive"],
+  "gates": {
+    "current": 1,
+    "description": "Gate 1 = Card 全源；Gate 2 = Brief 推广子集；Gate 3 = Deep-Dive 高价值"
+  },
+  "sources": [
+    {
+      "slug": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "source_type": "repo",
+      "tier_current": "card",
+      "status": "card_complete",
+      "promote_to_brief": true,
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "newbie"
+      },
+      "last_checked": "2026-06-10"
+    },
+    {
+      "slug": "claude-skills-blog",
+      "url": "https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills",
+      "source_type": "article",
+      "tier_current": "card",
+      "status": "card_complete",
+      "promote_to_brief": null,
+      "promote_to_deep_dive": null,
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
+      "last_checked": "2026-06-10"
+    }
+  ]
+}

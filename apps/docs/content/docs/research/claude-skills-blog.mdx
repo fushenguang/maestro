@@ -1,0 +1,59 @@
+---
+title: 如何写好一个 Skill（Anthropic 官方）
+description: Anthropic 官方关于「如何写好一个 Claude Code skill」的实战总结，9 大分类 + 8 条写作建议
+slug: claude-skills-blog
+url: https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills
+source_type: article
+tier: card
+status: card_complete
+last_checked: 2026-06-10
+published_date: 2026-06-03
+reading_time: 5 min
+primary_author: Anthropic Claude Code Team
+audience_tags:
+  cs_background: yes
+  devops: mid
+  cc_experience: used
+promote_to_brief: null
+promote_to_deep_dive: null
+---
+
+# Lessons from building Claude Code — How we use skills
+
+## 一句话定位
+
+> Anthropic 官方对「如何在 Claude Code 中写好一个 skill」的实战总结：9 大分类 + 8 条写作建议 + 衡量与分发模式。
+
+## 关键 takeaway
+
+1. **Skill = 文件夹，不是单个 .md**——可包含 scripts、assets、data、dynamic hooks。最常见的误解是「skill 就是一个 markdown 文件」。
+2. **9 大分类框架**：Library/API reference、Product verification、Data fetching、Business process、Code scaffolding、Code quality & review、CI/CD、Runbooks、Infra operations。「最佳 skill 干净归一类；横跨多类的 skill 会让 agent 困惑。」
+3. **Verification skills 影响最大**——原文：「花一周把 verification skills 写好是值得的」。例：signup-flow-driver、checkout-verifier、tmux-cli-driver。
+4. **8 条写作建议**（每条都有反例与正例）：(1) Don't state the obvious；(2) Build a gotchas section（最高信号）；(3) Use the file system & progressive disclosure；(4) Avoid railroading Claude；(5) Think through the setup（`config.json` + `AskUserQuestion`）；(6) Write descriptions for the model, not for humans；(7) Help Claude remember（`${CLAUDE_PLUGIN_DATA}` 持久化日志）；(8) Store scripts and generate code；(9) Use on-demand hooks（`/careful` 拦 `rm -rf`，`/freeze` 限目录）。
+5. **Description 字段是触发器，不是摘要**——Claude 在 session 启动时扫所有 skill 的 description 决定「这个请求有没有 skill 可用」。例：在 description 里加 `"babysit"` 触发关键词。
+6. **Gotchas section = 最高信号**——按真实失败点积累。「The subscriptions table is append-only. The row you want is the one with the highest version, not the most recent created_at.」
+7. **两种分发方式**：(a) 检入 repo（`./.claude/skills`，小团队）；(b) Plugin marketplace（规模化）。marketplace 还能做安装时的 setup flow。
+8. **衡量方式**：PreToolUse hook 记录 skill 使用 → 找出热门/未触发的 skill（官方放了 example code）。
+
+## 与 Claude Code 教程的关联
+
+- **本仓库自己的 `research-source` Skill 就是这条文章的实战标的**——读者学完这 Card，可以回头 audit 我们的 Skill：description 是不是「为模型触发」写的？gotchas section 有没有？folder 里面有没有 scripts 配套？
+- 教程应有一章专讲「如何写自己的 Skill」，以本文为权威参考，把 9 大分类 + 8 条建议做成 checklist 形式。
+- 与 superpowers 的差异：superpowers 关注「skill 体系的工作流」（什么时候触发哪个 skill），本文关注「单个 skill 的设计」（怎么把它写好）。两者互补。
+
+## 下一步建议
+
+- [ ] **升级到 Brief**：把 9 大分类与 8 条建议拆成可复用的 checklist（含正反例），便于教程引用。
+- [ ] **升级到 Deep-Dive**（高价值）：以本仓库的 `research-source` Skill 为「被审计对象」，用本文 8 条逐条打分 + 改进；同时复刻 `/careful` / `/freeze` 这种 on-demand hook 的具体配置。
+
+## 参考锚点
+
+- 原文 #what-are-skills — 「Skills are folders, not just markdown files」核心定义
+- 原文 #types-of-skills — 9 大分类的完整定义 + 例子（billing-lib、signup-flow-driver、funnel-query、standup-post、adversarial-review、babysit-pr、oncall-runner、dependency-management 等）
+- 原文 #tips-for-making-skills — 8 条建议的完整正文
+- 原文 #build-a-gotchas-section — gotchas section 的 3 个反例（订阅表 / 字段名差异 / Staging 假阳性）
+- 原文 #write-descriptions-for-the-model — 触发器 description 的解释
+- 原文 #help-claude-remember — `${CLAUDE_PLUGIN_DATA}` 环境变量与持久化
+- 原文 #use-on-demand-hooks — `/careful`（PreToolUse matcher on Bash）与 `/freeze`（Edit/Write 限目录）配置思路
+- 原文 #distributing-skills — 两种分发路径的取舍
+- 原文 #measuring-skills — PreToolUse hook 衡量用法的 example code 链接

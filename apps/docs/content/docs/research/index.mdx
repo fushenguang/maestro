@@ -1,0 +1,41 @@
+---
+title: Research
+description: Claude Code 教程的研究素材库 — 每一个资料源被逐级分析为 Card / Brief / Deep-Dive
+---
+
+## 简介
+
+本目录是「Claude Code 教程」的**研究素材库**。每一个资料源（GitHub repo / 文章 / 教程 / 课程）都按以下三层逐级分析：
+
+| Tier | 定位 | 字数 |
+|---|---|---|
+| **Card** | 速览：一句话定位 + 3-5 条 takeaway + 与教程的关联 | ≤ 800 |
+| **Brief** | 梳理：章节结构 + 关键示例 + 跨源关联 | ≤ 2500 |
+| **Deep-Dive** | 深读：完整分析 + 教程章节候选 | ≤ 5000 |
+
+当前阶段：**Gate 1（Card）**——先把所有候选源都做成 Card，再由人类 review 决定哪些升级到 Brief / Deep-Dive。
+
+## 受众标签（三轴）
+
+每个源按以下三轴打标签，读者可按自己的画像挑选阅读：
+
+- **CS 背景**：`yes`（专业开发者）/ `partial`（会写但不深）/ `no`（不写代码）
+- **DevOps 熟练度**：`low`（少用命令行）/ `mid`（日常 git + shell）/ `high`（CI/CD、容器、生产环境）
+- **Claude Code 经验**：`newbie`（首次接触）/ `used`（用过几次）/ `advanced`（写自定义 Skill / Plugin）
+
+## 当前资料源（按源排）
+
+| 源 | 类型 | 当前 Tier | 受众标签 | 状态 | 最后检查 |
+|---|---|---|---|---|---|
+| [superpowers](./superpowers) | repo | Card | CS=yes / DevOps=mid / CC=newbie | card_complete | 2026-06-10 |
+| [Lessons from building Claude Code — How we use skills](./claude-skills-blog) | article | Card | CS=yes / DevOps=mid / CC=used | card_complete | 2026-06-10 |
+
+## 下一闸（Gate 2 / Brief）候选项
+
+（Gate 1 完成后由人类 review 在 `registry.json` 设置 `promote_to_brief: true` 来决定）
+
+## 元数据
+
+- 完整注册表：`registry.json`
+- 单源 fetch 详情：每个源目录下的 `sources.json`
+- Skill 工具：`.claude/skills/research-source/SKILL.md`
