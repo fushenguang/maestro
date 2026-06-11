@@ -1,7 +1,8 @@
 {
-  "version": "0.1.0",
-  "schema_version": "2026-06-10",
-  "updated_at": "2026-06-10",
+  "version": "0.1.1",
+  "schema_version": "2026-06-11",
+  "updated_at": "2026-06-11",
+  "output_dir": "apps/docs/content/docs/research/",
   "audience_axes": {
     "cs_background": ["yes", "partial", "no"],
     "devops": ["low", "mid", "high"],
@@ -17,6 +18,7 @@
       "slug": "superpowers",
       "url": "https://github.com/obra/superpowers",
       "source_type": "repo",
+      "source_subtype": "methodology",
       "tier_current": "card",
       "status": "card_complete",
       "promote_to_brief": true,
@@ -32,6 +34,7 @@
       "slug": "claude-skills-blog",
       "url": "https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills",
       "source_type": "article",
+      "source_subtype": "blog",
       "tier_current": "card",
       "status": "card_complete",
       "promote_to_brief": null,
@@ -42,6 +45,40 @@
         "cc_experience": "used"
       },
       "last_checked": "2026-06-10"
+    },
+    {
+      "slug": "ai-coding-guide-zh",
+      "url": "https://github.com/KimYx0207/AI-Coding-Guide-Zh",
+      "source_type": "repo",
+      "source_subtype": "tutorial",
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
+      "promote_to_brief": true,
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "mid",
+        "cc_experience": "newbie"
+      },
+      "last_checked": "2026-06-11",
+      "notes": "中文社区覆盖最广的 Claude Code 教程；三工具横向；v4.3 发布于 2026-06-10；作为正反两面评估锚点"
+    },
+    {
+      "slug": "alirezarezvani-claude-skills",
+      "url": "https://github.com/alirezarezvani/claude-skills",
+      "source_type": "repo",
+      "source_subtype": "skill_collection",
+      "tier_current": "card",
+      "status": "card_complete",
+      "promote_to_brief": null,
+      "promote_to_deep_dive": null,
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "high",
+        "cc_experience": "used"
+      },
+      "last_checked": "2026-06-11",
+      "notes": "343+ skills × 13 平台；stdlib-only Python；企业级工程治理；10 维框架验证样本，证明框架能 discriminate"
     }
   ]
 }

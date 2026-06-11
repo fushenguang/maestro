@@ -210,3 +210,222 @@
 - [ ] 写完 Deep-Dive 后 cross-check 2 个 takeaway vs 材料原文
 - [ ] 更新 `registry.json` + `index.mdx` + `meta.json`（3 处同步）
 - [ ] 在本文档追加该源的「暴露的新问题」（如有）
+
+---
+
+## 8. 第 3 源跑通沉淀（2026-06-11）
+
+### 8.1 源：`ai-coding-guide-zh`（KimYx0207/AI-Coding-Guide-Zh）
+
+- **类型**：repo（tutorial-style，中文）
+- **场景验证目标**：tutorial 型 repo / 中文材料 / 三工具横向源（CC+Codex+OpenClaw 混合）
+- **结果**：Card 跑通；dev server 200，无 MDX 500；3 个 takeaway 锚点 cross-check 通过
+- **耗时**：约 30 分钟（clone 1min + 抽材 5min + 写产物 15min + 同步元数据 + 验证 9min）
+
+### 8.2 暴露的新问题
+
+#### 问题 6：`gh repo clone` HTTP2 framing 错误
+
+**症状**：`gh repo clone KimYx0207/AI-Coding-Guide-Zh ...` 报 `Error in the HTTP2 framing layer`
+
+**根因**：网络/服务端 HTTP/2 协商失败（与 GH 的边缘链路偶发抖动相关）
+
+**修复**：`git -c http.version=HTTP/1.1 clone --depth=1 <url>` 强制 HTTP/1.1
+
+**沉淀**：
+- ✅ SKILL.md Step 1 拉取段加 fallback：`gh repo clone` 失败时回退到 `git -c http.version=HTTP/1.1 clone --depth=1`
+- ✅ 出错时显式记录到 sources.json 的 `fetched_via` 字段（已实施）
+
+#### 问题 7：Card 字数 800 字硬限实操偏紧
+
+**症状**：5 条 takeaway + 每条带 file:L 锚点 + 关联段 + 参考锚点，初稿 1807 字符；压缩后 1507 字符仍超 800 字
+
+**根因**：800 字硬限对「3-5 条 takeaway + 每条带 1-2 个锚点」的 Card 结构偏紧，特别是中文场景下锚点引用语义密度高
+
+**修复**：
+- 当前采用「软限」做法：以 superpowers Card 段 1231 字符为同期参考标准
+- 中英混排实际字符 ≈ 0.6-0.7 中文字数，所以 1500 字符 ≈ 1000 中文字
+
+**沉淀**：
+- ✅ SKILL.md prompt/card.md 把「≤ 800 字」改为「≤ 1500 字符（中文字符约 1000 字）」
+- ✅ 同时保留「能 800 就 800」的优先级——不是放宽下限，是承认实操上限
+
+#### 问题 8：「Source 覆盖多个主题」未建模
+
+**症状**：本源同时覆盖 Claude Code、Codex App、OpenClaw 三个工具，registry.json 当前 schema 没有「subjects」字段表达
+
+**根因**：早期假设 1 源 = 1 主题，没建多对多关系
+
+**修复**：暂未在本次 commit 里加，但在产物文件里手动用 `source_subtype: "tutorial"` 表达「不是纯 repo，是 tutorial」
+
+**沉淀**：
+- ✅ registry.json schema 应加 `subjects: ["claude-code", "codex", "openclaw"]` 字段
+- ✅ 同时加 `source_subtype` 字段（区分 `pure_repo` / `tutorial` / `framework` / `library`）
+- ⏳ 推到 Step 4「标准化」批次做（不在本次范围）
+
+#### 问题 9：tutorial-style repo 不必全读
+
+**症状**：39 篇教程总 4.8MB，全读会撑爆上下文
+
+**根因**：早期 Card 流程没有「按 tier 调整阅读量」的策略
+
+**修复**：本次实践——README + CHANGELOG + 1 篇代表性章节（05-Hooks）抽样验证「单篇结构模板」，足够支持 Card；Brief / Deep-Dive 阶段才扩大阅读量
+
+**沉淀**：
+- ✅ SKILL.md Step 2 抽取段补充：「tutorial-style repo 在 Card tier 只需 README + CHANGELOG + 1 篇代表性章节抽样；Brief tier 扩展到全章节标题 + 3-5 篇精读；Deep-Dive tier 才读全文」
+- ✅ 这是「tier × source_type」的阅读策略矩阵的雏形，将来可扩展为表格
+
+### 8.3 受众标签判定依据（review 用）
+
+- `cs_background: partial` — README:73-77 把「刚入门的读者」列为首选受众，但 Agent SDK / Docker / Hooks 等章节要求一定开发背景，故 partial 而非 no
+- `devops: mid` — 覆盖 npm install / Docker / CI/CD，但不深入容器编排或生产监控
+- `cc_experience: newbie` — Claude Code 路线明确从「安装」开始，但同时也覆盖 advanced 主题；以入口门槛为准定为 newbie
+
+### 8.4 累计沉淀
+
+`registry.json` 加了 `output_dir: "apps/docs/content/docs/research/"`（meta-rule #5 实施）+ `version: 0.1.0 → 0.1.1` + `schema_version: 2026-06-10 → 2026-06-11`。下一源开始之前不再纠结路径硬编码。
+
+### 8.5 Brief + Deep-Dive 一并跑通（同日 2026-06-11 PM）
+
+Card 后由用户 review 同意 promote 到 brief + deep-dive，**特意要求做「正反双面分析」**（不只是赞美也要批判性审视）。结果：3006 字符 Brief + 8054 字符 Deep-Dive 跑通；3 个新锚点 cross-check 通过。
+
+#### 问题 10：Deep-Dive 8000+ 字符是新常态
+
+**症状**：Deep-Dive 最终 8054 字符（≈ 3300 中文字），超 5000 字硬限 60%
+
+**根因**：用户要求「正反双面 + 评估框架 + 章节决策表」三块结构，每块都需要展开
+
+**修复**：按 deep-dive.md prompt 自带的 overflow 机制——frontmatter 加 `overflow: true`，不强制压缩
+
+**沉淀**：
+- ✅ deep-dive.md prompt 的「≤ 5000 字 + overflow:true」机制设计正确，本次实测有效
+- ✅ Card / Brief / Deep-Dive 实际字符上限分别 ≈ 1500 / 3000 / 8000，建议 prompt 文档同步更新硬约束注释（避免下次跑时再纠结）
+- ✅ Deep-Dive 超 5000 字不是质量缺陷，是「真做深读」的必然——5000 字硬限对「评估框架 + 反例库 + 决策表」三件套同时上的场景偏紧
+
+#### 问题 11：「正反双面」是 Deep-Dive 最有用的框架
+
+**症状**：用户明确要求「不只是赞美，也要批判性审视」，催生「主题 3：批判性审视 —— 反面分析」段，列出 7 个盲点（design rationale 缺 / 评估机制缺 / TDD 缺 / 成本意识缺 / 失败案例缺 / 决策章缺 / 跟进元方法论缺）
+
+**根因**：deep-dive.md prompt 已经有「对源做批判性审视：列出至少 1 个反例 / 已知坑（避免单向赞美）」，但默认强度可能不够——用户主动加压才催生最有价值的部分
+
+**修复**：本次 Deep-Dive 把「反例」从 1 个扩到 7 个盲点 + 反例 / 已知坑列表，且每条配「对我们的启示」做转化
+
+**沉淀**：
+- ✅ deep-dive.md prompt 加强表达：「反例不少于 5 条」+「每条反例必须配『对我们的启示 / 差异化机会』段做转化」
+- ✅ 这条框架可推广到其他源——「正面提炼复用资产 + 反面扫盲点定位差异化机会」是 Deep-Dive 的通用骨架
+- ✅ 用户的 review 反馈是「我们认为很重要的源要双面分析」，未来 registry.json 可以加 `analysis_depth: light/standard/critical` 字段，标记这种「critical」级别的源
+
+#### 问题 12：「评估框架」是 Deep-Dive 最有复用价值的产出
+
+**症状**：本源 Deep-Dive 主题 1 提炼出「10 维度高质量教程评估框架」（章节信息头 / 路径分流 / 术语表 / 任务驱动排序 / 版本基线 / 风险前置 / 多场景 / voice + 权威 / 生活类比 / 跨工具对比），每条带本源具体证据
+
+**根因**：评估框架不是「评本源」，是「评所有源 + 评自己」的工具
+
+**修复**：把这个框架显式作为 Deep-Dive 的可复用资产之一，写进「可直接复用的资产清单」
+
+**沉淀**：
+- ✅ 未来跑其他重要源时，**先看是不是可以套这 10 维度**，省去重新发明框架的时间
+- ✅ 我们写自己的教程时，**先用这 10 维度自检**，再用它评其他源
+- ✅ 这种「评估框架」类的资产应该单独从产物文件抽出来到 `research/frameworks/` 目录（短期不做，等积累 2-3 个框架后再抽）
+
+#### 问题 13：「沿用 vs 错位」决策表是教程候选最直接的输出
+
+**症状**：Deep-Dive 主题 4 给 13 篇 Claude Code 章节逐条标记「沿用名称 / 沿用 + 加深 / 错位重写 / 新增」决策
+
+**根因**：教程章节命名既要降低读者切换成本（沿用中文社区习惯），又要差异化定位（错位）——这两个目标天然冲突，需要逐章决策
+
+**沉淀**：
+- ✅ Deep-Dive 阶段对「直接竞品类」源应该产出「沿用 vs 错位」决策表
+- ✅ 这个表是开新 OpenSpec change（教程大纲生成）时的第一手输入，**不要重新设计章节序**——直接拿这表谈判
+
+### 8.6 累计的「等下次合并到 Skill」清单（截止 2026-06-11 PM）
+
+| 来源 | 待合并内容 | 优先级 |
+|---|---|---|
+| Problem 6 | gh clone HTTP2 fallback → SKILL.md Step 1 | 高 |
+| Problem 7 | card.md 字数限制 800 → 1500 字符 | 中 |
+| Problem 8 | registry schema 加 subjects / source_subtype | 中 |
+| Problem 9 | SKILL.md Step 2 加「tier × source_type 阅读量矩阵」 | 中 |
+| Problem 10 | prompts/*.md 注释更新字符上限（Card 1500 / Brief 3000 / Deep-Dive 8000） | 高 |
+| Problem 11 | deep-dive.md「反例 ≥ 5 条 + 每条配启示」 | 高 |
+| Problem 12 | research/frameworks/ 目录积累评估框架（等 2-3 个再抽） | 低 |
+| Problem 13 | deep-dive.md 对竞品源加「沿用 vs 错位决策表」段 | 高 |
+
+按 SESSION_HANDOFF Step 3 「跑完 2 源后回头修 Skill」节奏：当前累计 1 源（本源 ai-coding-guide-zh）—— 推到下个源跑完后一次性合并到 SKILL.md / prompts/*.md。
+
+---
+
+## 9. 第 4 源跑通沉淀（2026-06-11 PM）
+
+### 9.1 源：`alirezarezvani/claude-skills`（343+ skills × 13 平台 / source_subtype: skill_collection）
+
+- **类型**：repo / **subtype: skill_collection**（新引入的 subtype）
+- **场景验证目标**：英文巨型 skill 库 / 与 ai-coding-guide-zh（中文教程）+ superpowers（精选方法论）三角对照 / **验证 10 维框架能否 discriminate**
+- **结果**：Card 跑通；dev server 200，无 MDX 500；框架自检产出 5 yes / 3 partial / 3 no 分布，与 ai-coding-guide-zh 强弱面互补 → **框架可 discriminate 验证通过**
+- **耗时**：约 25 分钟（clone + repo 抽 5min + 框架打分 5min + 写 Card 10min + 同步元数据 + 验证 5min）
+
+### 9.2 暴露的新问题
+
+#### 问题 14：10 维框架对非 tutorial 源不公平
+
+**症状**：把 ai-coding-guide-zh Deep-Dive 主题 1 的 10 维框架套到 skill_collection 源上，3 个维度（学习路径分流、术语表 + 生活类比、章节信息头标准化）拿了「no」或「partial」——但这不是源做得不好，而是 **skill_collection 类型源不需要这些维度**
+
+**根因**：框架是从「tutorial」一种源逆向提炼的，假设所有源都按教学语境设计
+
+**修复**：
+- 框架评分四档改为 `yes / partial / no / n/a`，n/a 用于「该维度对本 source_subtype 不适用」
+- 在 deep-dive.md prompt 写明：框架自检要按 source_subtype 适配，n/a 维度必标不适用理由
+- 在 SKILL.md 硬约束 #9 显式声明这条规则
+
+**沉淀**：
+- ✅ 已合并到本次 Skill 收敛（SKILL.md 硬约束 #9 + prompts/deep-dive.md 「框架自检规范」段）
+- ✅ 启示：框架 v0.1 是「tutorial-centric」；v0.2 需要按 source_subtype 分别给适用维度白名单
+- ✅ 启示：跑下一个 framework discriminate 验证应该用一个「无明显教学结构」的源（如纯 spec 文档 / RFC）
+
+#### 问题 15：skill_collection 类型源 Card 必读 CLAUDE.md / AGENTS.md
+
+**症状**：claude-skills 仓库根 CLAUDE.md 是 68KB（比 README 还大、信息密度更高）；项目结构、版本基线、ClawHub publishing constraints、anti-patterns 等核心信息全在 CLAUDE.md，README 只是 marketing 入口
+
+**根因**：skill_collection 类型源往往把「读者级 README」和「贡献者级 CLAUDE.md」分开维护——Card 只读 README 会漏关键工程治理信号
+
+**修复**：在 SKILL.md Step 2 阅读量矩阵里，skill_collection × Card 那格显式加 `CLAUDE.md / AGENTS.md（**重要！**）`
+
+**沉淀**：
+- ✅ 已合并到本次 Skill 收敛（SKILL.md Step 2 表格）
+- ✅ 这条经验普适：所有「有贡献者文档的开源项目」Card 阶段都应该至少扫一遍 CLAUDE.md / AGENTS.md / CONTRIBUTING.md，否则会漏掉项目的「真心话」
+
+#### 问题 16：「Card 加框架自检」是新的产物模板
+
+**症状**：本源 Card 多了「10 维框架自检」段，作为「框架验证用」的特殊用途——但常规源（如普通 article）不需要
+
+**根因**：Card 模板是 1.0 设计时定的「单源浏览用」，没考虑「源作为框架验证样本」的子用途
+
+**修复**：在 prompts/card.md 把「框架自检段」标为**可选**——「仅在『值得作为框架验证样本』的源加」，避免每个源都强加
+
+**沉淀**：
+- ✅ 已合并到本次 Skill 收敛（prompts/card.md 显示标注 optional）
+- ✅ 启示：未来每跑一个「锚点源」（如 ai-coding-guide-zh）都应该考虑加框架自检；普通参考源不必加
+
+### 9.3 累计沉淀 + Skill 收敛完成
+
+✅ **触发了 handoff 的「跑完 2 源后回头修 Skill」milestone**——本 session 完成的 2 源（ai-coding-guide-zh + alirezarezvani-claude-skills，本 session 全程）+ 9 项变更（8 项 from LEARNINGS 8.6 + 1 项 from Problem 14 + 2 项 from Problem 15-16）已**一次性收敛**到：
+
+| 文件 | 修改类型 | 关键变更 |
+|---|---|---|
+| `SKILL.md` | 大改 | + `--subtype` 参数；Step 1 加 HTTP/1.1 fallback；Step 2 重写为「tier × source_subtype 阅读量矩阵」；新增「字符上限实测基线」段；新增硬约束 #8（source_subtype 必填）+ #9（框架按 subtype 适配） |
+| `prompts/card.md` | 大改 | 字符上限 800 → 1500；加 `source_subtype` 字段；加「框架自检（可选）」段；扁平化路径 |
+| `prompts/brief.md` | 中改 | 字符上限 2500 → 3000；加 `source_subtype`；加「frontmatter 升级」段；明确「竞品源必含跨源关联」 |
+| `prompts/deep-dive.md` | 大改 | 字符上限 5000 → 8000（超 8000 加 overflow:true）；批判性审视「反例 ≥ 5 条 + 每条配启示」（原 ≥ 1）；新增「沿用 vs 错位决策表」段（竞品类源必含）；新增「框架自检规范」段（yes/partial/no/n/a 四档 + framework 反思） |
+
+**唯一推迟项**：Problem 12（research/frameworks/ 目录积累评估框架）—— 仍按原计划「等 2-3 个框架再抽」，目前只有 1 个（10 维教程评估框架 v0.1），不足以抽。
+
+### 9.4 4 源 Gate 1 完成全景
+
+| 源 | type / subtype | tier | status | 主要价值 |
+|---|---|---|---|---|
+| 1. superpowers | repo / methodology | deep-dive | deep-dive_complete | 工程方法论的 skill 体系 |
+| 2. claude-skills-blog | article / blog | card | card_complete | Anthropic 一手设计哲学 |
+| 3. ai-coding-guide-zh | repo / tutorial | deep-dive | deep-dive_complete | **锚点源**：10 维评估框架来源 + 沿用 vs 错位决策表 |
+| 4. alirezarezvani-claude-skills | repo / skill_collection | card | card_complete | **框架 discriminate 验证样本**；工程治理参考 |
+
+**三种 source_subtype 全覆盖**（tutorial / methodology / skill_collection / blog），框架经过三角验证可信。

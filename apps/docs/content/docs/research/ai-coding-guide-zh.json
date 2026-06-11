@@ -1,0 +1,78 @@
+{
+  "slug": "ai-coding-guide-zh",
+  "url": "https://github.com/KimYx0207/AI-Coding-Guide-Zh",
+  "source_type": "repo",
+  "source_subtype": "tutorial",
+  "fetched_at": "2026-06-11T09:36:00+08:00",
+  "fetched_via": "git clone --depth=1 (HTTP/1.1 forced; gh repo clone failed with HTTP2 framing)",
+  "local_cache": ".research-cache/ai-coding-guide-zh",
+  "last_commit": "2026-06-10T03:17:51+08:00",
+  "last_commit_sha": "840cfa4f816c780c132a66c3ccd18ee34ac27dfb",
+  "last_commit_subject": "docs: publish v4.3 tutorial refresh",
+  "default_branch": "main",
+  "size_bytes": 5033164,
+  "size_human": "4.8MB",
+  "tutorial_count": 39,
+  "files_walked": [
+    "README.md",
+    "CHANGELOG.md",
+    "docs/claude-code/05-Hooks系统完整指南.md"
+  ],
+  "tutorial_index": {
+    "claude-code": [
+      "01-Claude-Code完整安装指南",
+      "02-基础使用完整指南",
+      "03-Commands系统完整指南",
+      "04-MCP集成完整指南",
+      "05-Hooks系统完整指南",
+      "06-Subagent子代理完整指南",
+      "07-Skills定制完整指南",
+      "08-Plugins生态完整指南",
+      "09-Agent-SDK完整指南",
+      "10-综合实战完整指南",
+      "11-企业实战完整指南",
+      "12-Remote-Control完整指南",
+      "13-Channels与计划任务完整指南"
+    ],
+    "openclaw": [
+      "00-阅读指南",
+      "01-OpenClaw项目介绍",
+      "02-安装部署指南",
+      "03-快速开始指南",
+      "04-模型配置指南",
+      "05-消息平台接入指南",
+      "06-技能系统指南",
+      "07-记忆系统指南",
+      "08-多Agent协作指南",
+      "09-Docker部署指南",
+      "10-安全配置指南",
+      "11-常见问题FAQ"
+    ],
+    "codex": [
+      "CX-01-Codex-App安装与认证完整指南",
+      "CX-02-Codex-App桌面工作流完整指南",
+      "CX-03-Codex-Commands工作流入口完整指南",
+      "CX-04-Codex项目指令权限配置完整指南",
+      "CX-05-Codex-MCP外部工具完整指南",
+      "CX-06-Codex-Skills可复用工作流完整指南",
+      "CX-07-Codex-Plugins连接器完整指南",
+      "CX-08-Codex-Subagents多Agent协作完整指南",
+      "CX-09-Codex-Automations后台任务完整指南",
+      "CX-10-Codex-Review-GitHub-PR完整指南",
+      "CX-11-Codex-Web-Cloud辅助指南",
+      "CX-12-Codex-CLI辅助完整指南",
+      "CX-13-Codex安全企业完整指南",
+      "CX-14-Codex与Claude-Code对比指南"
+    ]
+  },
+  "version_baselines": {
+    "claude_code": "v2.1.169",
+    "openclaw": "v2026.6.1",
+    "codex_app": "26.602",
+    "codex_cli": "0.138.0"
+  },
+  "license": "MIT",
+  "stars": 4568,
+  "freshness_status": "fresh",
+  "freshness_note": "pushed 2026-06-10, last commit 2026-06-10 — 极活跃，v4.3 发布于克隆前一天"
+}

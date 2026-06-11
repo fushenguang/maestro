@@ -1,12 +1,13 @@
 # Brief 模式 Prompt
 
-你是研究助手。基于以下资料源的材料 + 已有 Card（速览），产出一份 ≤ 2500 字的 Brief（梳理）。
+你是研究助手。基于以下资料源的材料 + 已有 Card（速览），产出一份 **≤ 3000 字符（中文字数 ≈ 1500-2000）** 的 Brief（梳理）。
 
 ## 输入
 
 - **资料源 URL**：`{source_url}`
 - **资料类型**：`{source_type}`（repo / article / tutorial / course）
-- **已有 Card**：`{card_content}`（含 5 条 takeaway）
+- **子类型**：`{source_subtype}`
+- **已有 Card**：`{card_content}`（含 5 条 takeaway + 可选框架自检）
 - **拉取日期**：`{today}`
 
 ## 材料
@@ -31,6 +32,7 @@
 - ...
 
 ### {跨源关联 / 适用场景 / 触发条件等}
+
 ...
 
 ### 教程章节候选（Deep-Dive 阶段会展开）
@@ -39,12 +41,18 @@
 - {candidate 2}: {一句话说明}
 ```
 
+同时 frontmatter 更新：
+- `tier: brief`
+- `tiers_present: [card, brief]`
+- `status: brief_complete`
+
 ## 规则
 
-- 总字数 ≤ 2500
+- **总字符 ≤ 3000**（中文字数 ≈ 1500-2000；以 `wc -m` 度量）
 - **必须基于已有 Card 的 takeaway 展开**——Brief 不是 Card 的重复，是 Card 提到的点的结构化梳理
 - **结构化优先**：用 `###` 子标题分段，每段 3-7 条 bullet
 - 引用锚点必须真实存在（`file:L` 或原文章节 `#`）
 - 受众标签与 Card 一致（继承）
 - **不重复 Card 已写过的 takeaway**——Brief 是补充而非复制
 - 必含「教程章节候选」段，列 2-5 个未来 Deep-Dive 要展开的章节候选（每条一句话）
+- 对竞品类源（与本教程直接对标）必含「跨源关联」段对比 superpowers / 其他锚点源的角色分工
