@@ -5,19 +5,21 @@ slug: anth-effective-agents
 url: https://www.anthropic.com/research/building-effective-agents
 source_type: article
 source_subtype: blog
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 size_estimate: "18 KB / 118 lines extracted"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: low
   cc_experience: used
 primary_author: Anthropic Engineering（Erik Schluntz / Barry Zhang 等）
-promote_to_brief: null
+char_count: 5816
+overflow: false
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -55,3 +57,74 @@ promote_to_deep_dive: null
 - `blog:L61` — "Workflow: Evaluator-optimizer"
 - `blog:L83` — "When implementing agents, we try to follow three core principles:"
 - `blog:L86` — "Carefully craft your agent-computer interface (ACI) through thorough tool documentation and testing."
+
+## Brief（梳理）
+
+### Workflow vs Agent：架构性区分
+
+- **Workflow**：LLM 与 tools 通过**预定义代码路径**编排
+- **Agent**：LLM **自主决定**步骤与工具调用
+- **核心选型原则**：成功不在于做最复杂的系统，而在于做**最匹配需求**的系统——先简单 prompt + 评测，多步 agent 仅在简单方案不够用时再上
+
+### 「先用最简」原则
+
+- agentic 系统用**延迟与成本换性能**
+- 多数场景下：`retrieval + in-context examples` 优化的**单次 LLM 调用**就够
+- 反例：上来就 multi-agent 框架 → 90% 场景过度设计
+
+### 五大基础模式（augmented LLM → workflow → agent 渐进谱系）
+
+| 模式 | 抽象度 | 典型场景 |
+|---|---|---|
+| **Augmented LLM** | building block | LLM + retrieval / tools / memory + MCP |
+| **Prompt chaining** | workflow | 任务分解为固定子任务序列；可加 gate（programmatic check）做中间校验 |
+| **Routing** | workflow | 按输入分类路由到不同下游 prompt / tool；典型「简单问题 Haiku / 难问题 Sonnet」cost 优化 |
+| **Parallelization** | workflow | 两种变体：**Sectioning**（独立子任务并行）+ **Voting**（同任务多 prompt 多票）|
+| **Orchestrator-workers** | workflow → agent | 中央 LLM 动态拆任务、派 worker、合成结果；**subtasks aren't pre-defined**（编码类「不知道要改几个文件」天然适用）|
+| **Evaluator-optimizer** | workflow | 一个 LLM 生成、另一个评估反馈、循环迭代 |
+
+### 两种 Parallelization 详解
+
+- **Sectioning**：独立子任务并行（每 worker 跑不同子任务，**结果合流**）
+  - 例：guardrail 评审 + code vuln 评审 + inappropriateness 多维判定
+- **Voting**：同任务多 prompt 多票（每 worker 跑**同一任务**的不同版本，**多数决/取优**）
+  - 例：温度 0.7 跑 5 次取最常见答案（事实型 QA）
+
+### Agent 触发条件
+
+- **开放性问题**且**步数无法预测**、**不能硬编码固定路径**
+- **必要前置**：
+  - 在 sandbox 充分测试
+  - 加 guardrail
+  - 控制单次 LLM 调用成本上限
+
+### 三条核心原则 + 工具是 ACI
+
+1. **保持设计简单**——别为「未来可能需要」做复杂
+2. **显式展示 agent 的规划步骤**——prompt 里让 agent 显式输出「我现在要做什么 / 为什么 / 下一步」
+3. **ACI（Agent-Computer Interface）**：把 tool 当 API 写——**详尽 docstring + 错误处理 + 绝对路径 + poka-yoke（防呆）**
+- **SWE-bench 实测**：「优化工具的时间比优化 prompt 还多」——ACI 是 LLM-as-agent 的真正瓶颈
+
+### 跨源关联
+
+- vs `superpowers`：superpowers 的 14 skill 体系就是「Augmented LLM + Tools」的具体实现——**沿用 building block**
+- vs `anth-sub-agents`：sub-agent 机制是「Orchestrator-workers」+「Parallelization」在 Claude Code 内的具体实现——**沿用模式**
+- vs `ai-coding-guide-zh`：ai-coding-guide-zh 多文件实现章节就是「Orchestrator-workers」实战——**横向对照**
+- vs `anth-agent-sdk`：SDK 编程化编排 → 五大模式可全用 SDK 实现——**互补**
+- vs `claude-skills-blog`：blog 是「Anthropic 怎么用 skills」的实例分享；effective-agents 是「Anthropic 推荐的设计模式」——**错位**：实例 vs 模式
+
+### Maestro 自家产品对应
+
+- **Phase 3 Validation「双 LLM 评估」**（advocate + prosecutor）= **Parallelization.Voting** 的实例
+- **Phase 4 Contract 多轮澄清** = **Prompt chaining** 的实例
+- **Phase 5 Evolution 多文件改动** = **Orchestrator-workers** 的天然舞台
+- **「为本机 LLM pool 写 tool definition」** → 直接套用 **ACI 原则**（绝对路径 / poka-yoke / 详尽 docstring）
+
+### 教程章节候选
+
+1. **「设计 agent 之前」章**：先讲「先用最简」原则，反 multi-agent 框架过度设计
+2. **「五大基础模式」章**：augmented LLM → chaining → routing → parallelization → orchestrator-workers → evaluator-optimizer
+3. **「两种 Parallelization 详解」章**：sectioning vs voting 决策表
+4. **「ACI 工具设计」章**：3 条原则 + poka-yoke 模板
+5. **「Agent 触发条件」章**：何时上 agent vs workflow（决策表）
+6. **「Anthropic 自家案例」章**：Claude Code 怎么应用这 5 模式（与 anth-sub-agents / skills 联动）

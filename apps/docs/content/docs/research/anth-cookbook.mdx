@@ -5,23 +5,25 @@ slug: anth-cookbook
 url: https://github.com/anthropics/anthropic-cookbook
 source_type: repo
 source_subtype: cookbook
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 last_commit: 2026-06-09T16:53:19-04:00
 last_commit_sha: 34022c5
 stars: 45263
 license: MIT
 size_estimate: "~360 MB / 87 .ipynb + 83 registry"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: low
   cc_experience: newbie
 primary_author: Anthropic
-promote_to_brief: null
+char_count: 4594
+overflow: false
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -77,3 +79,66 @@ promote_to_deep_dive: null
 - `README.md:L3` — 「copy-able code snippets that you can easily integrate」——范式定义
 - `CLAUDE.md:L9` — `uv sync --all-extras`——入口
 - `tool_use/calculator_tool.ipynb:cell0` — 「demonstrate how to provide Claude with a simple calculator tool」——recipe 叙事模板
+
+## Brief（梳理）
+
+### Cookbook 定位：可复制 recipe 集合
+
+- **不是教程**：无教学叙事；每 recipe = 1 个 `.ipynb`，可独立 copy-paste
+- **不是 framework**：不引导项目结构；只展示「某概念怎么用 API 实现」
+- **核心价值**：87 个官方可复制 recipe + 83 个 `registry.yaml` 索引
+- **license MIT**：fork / 改 / 商用均可
+
+### 6 大目录主题分布
+
+| 目录 | 用途 | 教程引用 |
+|---|---|---|
+| `capabilities/` | RAG / 分类 / 摘要 / SQL 生成 | 教程 RAG 章节实战素材 |
+| `tool_use/` | 工具调用（19 nb）| 教程「function calling」章节 |
+| `claude_agent_sdk/` | Agent SDK 7 demo | 教程 Agent SDK 章 |
+| `managed_agents/` | Managed Agents（chief-of-staff / SRE / threat intel）| 教程「sub-agent 实战」章 |
+| `skills/` | Skill 范式 demo | 教程 Skills 章 |
+| `third_party/` | Pinecone / Voyage / LlamaIndex / MongoDB | 教程「第三方集成」章 |
+
+### 5 大范式（教程可学也可避坑）
+
+1. **Notebook-first**：每 recipe = 1 `.ipynb`，输出 cells 保留作 expected results
+2. **Registry 驱动**：`registry.yaml` 单一真相源
+3. **One concept per notebook**（`CLAUDE.md` 明文）
+4. **无教学叙事**：与 `anthropics/courses`（章节递进）/ Claude Code（CLI 指南）根本不同
+5. **演示警示**：cell 标 `for demonstration purposes only`
+
+### 何时用 / 不适用
+
+**何时用**：
+- 找官方代码：RAG / 分类 / 工具调用 / 视觉 / 缓存
+- 找第三方集成：Pinecone / Voyage / LlamaIndex
+- 找 agent 脚手架：chief-of-staff / SRE / threat intel
+- **`registry.yaml` 是「recipe 集合如何做内容索引」的样板**
+
+**不适用**：
+- 学 Claude API 基础 → `anthropics/courses`（章节递进）
+- 学 Claude Code → 那是另一个 repo
+- production 部署 → notebook 自带 `for demonstration only` 警告
+
+### 教程引用策略
+
+- **可作素材**：cookbook 提供「某概念怎么用 Claude API 实现」的最小可行代码
+- **不可作章节模板**：教程要叙事递进，cookbook 要 atomic 可复制——场景天然不同
+- **混合用法**：教程「实战」段引用 cookbook recipe + 教程正文讲概念 → 互补而非替代
+
+### 跨源关联
+
+- vs `ai-coding-guide-zh`：ai-coding-guide-zh 偏 Claude Code CLI 实操 + 中文实战；cookbook 偏 Claude API 实战——**错位**：CLI vs API 两条轨道
+- vs `superpowers`：superpowers 给方法论 + skill 体系；cookbook 给代码 recipe——**互补**：方法论 + 代码
+- vs `anth-agent-sdk`：cookbook `claude_agent_sdk/` 目录是 SDK 官方 demo——**同源不同形态**
+- vs `claude-skills-blog` / `anth-effective-agents`：Anthropic 哲学类博客；cookbook 是 Anthropic 工程类代码——**互补**：哲学 + 代码
+
+### 教程章节候选
+
+1. **「API 入门」章**：引 cookbook 1-2 个最简 recipe（calculator_tool.ipynb）
+2. **「RAG 实战」章**：引 cookbook `capabilities/rag/` 的 vector store + retrieval recipe
+3. **「Tool Use 实战」章**：引 cookbook `tool_use/` 的 19 个 recipe
+4. **「Agent SDK 实战」章**：引 cookbook `claude_agent_sdk/` 7 个 demo
+5. **「第三方集成」章**：引 cookbook `third_party/` 的 Pinecone / Voyage / LlamaIndex
+6. **「Notebook 索引样板」章**：学 `registry.yaml` 怎么组织 80+ recipe

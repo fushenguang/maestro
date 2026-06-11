@@ -132,16 +132,15 @@
       "url": "https://www.anthropic.com/research/building-effective-agents",
       "source_type": "article",
       "source_subtype": "blog",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
       "audience_tags": { "cs_background": "yes", "devops": "low", "cc_experience": "used" },
       "last_checked": "2026-06-11",
       "batch": 1,
       "tier_group": "Anthropic 官方",
-      "overflow": true,
-      "notes": "多智能体设计哲学奠基；body 2289 超 1500"
+      "notes": "多智能体设计哲学奠基；body 2289 超 1500；v0.5 Brief 已完成 (Workflow vs Agent + 5 大基础模式 + 2 种 Parallelization + 3 条核心原则 + ACI 工具设计 + Maestro 自家产品对应 + 6 教程章节候选)"
     },
     {
       "slug": "anth-mcp",
@@ -194,32 +193,31 @@
       "url": "https://docs.claude.com/en/api/agent-sdk/overview",
       "source_type": "article",
       "source_subtype": "docs",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
       "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "advanced" },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
       "overflow": true,
-      "notes": "Agent SDK = 库 + 你的进程；2026-06-15 起新 Agent SDK credit 配额；body 3065 超 1500"
+      "notes": "Agent SDK = 库 + 你的进程；2026-06-15 起新 Agent SDK credit 配额；body 3065 超 1500；v0.5 Brief 已完成 (3 条 Agent 路径 + 双语言对称 + 5 种认证 + 10 工具 + 6 类 hook + Subagent/MCP + Session 连续性 + 商业化节点 + 品牌约束 + 7 教程章节候选)"
     },
     {
       "slug": "anth-cookbook",
       "url": "https://github.com/anthropics/anthropic-cookbook",
       "source_type": "repo",
       "source_subtype": "cookbook",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
       "audience_tags": { "cs_background": "yes", "devops": "low", "cc_experience": "newbie" },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
-      "overflow": true,
-      "notes": "87 ipynb / 83 registry / 45k stars / MIT；cookbook subtype 新引入；body 1601 超 1500"
+      "notes": "87 ipynb / 83 registry / 45k stars / MIT；cookbook subtype 新引入；body 1601 超 1500；v0.5 Brief 已完成 (6 大目录主题分布 + 5 大范式 + 何时用/不适用 + 教程引用策略 + 6 教程章节候选)"
     },
     {
       "slug": "mcp-servers",
@@ -243,17 +241,16 @@
       "url": "https://github.com/openai/codex",
       "source_type": "repo",
       "source_subtype": "methodology",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
       "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "advanced" },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
-      "overflow": true,
-      "char_count": 2356,
-      "notes": "OpenAI 本地 coding agent CLI/TUI；Rust workspace ~100 crate；sandbox × approval 双轴解耦（CC 同类最深竞品）；hooks/skills/MCP/memory/sub-agent 全套生态"
+      "char_count": 5673,
+      "notes": "OpenAI 本地 coding agent CLI/TUI；Rust workspace ~100 crate；sandbox × approval 双轴解耦（CC 同类最深竞品）；hooks/skills/MCP/memory/sub-agent 全套生态；v0.5 Brief 已完成 (CC 视角映射 + 多模型 first-class + 持久化 sub-agent graph + 异步 memory pipeline + 6 教程章节候选)"
     },
     {
       "slug": "gemini-cli",
@@ -316,18 +313,17 @@
       "url": "https://github.com/Aider-AI/aider",
       "source_type": "repo",
       "source_subtype": "methodology",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
       "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
-      "overflow": true,
-      "char_count": 2327,
+      "char_count": 5716,
       "fetched_via_fallback": true,
-      "notes": "Aider-AI/aider OSS terminal pair programmer；三支柱：git-first + 14+ edit format + pluggable LLM (litellm)；Repo-map = RAG-for-codebase；chat modes (code/ask/architect/help)；零 telemetry / Apache 2.0；CC 最直接同类工具；subagent v1 网络拒，v2 走 pre-seeded cache (Problem 26)"
+      "notes": "Aider-AI/aider OSS terminal pair programmer；三支柱：git-first + 14+ edit format + pluggable LLM (litellm)；Repo-map = RAG-for-codebase；chat modes (code/ask/architect/help)；零 telemetry / Apache 2.0；CC 最直接同类工具；subagent v1 网络拒，v2 走 pre-seeded cache (Problem 26)；v0.5 Brief 已完成 (3 大支柱详解 + 14+ edit format + pluggable LLM + Repo-map + 4 chat modes + 6 维 CC 对比 + 8 教程章节候选)"
     }
   ]
 }

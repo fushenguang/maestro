@@ -5,10 +5,11 @@ slug: openai-codex
 url: 'https://github.com/openai/codex'
 source_type: repo
 source_subtype: methodology
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 last_commit: 598125109dd2e098486884d8fb563ebe90bc24da
 stars: null
@@ -19,9 +20,9 @@ audience_tags:
   devops: mid
   cc_experience: advanced
 primary_author: OpenAI
-char_count: 2356
+char_count: 5673
 overflow: true
-promote_to_brief: null
+promote_to_brief: true
 promote_to_deep_dive: null
 fetched_via: git_clone_http1.1
 fetched_via_fallback: false
@@ -69,4 +70,75 @@ tier_group: MCP 生态 + 同类工具
 - `(methodology:L5)` — `codex-rs/memories/README.md:L29-38`：memory pipeline 触发条件 + 两阶段异步。
 - `(methodology:L6)` — `codex-rs/cli/src/main.rs`（3960 行）+ `AGENTS.md:L45-58`：CLI 体量与 module size 治理。
 - `(methodology:L7)` — `sdk/typescript/README.md:L7-15` & `sdk/python/README.md:L9-12`：SDK 用 stdio JSONL spawn CLI。
+
+## Brief（梳理）
+
+### Codex 定位：OpenAI 出品的 CC 同源竞品
+
+- **栈差异**：CC Node/TS 单体 vs Codex Rust workspace（~100 crate）
+- **CLI 体量**：main.rs 3960 行；**AGENTS.md 强制 module <500 LoC**（CC 没这个限制）
+- **License**：Apache-2.0
+
+### Sandbox × Approval 双轴（核心设计）
+
+| 轴 | 档位 / 状态 |
+|---|---|
+| **Sandbox** | `read-only` / `workspace-write` / `danger-full-access`（三档）|
+| **Approval** | `untrusted` / `on-failure` / `on-request` / `never` / **`granular`**（五态） |
+
+- **`granular`** 子项：按 prompt 来源（user / skill / sub-agent）分项开关
+- **对比 CC**：CC `--permission-mode` 单轴；Codex **双轴 + `granular` 子项**——企业 admin 更细
+- **视角映射**（CC plan mode ↔ Codex）：
+  - CC plan mode ≈ Codex `untrusted` + `workspace-write`
+  - CC `--dangerously-skip-permissions` ≈ Codex `danger-full-access` + `never`
+
+### 多模型一等公民
+
+- **独立 crate**：`ollama` / `lmstudio` / `models-manager`
+- **本地模型 first-class**——CC 默认只走 Anthropic API
+- **场景**：企业内网 / 数据合规 / 成本敏感
+
+### Hooks / Skills / Sub-agents / Memory 全做
+
+| 概念 | Codex 实现 |
+|---|---|
+| **Hooks** | 10 个 event 命名**与 CC 一致**；每 event 独立 JSON schema |
+| **Skills** | 内置 `skill-creator` / `skill-installer` / `plugin-creator` system skills |
+| **Sub-agents** | `agent-graph-store` 持久化**图**（vs CC `Task` tool 无状态）|
+| **Memory** | `memories` **异步两阶段 pipeline**（vs CC 同步 auto memory）|
+
+- **共享概念，schema 不互通**——同一名字不同 JSON 结构（OpenAI 自定义）
+
+### 三层分发形态
+
+| 形态 | 形态描述 |
+|---|---|
+| **CLI / TUI** | 终端交互 |
+| **`app-server` protocol** | v2 active（与 CC 类似，但不是 MCP）|
+| **Python / TS SDK** | stdin/stdout JSONL spawn CLI（包装 CLI，**不是 native**）|
+
+- 与 CC 类似：CLI + SDK 两条路；但 Codex SDK 是 spawn CLI 而非 native
+
+### 登录与商业化
+
+- **默认登录**：**Sign in with ChatGPT**（复用 Plus / Pro 额度）
+- 对比 CC：CC 默认 Anthropic API key
+- **影响**：Codex 适合 OpenAI 现有用户零成本上手；CC 适合 Anthropic API 现有用户
+
+### 跨源关联
+
+- vs `anth-claude-code-overview`：本 vs 官方全景——**横向对比锚点**
+- vs `anth-hooks`：10 个 event 命名一致但 schema 不互通——**沿用概念 + 错位实现**
+- vs `anth-sub-agents`：本用 `agent-graph-store` 持久化图；CC `Task` tool 无状态——**错位实现**
+- vs `anth-memory`：本异步两阶段 pipeline；CC 同步 auto memory——**错位实现**
+- vs `aider`：本 Rust workspace；aider Python + litellm——**不同架构的同类工具**
+
+### 教程章节候选
+
+1. **「Claude Code vs Codex 横向」章**：栈 / 审批 / 多模型 / 登录 4 维对比
+2. **「Sandbox × Approval 双轴设计」章**：为什么需要分两层（企业部署讲解）
+3. **「多模型路由」章**：Codex 的 ollama / lmstudio first-class + Anthropic 现状
+4. **「Sub-agent 持久化 vs 无状态」章**：Codex `agent-graph-store` 优劣
+5. **「同类工具：CC / Codex / Aider / Cline 4 选 1」章**：决策表（项目类型 × 团队规模 × 部署需求）
+6. **「MCP 协议普及度对比」章**：CC 完整生态 vs Codex `McpConnectionManager`（轻量）
 
