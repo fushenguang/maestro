@@ -75,6 +75,7 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 - `.claude/skills/pdf-extract/SKILL.md` — **v0.3**（Standalone skill 决策；4 模式 + auto fallback + P34-P38 修好；CJK 文档化）
 - `.claude/skills/pdf-extract/scripts/{extract,layout_parser,quality_check}.py` — v0.3 实现
 - 缓存目录：`.research-cache/raw-fetches/{batch1,batch2,batch3}/`
+- **Brief 推进状态**：11 源升 Brief（5 anth 核心 + 5 混合 + 1 既有 deep-dive），9 源仍 Card
 
 ### 1.4 配置改动（保持）
 
@@ -91,18 +92,33 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 - **剩余**：12-25 源
 - 预计还需 2-3 批 × ~30-60 min = 1-2 session 完成
 
-### 2.2 推荐路径（**下 session 第一件事：跑批 5**）
+### 2.2 推荐路径（**下 session 第一件事：A1 4 源 Brief 推进**）
 
 **步骤**（按顺序）：
 
-1. **批 5：同类工具（methodology）补完 + tutorial 增 1-2**（60-90 min）：
-   - 候选：Cline（VSCode Claude Code 扩展）/ Continue / Swe-agent / OpenHands / Roo Code
-   - 与现有 5 个 methodology 源（superpowers / codex / gemini-cli / qodo-merge / aider）形成更全的同类工具矩阵
-   - 替代原学术 PDF 批 4（暂缓）
+1. **A1 4 源 Brief 推进**（50-60 min）：
+   - `anth-agent-skills`（Skills 官方定义 + frontmatter 事实标准）
+   - `mcp-servers`（MCP 官方 7 reference servers 联 `anth-mcp` Brief 配套）
+   - `gemini-cli`（CC 同类 + 1M context + a2a-server 实验）
+   - `cursor-changelog`（IDE-native vs CC terminal 横向对比）
+   - 每个走标准模板：append Brief 段 + 更新 frontmatter（tier/status/tiers_present/char_count/promote_to_brief）+ registry.json 标 promote_to_brief: true
 
-2. **批 5 备选**：tutorial 类增 1-2（如 aider-docs / oh-my-claudecode / claude-code-ultimate 等）+ skill_collection 类（如 awesome-claude-code / awesome-claude-skills）
+2. **A1 跑完后可选**：
+   - 继续 Brief：claude-skills-blog / alirezarezvani / slash-commands / qodo-merge / superpowers 5 源
+   - Deep-Dive 闸门：11 Brief 源选 1-2 升 Deep-Dive（如 hooks + memory 或 codex + aider）
+   - 跑批 5：同类工具 Cline / Continue / Swe-agent / OpenHands（横向广度）
 
-3. **批 6+：根据批 5 暴露问题决定**
+3. **MDX 字符陷阱**（**P39 新增**）：
+   - `<数字` 在 MDX 文本中触发 JSX 解析错误（**必须** `&lt;` 转义）
+   - backtick 包裹的 `<X>` 标签**不**触发（已实测）
+   - 新增 Brief 后**必跑** `pnpm dev --filter=docs` 验证无 JSX 解析错
+   - 已知触发：openai-codex L42 / L79 (`<500 LoC`) 已修（79a4e71）
+
+4. **docs landing 404 防御**（**P40 新增**）：
+   - `content/docs/<dir>/` 子目录无 `index.mdx` 时，子目录路径（`/docs/<dir>`）200，但**根路径** `/docs` 404
+   - 防御：`content/docs/index.mdx` 必建（c07160b 修复）
+
+5. **批 6+：根据新 session 进度决定**
 
 ### 2.3 批 4 启动条件
 
@@ -121,14 +137,14 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 
 ## 3. 启动前 Checklist（下 session）
 
-- [ ] 读本文件（已反映本 session 末态）
+- [ ] 读本文件（已反映本 session 末态：11 Brief + 2 fix + 13 commits）
 - [ ] 读 `LEARNINGS.md` Section 12-15（批 3 + pdf-extract v0.1/v0.2/v0.3 全部沉淀）
-- [ ] 看 `registry.json` 当前状态（20 源 + 6 subtype + skill_version 0.4）
+- [ ] 看 `registry.json` 当前状态（20 源 + 11 Brief + 6 subtype + skill_version 0.4）
 - [ ] 看 `.claude/skills/research-source/SKILL.md` 当前 **v0.4**（P26-30 已合并）
 - [ ] 看 `.claude/skills/pdf-extract/SKILL.md` 当前 **v0.3**（P34-P38 已修）
 - [ ] 看 `.research-cache/raw-fetches/batch{1,2,3}/` 持久缓存
-- [ ] 确认 dev server 是否还在跑；不在就 `cd apps/docs && pnpm dev`
-- [ ] **第一件事：跑批 5**（同类工具补完 / tutorial 增 1-2）
+- [ ] 确认 dev server 是否还在跑（PID 10060，port 3000）；不在就 `cd apps/docs && pnpm dev`
+- [ ] **第一件事：A1 4 源 Brief 推进**（anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog）
 
 ---
 
@@ -201,4 +217,4 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 
 ## 7. SESSION_HANDOFF 更新结束
 
-下 session 开始时，按 Checklist Section 3 执行；**第一件事跑批 5**（同类工具补完 / tutorial 增 1-2）。批 4 启动条件：用户提供 H1-H12 清单。
+下 session 开始时，按 Checklist Section 3 执行；**第一件事 A1 4 源 Brief 推进**（anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog）。
