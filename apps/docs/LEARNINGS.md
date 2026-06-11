@@ -1646,3 +1646,166 @@ Error (/.../js-yaml@4.2.0/.../loader.js:196:10)
 4. **反向审计其他 SKILL**（P46 沉淀）：
    - pdf-extract v0.3 SKILL.md 也可走反向审计
    - 未来 3 个待写 SKILL 都该做一次
+
+---
+
+## 19. 教程规划 + Session 切换（2026-06-11 深夜最后一段）
+
+> 累计 A1 4 源 + A2 4 源 + 3 源 Deep-Dive 已 commit（`feat(research): A1 4 源 + A2 4 源 + 3 源 Deep-Dive 推进` 6bd1524）。本节为**新 session 准备**：写 TUTORIAL_PLANNING.md + 教程规范 + Deep Research 融合策略 + 何时补充调研。
+
+### 19.1 commit 6bd1524 范围
+
+| 类型 | 数量 | 详情 |
+|---|---|---|
+| 4 mdx（A1 Brief）| 4 | anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog |
+| 5 mdx（A2 Brief + 1 registry sync）| 5 | claude-skills-blog / alirezarezvani-claude-skills / anth-slash-commands / qodo-merge + superpowers registry |
+| 3 mdx（Deep-Dive）| 3 | anth-hooks / anth-memory / claude-skills-blog |
+| 1 registry | 1 | version 0.1.5 → 0.1.8；skill_version 0.3 → 0.4 |
+| 2 docs | 2 | LEARNINGS + SESSION_HANDOFF |
+
+- 13 文件 / +2331 行 / -161 行
+- 主 Claude 直接起草（A1 / A2 / Deep-Dive 全部沿用 A1 模式——4 源 cache 已 pre-seed + Brief 段结构化 + 规避 P30 subagent 写盘违规）
+- 累计 20 源 6 subtype 全覆盖 + 18 Brief + 5 Deep-Dive
+
+### 19.2 教程规划（v0.1）核心决策
+
+#### 决策 1：Deep-Dive 5 源 → 教程主章 1:1 映射
+
+| Deep-Dive 源 | char_count | 教程一级目录 |
+|---|---|---|
+| ai-coding-guide-zh | (大) | `00. 教程地图：怎么读这教程` |
+| anth-hooks | 13672 | `02. Hooks：让 Claude Code 守规矩的 8 条铁律` |
+| anth-memory | 13296 | `03. 记忆系统：让 Claude Code 跨会话记得你` |
+| claude-skills-blog | 18560 | `04. Skill 哲学：怎么把经验写给 Claude 用` |
+| superpowers | (大) | `05. 工程方法论：让 Claude Code 强制按 TDD 工作` |
+
+- **关键决策**：**不是照抄 Deep-Dive**——是把它当**素材库**用
+- 每章从对应 Deep-Dive 抽 2-3 个最 actionable 的点，用 witty-humor 风格**重新表达**
+
+#### 决策 2：写作风格强制 cogito-writing-witty-essay
+
+- **强制使用** `/Users/sunny/.agents/skills/cogito-writing-witty-essay/`
+- 5 大语言特征 + 4 大节奏 + 7 大禁用模式
+- 风格速查：`styles/witty-humor/profile.md` + `references/style-guide.md` + `references/anti-ai.md`
+
+#### 决策 3：每章 ≤ 5000 字 + 解决 1 个问题
+
+- **硬约束**：超 5000 字强制重写或拆章
+- **章顶「目标内容」**：读者扫一眼知道产出
+- **两级目录**：一级 = 大的方向，二级 = 具体步骤
+- **章末「小结 + 下一章预告」**：收口 + 引导
+
+#### 决策 4：内容形式三期
+
+- **一期（本期）**：文字 .mdx
+- 二期：短视频（remotion / hyperframes）
+- 三期：语音 / 播客
+
+### 19.3 Deep Research 融合 SOP（Q3 答案）
+
+```
+写每章前必走 7 步：
+
+Step 1: 读对应 Deep-Dive .mdx → 抽 2-3 个最 actionable 点
+Step 2: 读相关 1-2 个 Brief .mdx → 抽 1 个横向对比素材
+Step 3: 写「目标内容」(章节顶部一段) → 读者先知道产出
+Step 4: 写「主角 POV 引子」→ 用 daily-life 场景 / 痛点开场
+Step 5: 写正文 → 按 witty-humor 5 大特征 + 4 大节奏
+Step 6: 「本章小结 + 下一章预告」→ 收口 + 引导继续读
+Step 7: wc -m 校验 ≤ 5000 + 锚点引用 Deep-Dive 源 + 校验
+```
+
+### 19.4 何时补充 Deep Research（Q4 答案）
+
+5 类自动感知信号：
+
+| 信号 | 检测方式 | 行动 |
+|---|---|---|
+| 1. 章节「痛点场景」写不出 3 个 | 写正文前 5 分钟还卡 | 回 Deep-Dive 找反例 |
+| 2. 横向对比写不出 2 维 | 没有 Brief 源能直接引 | 跑 subagent 拉新源（cache-first）|
+| 3. 数字 / 配比缺失 | 找不到数据出处 | 跑 fetch 到原 .mdx / .txt 找 verbatim 锚点 |
+| 4. 反例 < 3 条 | Deep-Dive 主题 3 反例不足 | 补 subagent 拉同源批评性文章 |
+| 5. 教程章节候选被引用但没写 | 「未做」标记 | 补 subagent 拉源 |
+
+#### 当前 5 Deep-Dive 源未饱和度评估
+
+| 源 | 饱和度 | 关键证据 |
+|---|---|---|
+| anth-hooks | **饱和** | 8 安全基线 + pre-bash-validator.sh 可执行 |
+| anth-memory | **饱和** | 4 加载链 + 6 盲点 + 4 工具 7 维对照 |
+| claude-skills-blog | **饱和** | 9×8 0/1/2 评分 + 反向审计 5/16→12/16 |
+| superpowers | **饱和** | 14 skill + 7 步 + writing-skills 元方法 |
+| ai-coding-guide-zh | **饱和** | 10 维评估框架 + 39 篇教程结构 |
+
+**当前判断**：5 主章素材**够用**——不需要补充新源。补充需求是**章节间衔接 + 实战案例**——这些由 writing skill 处理，不是 research 问题。
+
+### 19.5 5 个新问题（P49-P53）
+
+#### P49：5 Deep-Dive 源已「够用」——但 saturate 判断易陷「沉没成本」
+
+**症状**：当前 5 Deep-Dive 源已 saturate，但 5 主章以外的**横向对比素材**仍薄（如 CC vs Cline / Continue / Swe-agent / OpenHands）——这些是**未来补充**。
+
+**沉淀**：
+- ✅ 教程 5 主章内部素材 saturate
+- ✅ 教程「同类工具横向」章素材未 saturate——需要批 5 跑完再写
+- ✅ 判断 saturate 看「每章 2-3 个 actionable 点能否抽出」——能抽 = saturate
+
+#### P50：教程规范的 5000 字上限是"字"还是"token"——易混淆
+
+**症状**：用户说"章节字数最多不能超过 5000 字"——是 5000 中文字还是 5000 字符（含 markdown 标记）？
+
+**沉淀**：
+- ✅ 默认理解 = **5000 字符**（`wc -m` 实测，含 markdown 标记）
+- ✅ 5000 字符 ≈ 3000-3500 中文字（混排比例 0.6-0.7）
+- ✅ 教程写完必跑 `wc -m` 校验——不靠目测
+- ✅ 工具：每章 git pre-commit hook 加 `wc -m` 校验，超 5000 报警
+
+#### P51：cogito-writing-witty-essay skill 是"风格"——不替代"内容深度"
+
+**症状**：writing skill 强制 witty-humor 风格 + 5 大语言特征 + 7 大禁用模式——但**不教怎么把 Deep-Dive 内容融合进去**。
+
+**沉淀**：
+- ✅ writing skill = 文笔风格（怎么写）
+- ✅ research-source skill = 内容来源（写什么）
+- ✅ TUTORIAL_PLANNING.md 2.3 7 步 SOP = **融合桥梁**（用 research 内容 + writing 风格）
+- ✅ 启示：未来跑教程写作时**两个 skill 必须一起用**——只用 style 不深 / 只用 research 不爽
+
+#### P52：Deep-Dive 的"主题 4 沿用 vs 错位决策表"是教程章节序的输入
+
+**症状**：写教程章节时容易"重新设计章节序"——但 5 Deep-Dive 源「主题 4」已给 6-7 行**沿用 vs 错位决策表**。
+
+**沉淀**：
+- ✅ 沿用 vs 错位决策表 = 教程章节序的**直接输入**——不重新设计
+- ✅ 「沿用」= 沿用中文社区/同源工具的章节命名（降低读者切换成本）
+- ✅ 「错位」= 显式差异化（基于 Deep-Dive 主题 3 反面盲点定位差异化机会）
+- ✅ 启示：开 OpenSpec change 写教程大纲时**直接拿 5 决策表谈判**——不发明新章节序
+
+#### P53：TUTORIAL_PLANNING.md 是「新 session 启动钥匙」——必放显眼位置
+
+**症状**：新 session 启动时，agent 不知道 Deep Research 资产位置 + 教程规范 + 写作风格约束。
+
+**沉淀**：
+- ✅ TUTORIAL_PLANNING.md 放 `apps/docs/` 根（与 SESSION_HANDOFF.md 同级）
+- ✅ SESSION_HANDOFF 末段指向 TUTORIAL_PLANNING.md
+- ✅ 启动 Checklist 必读 TUTORIAL_PLANNING.md
+- ✅ 启示：跨 session 工作的「**规划文件**」应与 SESSION_HANDOFF 分开——前者长存，后者只反映 session 末态
+
+### 19.6 下一 session 启动 Checklist（新 session 第一件事）
+
+1. [ ] 读 `apps/docs/TUTORIAL_PLANNING.md`（教程规划钥匙）
+2. [ ] 读 `apps/docs/LEARNINGS.md` Section 16-19（决策沉淀）
+3. [ ] 读 `apps/docs/SESSION_HANDOFF.md` 末态
+4. [ ] 决定**首批**写哪 1-3 章（推荐：02 Hooks——8 条安全基线最 actionable）
+5. [ ] 加载 `cogito-writing-witty-essay` skill（`/Users/sunny/.agents/skills/cogito-writing-witty-essay/SKILL.md`）
+6. [ ] 加载 `research-source` skill（`/Users/sunny/.claude/skills/research-source/SKILL.md` v0.4）
+7. [ ] 写每章前必走 7 步 SOP（TUTORIAL_PLANNING 2.3）
+8. [ ] 写完每章必跑 `wc -m` 校验 ≤ 5000
+9. [ ] 章节末尾追加「参考源」段，引 1-3 个 Deep-Dive / Brief
+
+### 19.7 决策待办（下一 session 必决）
+
+- [ ] 决定**首批**写哪几章（推荐：00 教程地图 + 01 安装 + 02 Hooks = 最小可用）
+- [ ] 决定**首批发布**还是**先内部 review**
+- [ ] 决定**目录结构**：`apps/docs/content/docs/tutorials/` 新建？或 `apps/docs/content/docs/courses/`？
+- [ ] 决定**sidebar 配置**：`meta.json` 怎么挂？
+- [ ] 决定**写作完成时如何 commit**：每个 chapter 一个 commit？还是合一个？

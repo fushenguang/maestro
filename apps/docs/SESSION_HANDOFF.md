@@ -1,8 +1,8 @@
 # SESSION HANDOFF — Claude Code 调研流水线
 
-> 本次 session：2026-06-11（全天 + 晚 + 深夜 23:xx）— 累计 **20 源 Gate 1** + **A1 4 源 Brief 推进** + 6 commits
-> 关键进展：research-source skill v0.3 → **v0.4**（P26-30 合并）+ 新建 **pdf-extract skill v0.1 → v0.3**（P34-P38 修复）+ **A1 4 源 Brief 推进完成**
-> 下一 session 启动建议：先读本文件 + `LEARNINGS.md` Section 12-16，**第一件事 = 选 1-2 源升 Deep-Dive 或继续 Brief 推进（claude-skills-blog / alirezarezvani / slash-commands / qodo-merge / superpowers 5 源候选）**
+> 本次 session：2026-06-11（全天 + 晚 + 深夜）— 累计 **20 源 Gate 1** + **A1 4 源 Brief** + **A2 4 源 Brief + 1 同步** + **3 源 Deep-Dive** + 1 commit (6bd1524)
+> 关键进展：research-source skill v0.3 → **v0.4** + pdf-extract skill v0.1 → v0.3 + 教程规划文档 **TUTORIAL_PLANNING.md** 就绪
+> 下一 session 启动建议：先读本文件 + `LEARNINGS.md` Section 16-19 + **`apps/docs/TUTORIAL_PLANNING.md`**（教程规划钥匙），**第一件事 = 写教程首批章节**（推荐 02 Hooks）
 
 ---
 
@@ -98,39 +98,47 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 
 ### 2.1 累计目标进度
 
-- 已完成：**20 源 Gate 1** + **14 源 Brief**（A1 完成）
+- 已完成：**20 源 Gate 1** + **18 源 Brief** + **5 源 Deep-Dive**（A1 + A2 + Deep-Dive 全部完成）
 - 上 session 锁定目标：32-45 源
-- **剩余**：12-25 源
-- 预计还需 2-3 批 × ~30-60 min = 1-2 session 完成
+- **剩余（可选）**：12-25 源横向补完 / 批 4 学术 PDF / 批 5 同类工具
 
-### 2.2 推荐路径（**下 session 第一件事：A2 = 5 源 Brief 推进或选 1-2 升 Deep-Dive**）
+### 2.2 **下 session 第一件事：教程首批章节写作**
 
-**A1 已完成**（4 源 Brief 推进），下 session 三选一：
+> **教程规划已就绪**——见 `apps/docs/TUTORIAL_PLANNING.md`
 
-1. **A2 5 源 Brief 推进**（50-70 min，**首选**）：
-   - `claude-skills-blog`（Anthropic 官方 lessons learned + 设计哲学）
-   - `alirezarezvani-claude-skills`（343+ skills × 13 平台，skill_collection 唯一巨型源）
-   - `anth-slash-commands`（已并入 Skills 体系，补 Brief 与 anth-agent-skills 配套）
-   - `qodo-merge`（vertical PR agent，与 CC generalist 形成对比）
-   - `superpowers`（既有 Card，可升级 Brief；14 skill 方法论体系）
+5 Deep-Dive 源 → 教程 5 主章 1:1 映射：
 
-2. **Deep-Dive 闸门**（80-100 min）：
-   - 14 Brief 源中选 1-2 升 Deep-Dive（高价值候选：hooks + memory / codex + aider）
-   - Deep-Dive 必须含「正反双面 + 评估框架 + 决策表」三件套（沿用 ai-coding-guide-zh 模板）
+| 教程一级目录 | Deep-Dive 源 |
+|---|---|
+| 00 教程地图 | ai-coding-guide-zh |
+| 01 安装与环境 | (无 Deep-Dive，纯实战) |
+| 02 Hooks 8 条铁律 | anth-hooks |
+| 03 记忆系统 | anth-memory |
+| 04 Skill 哲学 | claude-skills-blog |
+| 05 工程方法论 | superpowers |
 
-3. **跑批 5**（30-60 min）：
-   - 同类工具补完：Cline / Continue / Swe-agent / OpenHands（横向广度）
-   - subagent 走 v0.4 cache-first 流程
+**推荐首批写**：
+- 02 Hooks（8 条安全基线最 actionable + pre-bash-validator.sh 模板可直接套）
+- 或 04 Skill 哲学（反向审计自己 SKILL.md 的立竿见影）
 
-### 2.3 跑前 Checklist（A2 / Deep-Dive / 批 5 三选一）
+**写作工具**：deepseek v4 pro（用户指定）+ `cogito-writing-witty-essay` skill（`/Users/sunny/.agents/skills/cogito-writing-witty-essay/SKILL.md`）
 
-- [ ] 读本文件（已反映 A1 末态：14 Brief + 0 Deep-Dive 增量）
-- [ ] 读 `LEARNINGS.md` Section 12-16
-- [ ] 看 `registry.json` 当前状态（20 源 + 14 Brief + 6 subtype + version 0.1.6 + skill_version 0.4）
-- [ ] 看 `.claude/skills/research-source/SKILL.md` 当前 v0.4（P26-30 已合并）
-- [ ] 看 `.research-cache/raw-fetches/batch{1,2,3}/` 持久缓存（A1 cache 还在）
-- [ ] 确认 dev server 是否还在跑（PID 13336，port 3000）；不在就 `cd apps/docs && pnpm dev`
-- [ ] **第一件事**：A2 5 源 Brief / Deep-Dive / 批 5 三选一
+### 2.3 跑前 Checklist
+
+- [ ] 读 `apps/docs/TUTORIAL_PLANNING.md`（教程规划钥匙）
+- [ ] 读 `LEARNINGS.md` Section 16-19
+- [ ] 看 `registry.json` 当前状态（20 源 + 18 Brief + 5 Deep-Dive + version 0.1.8 + skill_version 0.4）
+- [ ] 加载 cogito-writing-witty-essay skill
+- [ ] 加载 research-source skill v0.4
+- [ ] 决定首批写哪 1-3 章
+- [ ] 写每章前必走 7 步 SOP（TUTORIAL_PLANNING 2.3）
+- [ ] 写完每章必跑 `wc -m` 校验 ≤ 5000
+
+### 2.4 备选（如不想立刻写教程）
+
+- 跑批 5（30-60 min）：Cline / Continue / Swe-agent / OpenHands
+- 批 4 启动（需用户提供 H1-H12 PDF 清单）
+- 反向审计 pdf-extract v0.3 SKILL.md（P46 沉淀）
 
 ### 2.4 跑批 5 配套优化（可选）
 
