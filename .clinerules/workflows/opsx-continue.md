@@ -1,6 +1,6 @@
----
-description: Continue working on a change - create the next artifact (Experimental)
----
+# OPSX: Continue
+
+Continue working on a change - create the next artifact (Experimental)
 
 Continue working on a change by creating the next artifact.
 

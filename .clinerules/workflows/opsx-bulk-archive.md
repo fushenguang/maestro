@@ -1,6 +1,6 @@
----
-description: Archive multiple completed changes at once
----
+# OPSX: Bulk Archive
+
+Archive multiple completed changes at once
 
 Archive multiple completed changes in a single operation.
 

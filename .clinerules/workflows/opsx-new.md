@@ -1,6 +1,6 @@
----
-description: Start a new change using the experimental artifact workflow (OPSX)
----
+# OPSX: New
+
+Start a new change using the experimental artifact workflow (OPSX)
 
 Start a new change using the experimental artifact-driven approach.
 
