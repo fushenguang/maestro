@@ -5,19 +5,21 @@ slug: anth-slash-commands
 url: https://docs.claude.com/en/docs/claude-code/slash-commands
 source_type: article
 source_subtype: docs
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 size_estimate: "43 KB / docs page"
-overflow: true
 audience_tags:
   cs_background: yes
   devops: low
   cc_experience: used
 primary_author: Anthropic
-promote_to_brief: null
+char_count: 6306
+overflow: true
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -49,3 +51,98 @@ promote_to_deep_dive: null
 - `docs:L1` — `disable-model-invocation` / `user-invocable` 对立 + `allowed-tools` 预批。
 - `docs:L1` — Dynamic context（`` `!cmd` ``）+ `disableSkillShellExecution`。
 - `docs:L1` — Bundled skills 列表 + v2.1.145+ 版本要求。
+
+## Brief（梳理）
+
+### 4 级加载范围（Scope Chain）
+
+| 层级 | 路径 | 优先级 |
+|---|---|---|
+| **enterprise** | 组织级（managed）| 最高 |
+| **personal** | `~/.claude/skills/` | 中 |
+| **project** | `.claude/skills/` | 中低 |
+| **plugin** | `plugin-name:skill-name` 命名空间 | 最低（plugin 隔离）|
+
+- **冲突解析**：高优先级覆盖低优先级；同层级按字母序
+- **plugin namespace**：`plugin-name:skill-name` 格式——避免跨 plugin 命名冲突
+
+### SKILL.md 16 字段 Frontmatter 详表
+
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| `name` | string | kebab-case 标识（与目录名一致）|
+| `description` | string | **触发器不是摘要**——Claude 据此判定何时加载 |
+| `when_to_use` | string | 显式触发场景（比 description 更具体）|
+| `argument-hint` | string | 提示用户参数格式，如 `[branch-name]` |
+| `arguments` | array | 形式化参数定义 |
+| `disable-model-invocation` | bool | **user-only**——Claude 不能自动调，只允许 user 手动 `/` |
+| `user-invocable` | bool | **model-only**——Claude 自动调，user 看不到 |
+| `allowed-tools` | string | 工具白名单（预批，不需 permission）|
+| `disallowed-tools` | string | 工具黑名单（即便 model 想用也禁）|
+| `model` | string | 强制走特定模型（sonnet / opus / haiku）|
+| `effort` | enum | 思考深度（low / medium / high）|
+| `context: fork` | bool | **subagent 隔离**——在独立 context 跑 |
+| `agent` | enum | subagent 类型（Explore / Plan / general-purpose / 自定义）|
+| `hooks` | object | 局部 hook 配置 |
+| `paths` | array | 文件 glob 模式（限定 skill 适用目录）|
+| `shell` | string | 强制 shell 解释器（bash / zsh）|
+
+- **关键对立**：`disable-model-invocation: true` vs `user-invocable: false`
+  - 部署命令 = user-only（避免 Claude 误触发）
+  - 后台工具 = model-only（user 不知情但自动执行）
+
+### 动态 Context 注入
+
+| 机制 | 语法 | 行为 |
+|---|---|---|
+| **Command 注入** | `` !`git status` `` | 加载时跑，stdout 替换进 prompt |
+| **fenced 形式** | ```` ```!``` ```` | 同上但更显眼 |
+| **环境变量** | `${CLAUDE_SESSION_ID}` | session 唯一 ID |
+| **环境变量** | `${CLAUDE_EFFORT}` | 当前 effort 等级 |
+| **环境变量** | `${CLAUDE_SKILL_DIR}` | skill 所在目录绝对路径 |
+| **关闭** | settings 加 `disableSkillShellExecution: true` | 不影响 bundled / managed |
+
+- **风险**：`!cmd` 在 SKILL.md 加载时跑——可被恶意 SKILL.md 利用做 prompt injection
+- **缓解**：始终设置 `disableSkillShellExecution: true`，只在 trusted skill 才用
+
+### 参数与命名参数
+
+| 形式 | 用途 |
+|---|---|
+| `$ARGUMENTS` | 整个参数字符串 |
+| `$ARGUMENTS[N]` | 第 N 个参数（0-indexed）|
+| `$N` | 简写 = `$ARGUMENTS[N]` |
+| **命名参数** | `--branch=main` → `$branch` |
+
+- 例：`/deploy --env=prod --branch=main` → SKILL.md 里 `$env` = `prod`, `$branch` = `main`
+
+### 内置 Bundled Skills
+
+| Skill | 角色 | 版本要求 |
+|---|---|---|
+| `/code-review` | 自带代码评审 | 默认 |
+| `/batch` | 批量处理多文件 | 默认 |
+| `/debug` | 系统化调试 | 默认 |
+| `/loop` | 周期循环 | 默认 |
+| `/claude-api` | Claude API 集成 | 默认 |
+| `/run` | 启动 skill runner | v2.1.145+ |
+| `/verify` | 验证前一步结果 | v2.1.145+ |
+| `/run-skill-generator` | 引导生成新 skill | v2.1.145+ |
+
+- **v2.1.145+ 自动推断启动方式**：按项目类型（CLI / server / TUI / browser-driven）自动选
+
+### 跨源关联
+
+- vs `anth-agent-skills`（brief）：本 = **SKILL.md 16 字段契约**（frontmatter 详表）；那 = **官方 spec 极简版**（仅 2 必填 + 4 可选）——**完整 vs 入门**
+- vs `claude-skills-blog`（brief）：本 = **frontmatter what-fields**；那 = **how-to-write 8 建议**——**字段表 vs 写法哲学**
+- vs `superpowers`（deep-dive）：本 = **Claude Code 官方 16 字段**；那 = **superpowers 自创 frontmatter**（name + description + 自定义）——**官方 vs 社区**
+- vs `alirezarezvani-claude-skills`（brief）：本 = **单 skill 字段契约**；那 = **Path-B 11-file contract**（更激进的 11 文件 contract）——**单点 vs 全套**
+
+### 教程章节候选
+
+1. **「SKILL.md frontmatter 16 字段全表」章**：作为速查表，每字段给反例
+2. **「disable-model-invocation vs user-invocable」章**：何时用哪个（部署命令 vs 后台工具）
+3. **「Dynamic context 注入实战」章**：`!cmd` 用法 + 安全考虑
+4. **「Subagent 隔离：context: fork」章**：让 skill 在独立 context 跑的设计模式
+5. **「环境变量 4 类」章**：CLAUDE_SESSION_ID / EFFORT / SKILL_DIR / 自定义
+6. **「从 commands/foo.md 迁移到 skills/foo/SKILL.md」章**：6 月份最新变化，教程叙事需更新

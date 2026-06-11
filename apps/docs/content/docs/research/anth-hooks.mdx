@@ -5,11 +5,12 @@ slug: anth-hooks
 url: https://docs.claude.com/en/docs/claude-code/hooks
 source_type: article
 source_subtype: docs
-tier: brief
+tier: deep-dive
 tiers_present:
   - card
   - brief
-status: brief_complete
+  - deep-dive
+status: deep-dive_complete
 last_checked: 2026-06-11
 size_estimate: "140 KB / docs page"
 audience_tags:
@@ -17,10 +18,10 @@ audience_tags:
   devops: high
   cc_experience: used
 primary_author: Anthropic
-char_count: 4896
-overflow: false
+char_count: 13672
+overflow: true
 promote_to_brief: true
-promote_to_deep_dive: null
+promote_to_deep_dive: true
 ---
 
 # Hooks（官方文档）
@@ -123,3 +124,258 @@ skill / agent frontmatter   → skill/agent 内联
 4. **「SessionStart 注入 context」章**：动态加载项目状态 / CI 结果 / team 知识
 5. **「企业级 Hook 治理」章**：`allowManagedHooksOnly` + hook 审计 + 灾难回滚
 6. **「Hook 安全」章**：8 条陷阱 + 防御模板
+
+---
+
+## Deep-Dive（深读）
+
+### 主题 1：Hook 完整 Contract 详表
+
+Hook 是 CC 中最复杂的扩展点，把「事件 → 决策 → 副作用」三件事绑死。下面把 Brief 已说的概念**精确化到字段级**，每条都给出原文锚点 + 实战模板。
+
+#### 1.1 五类 Handler 形态
+
+| Handler | 形态 | 输入 | 输出 | 决策语义 |
+|---|---|---|---|---|
+| **`command`** | shell 命令 | stdin JSON（事件上下文）| exit code + stdout | `exit 0` 成功 / `exit 2` 阻塞 / 其它非阻塞 |
+| **`http`** | HTTP 端点 | POST JSON body | 2xx + JSON body | `{decision, reason}` 或 `hookSpecificOutput` |
+| **`mcp_tool`** | 调 MCP server | 工具调用 | 工具返回值 | 与 MCP 工具返回值同 |
+| **`prompt`** | 用 LLM 决策 | 事件 + LLM prompt | LLM 判定 | decision 字段 |
+| **`agent`** | 派独立 subagent | 事件 + agent 指令 | subagent 判定 | 同 `prompt` 但可用工具 |
+
+- **选型决策**：
+  - 简单决策（拦截 / 改写 / 拒绝）→ `command` 最快
+  - 需要外部状态（PR status / DB 查询）→ `http`
+  - 需要 LLM 推理（"这是否合理"）→ `prompt` / `agent`
+  - MCP 已有的能力直接复用 → `mcp_tool`
+
+#### 1.2 事件完整清单（按层级）
+
+| 层级 | 事件 | 触发时机 | 关键输出字段 |
+|---|---|---|---|
+| **会话级** | `SessionStart` | session 启动 | `additional_context` 注入 |
+| | `SessionEnd` | session 退出 | 清理 hook |
+| | `Stop` | agent 主动停止 | 阻止继续（force continue）|
+| | `Notification` | 通知事件 | 控制通知方式 |
+| **轮次级** | `UserPromptSubmit` | 用户 prompt 提交 | 改写 / 注入 context |
+| | `SubagentStart` | subagent 启动 | 注入 subagent context |
+| | `SubagentStop` | subagent 结束 | 监管 subagent 退出 |
+| **工具级** | `PreToolUse` | 工具调用前 | **`permissionDecision`** + **`updatedInput`** |
+| | `PostToolUse` | 工具调用后 | 反馈 / 自动重试 |
+| | `PermissionRequest` | 权限弹窗 | 替代默认弹窗 |
+
+- **`PreToolUse` 是「最重」事件**——**唯一**能改写 tool 输入的事件（其它只能 block / allow）
+- **`PermissionRequest` 替代默认弹窗**——给企业做"自定义审批 UI"的能力
+
+#### 1.3 执行契约（按 Handler 类型）
+
+**`command` hook exit code 契约**：
+
+| exit code | 语义 | 副作用 |
+|---|---|---|
+| `0` | 成功 | hook 输出进 agent context |
+| `2` | **阻塞** | stderr 进 agent context（**其它非 0 不进**）|
+| 其它非 0 | 非阻塞失败 | 错误进 stderr，agent 继续 |
+
+- **关键陷阱**：很多人以为 `exit 1` 也阻塞——**不是**，只有 `2` 是阻塞语义
+
+**`http` hook 契约**：
+
+```
+HTTP 2xx + JSON body:
+{
+  "decision": "block" | "approve" | undefined,
+  "reason": "string (when decision=block)",
+  "hookSpecificOutput": {
+    "permissionDecision": "allow" | "deny" | "ask" | "defer",
+    "updatedInput": {...}
+  }
+}
+```
+
+**`prompt` / `agent` hook 契约**：LLM 返回 + decision 字段。
+
+#### 1.4 配置三层结构
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/validator.sh",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+- **event → matcher → hook**——三层嵌套
+- **`matcher`** 可用 glob 模式（如 `Bash` / `Edit|Write` / `mcp__.*`）
+- **每个 event 可配多个 hook**（数组），按顺序执行
+
+#### 1.5 作用域链 5 层
+
+```
+~/.claude/settings.json      # user 级
+.claude/settings.json        # project 级（commit 进 git）
+.claude/settings.local.json  # project 本地（gitignore）
+插件 hooks/hooks.json         # plugin 级
+skill / agent frontmatter    # 内联级（仅该 skill / agent）
+```
+
+- **优先级**（从高到低）：managed > user > project > local > plugin > 内联
+- **合并语义**：同 event + 同 matcher 的 hook 全部执行（**不**去重）
+- **企业管控**：`allowManagedHooksOnly` 强制只跑托管 hook——**完全屏蔽** user/project/plugin
+
+### 主题 2：8 条安全基线（CC Hook 专属）
+
+Hook 以**系统用户全权限**跑——这是所有安全问题的根。每条基线都有具体场景 + 防御代码片段。
+
+| # | 陷阱 | 攻击/失误场景 | 防御 |
+|---|---|---|---|
+| 1 | **系统全权限** | hook 误删 `/var/lib` 数据 | hook 内部做权限收敛（用非 root 跑）|
+| 2 | **命令注入**（未引号） | `$VAR` 含 `; rm -rf /` | 永远 `"$VAR"` 双引号 |
+| 3 | **路径穿越**（`..`）| 写入 `../../../etc/passwd` | 校验路径前缀 `${CLAUDE_PROJECT_DIR}/` |
+| 4 | **相对路径歧义** | hook 跑的 cwd 不可预期 | 用 `${CLAUDE_PROJECT_DIR}` 绝对路径 |
+| 5 | **直读 secret** | hook 把 `.env` 内容外发 | 显式排除 `.env` / `.git` / `*.pem` |
+| 6 | **无 controlling terminal**（v2.1.139+）| 通知 / 响铃失败 | 用 `terminalSequence` 字段（OSC 0/1/2/9/99/777 + BEL）|
+| 7 | **无 timeout** | 死循环 hook 卡死 CC | 设 `timeout: N`（默认 60s）|
+| 8 | **敏感信息泄露** | hook 把 secret 写进日志 | 显式 redact / 用专用 secret store |
+
+#### 实战模板（5 必查 + 3 必防）
+
+**`pre-bash-validator.sh`** 模板（防御 1-4）：
+
+```bash
+#!/usr/bin/env bash
+# stdin: { tool: "Bash", toolInput: { command: "..." } }
+set -euo pipefail
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.toolInput.command')
+
+# 防御 1: 拦截 rm -rf
+if echo "$COMMAND" | grep -qE 'rm\s+-rf?\s+/'; then
+  echo "DENY: rm -rf / 不允许" >&2
+  exit 2
+fi
+
+# 防御 2: 拦截 sudo
+if echo "$COMMAND" | grep -qE '^sudo\s'; then
+  echo "DENY: sudo 不允许" >&2
+  exit 2
+fi
+
+# 防御 3: 拦截 secret 读取
+if echo "$COMMAND" | grep -qE 'cat\s+.*(\.env|\.pem|aws_credentials)'; then
+  echo "DENY: secret 读取" >&2
+  exit 2
+fi
+
+exit 0
+```
+
+- **核心原则**：**只允许已知命令模式**，而不是**禁止已知坏命令**（黑名单永远漏）
+- **更安全模板**：`if [[ ! "$COMMAND" =~ ^(npm|yarn|pnpm|git|ls|cat|grep)\s ]]; then exit 2; fi`（白名单）
+
+### 主题 3：批判性审视 —— 反面分析（5+ 盲点）
+
+#### 盲点 1：Hook 调试极难——无原生 debug 工具
+
+**症状**：hook 跑错时，CC 只给 `exit 2` 但 stderr 进 agent context，**开发者在 terminal 看不到**。需要手动加 `set -x` 或 redirect 到日志文件，**没有 IDE 集成**。
+
+**对照**：VSCode tasks.json 有 Problems panel；Makefile 有 `--dry-run`；CC hook **没**对应能力。
+
+**对我们的启示**：教程必须配「Hook 调试模板」（wrapper script 写日志到 `${CLAUDE_PROJECT_DIR}/.claude/hook-debug.log`）——这是文档未给但开发者必备的脚手架。
+
+#### 盲点 2：matcher 表达力弱——不能组合 AND/OR/NOT
+
+**症状**：`matcher: "Bash|Edit"`（OR）OK，但 `matcher: "Bash AND NOT *secret*"`（组合）**不支持**。要表达「Bash 命令但不含 secret」必须 hook 内部再做字符串过滤。
+
+**对照**：GitHub Actions 的 paths filter 支持复杂 boolean；CC matcher 退化为单层字符串 glob。
+
+**对我们的启示**：教程写「matcher 设计原则」——**让 matcher 尽量宽，hook 内部做精细判断**（而不是堆 matcher 模式）。
+
+#### 盲点 3：stdin 阻塞陷阱——大 JSON 会卡
+
+**症状**：command hook 收 stdin JSON，**但某些 shell 启动器（如 `nix-shell`）会缓冲 stdin**——hook 永远等不到 JSON。
+
+**对照**：HTTP hook 用 POST body 无此问题；`prompt` hook 也无。
+
+**对我们的启示**：写 hook 时显式 `INPUT=$(cat <<'EOF'` 用 heredoc 防 stdin 缓冲；或用 `--no-sandbox` shell 启动器。
+
+#### 盲点 4：OSC 字符兼容性（v2.1.139+ 才有 `terminalSequence`）
+
+**症状**：v2.1.139 之前 hook 直写 `/dev/tty` 写 ESC 序列，v2.1.139+ 无 controlling terminal 后**全部失效**。但老 hook 代码在 issue 搜索里仍大量流传。
+
+**对照**：tmux / iTerm2 的 escape 序列文档化（OSC 0/1/2/9/99/777）——CC 文档只列了 6 个 OSC 码，**不全**。
+
+**对我们的启示**：教程给「`terminalSequence` 完整表 + 兼容性矩阵」——OSC 0 (set title) / OSC 1 (set icon) / OSC 2 (set window title) / OSC 9 (notify) / OSC 99 (progress) / OSC 777 (custom)。
+
+#### 盲点 5：性能开销——每事件多进程启动
+
+**症状**：command hook 每事件 fork+exec shell 进程（~10-50ms）。高频事件（PostToolUse 在大项目里每分钟 50+ 次）累计起来拖慢 CC。
+
+**对照**：Aider 的 hook 系统是 in-process 回调；CC 是 fork+exec——架构决定性能差距。
+
+**对我们的启示**：教程讲「PostToolUse 不要做重活」——轻量校验（grep / jq）可，重量级操作（DB 写入 / 第三方 API）应异步（写队列 / nohup）。
+
+#### 盲点 6：跨平台 terminalSequence 兼容性
+
+**症状**：OSC 序列在 Windows Terminal / ConEmu / WSL 行为差异大；macOS Terminal.app 支持 OSC 0 但不支持 OSC 9。
+
+**对照**：iTerm2 / kitty / wezterm 都支持 OSC 0/1/2/9；但默认 Windows cmd / PowerShell 终端**多数不支持**。
+
+**对我们的启示**：教程「terminalSequence 兼容矩阵」按 terminal × OSC 码分档——enterprise CC 用户要测这一档。
+
+### 主题 4：与同类工具的「沿用 vs 错位」决策表
+
+CC hook 不是孤本——Cursor / Codex / Aider / GitHub Actions 都有类似机制。教程必须讲清「**为什么用 CC hook 而非 X**」。
+
+| 概念 | CC Hook | Cursor /review | openai-codex hooks | GitHub Actions |
+|---|---|---|---|---|
+| **触发** | 6 类事件 | 推送前 / PR 同步 | 10 event 命名一致 | workflow 文件 |
+| **执行位置** | 本地进程 | 云端 / 浏览器 | 本地 Rust | 云端 runner |
+| **决策语义** | exit / JSON / LLM | 推送前自动审 | JSON schema | workflow 控制流 |
+| **可改写输入** | ✅（PreToolUse `updatedInput`）| ❌ | ✅（部分）| ✅（环境变量）|
+| **跨平台** | macOS / Linux / WSL | IDE 限定 | macOS / Linux / WSL | 跨 OS |
+| **企业管控** | `allowManagedHooksOnly` | RBAC | approval policy | org-level secrets |
+| **教程定位** | 教程「自动化与治理」主轴 | 教程「评审闭环」章引用 | 教程「同类工具横向」章引用 | 教程「CI/CD」章引用 |
+
+**沿用 vs 错位决策**：
+
+| Hook 特性 | 教程决策 | 理由 |
+|---|---|---|
+| 5 类 handler | **沿用** | 通用概念，读者已用 GitHub Actions 容易迁移 |
+| exit code 契约 | **沿用** | Unix 哲学，文档化好 |
+| `PreToolUse.updatedInput` | **沿用 + 加深** | CC 独有，但概念对标 Codex 的 `tool_input_mod`——可对比 |
+| `allowManagedHooksOnly` | **沿用** | 企业用户强需求 |
+| OSC `terminalSequence`（v2.1.139+）| **错位** | CC 独有，**不**强求读者掌握，标「进阶可选」|
+| `prompt` / `agent` handler | **沿用 + 错位** | 概念对标 Cursor 的 `/review`（也是 LLM 决策），但实现不同 |
+| matcher glob 表达力弱 | **错位 + 加深** | 教程教「matcher 宽 + hook 内精细判断」原则，反向工程化 |
+
+### 可直接复用的资产清单
+
+1. **8 条安全基线**（上面主题 2）——直接做成教程「Hook 安全」章 checklist
+2. **`pre-bash-validator.sh` 模板**——5 必查 + 3 必防
+3. **5 层作用域链配置示例**——从 user 到内联 5 个 `settings.json` 完整文件
+4. **OSC `terminalSequence` 兼容矩阵**——OSC 0/1/2/9/99/777 × macOS Terminal / iTerm2 / kitty / wezterm / Windows Terminal
+5. **Hook 调试模板**（盲点 1 反例沉淀）——wrapper 写 `${CLAUDE_PROJECT_DIR}/.claude/hook-debug.log`
+6. **Hook 性能预算**（盲点 5）——按事件类型给最大耗时建议（PreToolUse < 50ms / PostToolUse < 100ms / SessionStart < 500ms）
+7. **「matcher 宽 + hook 内精判」原则**——把 GitHub Actions 的 `paths` 习惯迁移过来
+8. **`/review`-style hook 配置**——PostToolUse 跑 lint + 跑测试 + 输出 issue 列表
+
+### 教程章节候选（Deep-Dive 阶段会展开）
+
+1. **「Hook 安全 8 条基线」章**：8 条陷阱 + 5 必查 + 3 必防 + 调试模板
+2. **「PreToolUse 权限闸口实战」章**：白名单 vs 黑名单 + `updatedInput` 改写 + secret 注入
+3. **「企业级 Hook 治理」章**：`allowManagedHooksOnly` + hook 审计 + 灾难回滚 + 跨平台兼容
+4. **「vs Cursor /review / openai-codex hooks / GitHub Actions」章**：6 维对照决策表
+5. **「OSC terminalSequence 实战」章**：6 个 OSC 码 × 5 个 terminal 兼容矩阵
+6. **「Hook 调试模板」章**：wrapper script 写日志 + `set -x` + 死循环防御

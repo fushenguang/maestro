@@ -5,10 +5,11 @@ slug: gemini-cli
 url: 'https://github.com/google-gemini/gemini-cli'
 source_type: repo
 source_subtype: methodology
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 last_commit: 5d4af9f812bb08750e5a14ee66dd4c1f7a90b13c
 stars: null
@@ -19,9 +20,9 @@ audience_tags:
   devops: mid
   cc_experience: used
 primary_author: Google Gemini team
-char_count: 1857
+char_count: 6901
 overflow: true
-promote_to_brief: null
+promote_to_brief: true
 promote_to_deep_dive: null
 fetched_via: pre_seeded_cache
 fetched_via_fallback: true
@@ -68,3 +69,85 @@ notes: subagent v2：主 Claude pre-seed cache（v1 因 API 429 失败）
 - `packages/a2a-server/` — A2A server（CC 无对应）
 
 > **未解决**：A2A vs MCP 边界；Gemini 3 vs Opus 4 实测；1M 长 repo 有效率；model-routing fallback 判定。
+
+## Brief（梳理）
+
+### 7 包 monorepo 详解（`GEMINI.md:L21-L29`）
+
+| Package | 角色 | 关键内容 |
+|---|---|---|
+| **`packages/cli`** | 用户面终端 UI + 输入处理 + 渲染 | React Ink 渲染层 |
+| **`packages/core`** | 后端逻辑 + Gemini API 编排 + prompt 构造 + tool 执行 | MCP 客户端 / Subagent 调度 / 工具注册 |
+| **`packages/a2a-server`** | **A2A server 实现**（CC 无对应）| Agent-to-Agent 协议实验——多 agent 跨进程协作 |
+| **`packages/sdk`** | 嵌入式 SDK——程序化调用 Gemini CLI 能力 | npm + Python 双语言 |
+| **`packages/devtools`** | 集成开发者工具（Network/Console inspector）| 类 Chrome DevTools 的 CLI 调试器 |
+| **`packages/test-utils`** | 共享测试工具 + test rig | 跨包 mock / fixture |
+| **`packages/vscode-ide-companion`** | **VS Code 扩展**，与 CLI 配对 | IDE 集成（CC 走独立 IDE 路径）|
+
+- **工程基线**（`GEMINI.md:L13-L20`）：Node >= 20（推荐 20.19.0 for dev）/ TypeScript / React Ink / Vitest / esbuild / ESLint + Prettier
+- **License header 强制**（`GEMINI.md:L78-L81`）：ESLint 强制要求 `Copyright 2026 Google LLC` Apache-2.0 header 在新 `.ts`/`.tsx`/`.js` 文件——**企业级治理**信号
+
+### 三种认证路径（README L150-L209）
+
+| 方式 | 配额 | 适用场景 | 入口 |
+|---|---|---|---|
+| **Sign in with Google (OAuth)** | 60 req/min + 1000/day + Gemini 3 + **1M context** | 个人开发 / Code Assist License 持有者 | 浏览器 OAuth 流 |
+| **GEMINI_API_KEY** | 1000/day + Gemini 3 (flash + pro 混合) | 需要具体模型控制 / 付费 tier | `export GEMINI_API_KEY=...` |
+| **Vertex AI** | 企业配额 + 高级安全合规 | 生产 / 企业部署 | `export GOOGLE_API_KEY=...` + `GEMINI_GENAI_USE_VERTEXAI=true` |
+
+- **零摩擦入口**：OAuth 路径**无需 API key**——个人 Google 账号即可，免费 1M context。
+- **CC 对比**：CC 默认 Anthropic API key；Gemini OAuth 路径对应 CC 的 Anthropic Console OAuth（但**配额**和**模型选择**更受限）。
+
+### 三层 GEMINI.md（Context Files）
+
+`docs/cli/gemini-md.md:L11-L37` 详述：
+
+| 层 | 路径 | 角色 |
+|---|---|---|
+| **Global context** | `~/.gemini/GEMINI.md` | 用户级默认 |
+| **Workspace context** | `./GEMINI.md` | 项目级 |
+| **JIT context** | 工具访问时向上扫到 trusted root | **按需加载**——最小化 token 消耗 |
+
+- **vs CC CLAUDE.md**：CC 用 4 级加载链（user / project / subdir / auto memory）；Gemini 用 3 层 + JIT 动态扫到 trusted root
+- **JIT 设计价值**：避免长 context 中无关注释撑爆 token；agent 实际需要某目录信息时才加载
+
+### MCP / Hooks / Skills / Subagents 全部对标 CC
+
+| 概念 | Gemini CLI 实现 | CC 对应 |
+|---|---|---|
+| **MCP** | 3 transport（stdio / SSE / Streamable HTTP）| 4 transport（多 Streamable HTTP 上/下变体）|
+| **Hooks** | 独立 hook 体系（独立文件 + event schema）| 6 类 hook 事件（`PreToolUse` / `PostToolUse` / `Stop` / `SessionStart` 等）|
+| **Skills** | 完整 Skills 体系（`packages/core` 含 skill loader）| Skill 是 CC 一等公民 |
+| **Subagents** | 本地 subagents + **Remote subagents** | CC `Task` tool 仅本地 |
+| **A2A** | **`packages/a2a-server`**（独立包）| **无**——CC 靠 MCP 做工具共享，不做 agent 跨进程 |
+| **GEMINI.md / CLAUDE.md** | 3 层 + JIT | 4 级加载链 + auto memory |
+
+- **差异化**（CC 没有的）：
+  - **A2A server**：跨进程 agent 协议（**未成熟**，标 experimental）
+  - **Remote subagents**：远端 agent 调度（vs CC 只能本地 Task 调起）
+  - **JIT context scanning**：按需向上扫 trusted root
+
+### 高级能力（README Key Features）
+
+- **Multimodal**（README L113）：从 PDF / image / sketch 生成完整 app——CC 无原生多模态输入（只接受 text）
+- **Google Search grounding**（README L127）：实时信息检索内置——CC 需自接 Search MCP
+- **Checkpointing**（README L129）：保存/恢复复杂会话——CC 无原生 checkpoint（`/compact` 是另一回事）
+- **Headless mode**（README L316）：`gemini -p "..." --output-format stream-json`——脚本化 CI 用
+- **VS Code companion**（`vscode-ide-companion` 包）：IDE 集成——Cursor 风格但弱
+
+### 跨源关联
+
+- vs `openai-codex`（brief）：本 = Google 出品 + 1M context + 7 包 monorepo；那 = OpenAI 出品 + 100 crate Rust workspace + sandbox×approval 双轴——**两家大厂的同源竞品**
+- vs `aider`（brief）：本 = Google 终端 + TS + Gemini 3；那 = OSS Python + litellm + Repo-map——**闭源厂商 vs OSS 社区**
+- vs `anth-claude-code-overview`（brief）：本 = 同类工具**横向对比**；那 = CC 自家全景——**外部视角 vs 内部视角**
+- vs `anth-mcp`（brief）：本 = Gemini 3 MCP transport；那 = CC 4 transport——**MCP 实现层差异**
+- vs `qodo-merge`（brief）：本 = generalist CLI；那 = vertical PR agent——**广度 vs 深度**
+
+### 教程章节候选
+
+1. **「同类工具横向：CC / Codex / Gemini CLI / Aider」章**：4 工具 6 维决策表（栈 / 多模型 / 审批 / 协作 / 上下文 / 商业模式）
+2. **「1M context 的实战边界」章**：长 repo / 长 transcript 实测 + 与 CC 200k 对比
+3. **「Google OAuth vs API key 路径选择」章**：3 认证方式 trade-off（配额 / 模型选择 / 合规）
+4. **「A2A vs MCP：agent 跨进程协议的未来」章**：a2a-server 实验包的现状 + 与 MCP 边界
+5. **「JIT Context 扫描设计」章**：3 层 GEMINI.md + 动态加载 vs CC 4 级静态加载链
+6. **「Google Search grounding 内置化」章**：免 MCP 接入实时信息——CC 需自接的痛点对比

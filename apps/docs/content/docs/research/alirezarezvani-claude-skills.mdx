@@ -5,10 +5,11 @@ slug: alirezarezvani-claude-skills
 url: https://github.com/alirezarezvani/claude-skills
 source_type: repo
 source_subtype: skill_collection
-tier: card
+tier: brief
 tiers_present:
   - card
-status: card_complete
+  - brief
+status: brief_complete
 last_checked: 2026-06-11
 last_commit: 2026-06-03
 last_commit_sha: fcd4fa1b203a9a0dc44d2482af21adfb53b7a727
@@ -20,7 +21,9 @@ audience_tags:
   cs_background: yes
   devops: high
   cc_experience: used
-promote_to_brief: null
+char_count: 9575
+overflow: true
+promote_to_brief: true
 promote_to_deep_dive: null
 ---
 
@@ -72,3 +75,107 @@ promote_to_deep_dive: null
 - `CLAUDE.md:1-100` — 项目目标、modular CLAUDE.md 架构、域分布
 - `CLAUDE.md` ClawHub Publishing Constraints — plugin.json schema 6 条硬规则
 - `CLAUDE.md` Anti-Patterns to Avoid — 「LLM calls in scripts」「Generic advice」等 5 条硬底线
+
+## Brief（梳理）
+
+### 16 个 Domain 主题分布（按 skill 数量）
+
+| Domain | 代表 skill | 工程性 | 教程价值 |
+|---|---|---|---|
+| **engineering** | agent-designer / rag-architect / mcp-server-builder / pr-review-expert / ci-cd-pipeline-builder / observability-designer | ★★★★★ | 真实复杂 skill 案例 |
+| **engineering-team** | team-topologies / dora-metrics | ★★★★ | 工程治理范本 |
+| **business-operations** | meeting-facilitator / standup-post | ★★★ | 跨职能 SOP |
+| **business-growth** | gtm-strategist / pricing-strategist | ★★ | GTM 框架 |
+| **product-team** | product-strategist / user-story-writer | ★★ | 产品方法论 |
+| **marketing** | content-strategist / seo-optimizer | ★★ | 营销战术 |
+| **c-level-advisor** | ceo-advisor / cfo-advisor / cto-advisor | ★ | 决策框架 |
+| **finance** | financial-analyst / fp-and-a | ★★ | 财务建模 |
+| **ra-qm-team** | regulatory-affairs / quality-management（**临床研究永远不替代医生**）| ★★★ | 合规边界 |
+| **research** | literature-reviewer / experiment-designer | ★★★ | 学术方法论 |
+| **research-ops** | research-ops-coordinator | ★★ | 学术工程化 |
+| **commercial** | sales-engineer / deal-desk | ★ | 销售赋能 |
+| **compliance-os** | compliance-officer / gdpr-specialist | ★★★ | 合规工作流 |
+| **productivity** | task-prioritizer / focus-coach | ★ | 个人效能 |
+| **orchestration** | workflow-orchestrator / multi-agent-coordinator | ★★★★ | 多 agent 编排 |
+| **markdown-html** | doc-formatter / html-builder | ★ | 工具集 |
+
+- **广度信号**：覆盖 16 domain 比单工具源（如 qodo-merge 仅 PR 自动化）大 1 个量级
+- **权威溯源密度**：每 reference 5-7 个 source（IAS 38 / NIST / WCAG / DORA / Tufte / Cohen / Schoenfeld / NN/g / Kotler）
+
+### 13 平台转换矩阵（`convert.sh` 一键）
+
+| 平台 | 输出路径 | 文件格式 |
+|---|---|---|
+| **Claude Code** | `.claude/skills/<name>/SKILL.md` | YAML + Markdown |
+| **Codex CLI** | `.codex/skills/<name>/SKILL.md` | 同 CC |
+| **Gemini CLI** | `.gemini/skills/<name>/GEMINI.md` | Markdown（无 frontmatter）|
+| **Cursor** | `.cursor/rules/<name>.mdc` | `.mdc`（MDC 格式）|
+| **Aider** | `CONVENTIONS.md` | 单文件 |
+| **Kilo** | `.kilocode/rules/<name>/` | 同 CC |
+| **Windsurf** | `.windsurf/skills/<name>/` | 同 CC |
+| **OpenCode** | `.opencode/skills/<name>/` | 同 CC |
+| **Augment** | `.augment/rules/<name>/` | 同 CC |
+| **Antigravity** | `<platform-specific>` | 自定义 |
+| **Hermes** | `~/.hermes/skills/<name>/` | 同 CC |
+| **Mistral Vibe** | `~/.vibe/skills/<name>/` | 同 CC |
+| **OpenClaw** | `<platform-specific>` | 自定义 |
+
+- **核心优势**：15 秒内全平台转——这在 13 个工具并存的生态里是「杀手特性」
+- **vs superpowers**：superpowers 7 平台，alirezarezvani 13 平台——**6 平台之差** + stdlib-only 严谨度
+
+### Path-B 11-file Contract 标准化
+
+每 skill 必含 11 个文件：
+
+| 文件类型 | 数量 | 角色 |
+|---|---|---|
+| **stdlib tools** | 3 | Python 标准库实现的可执行脚本 |
+| **references** | 3 × 5-7 sources | 文档 + 权威溯源（每 ref 5-7 source）|
+| **template** | 1 | 可复用模板 |
+| **cs-\* agent** | 1 | 命名空间 agent |
+| **/cs:\* command** | 1 | 命令接口 |
+| **plugin.json** | 1 | 元数据（CI 强制）|
+| **SKILL.md** | 1 | 入口 + frontmatter |
+
+- **vs superpowers「SKILL.md only」**：是**下一步演化**——从「单 .md 入口」到「11-file 完整 contract」
+- **megaprompt verbatim 保留**：所有 skill 的 prompt 全文保留——可审计 / 可复制
+
+### 5 条工程治理硬规则（`CLAUDE.md` Key Principles）
+
+1. **Algorithm over AI** — Python 工具**全部标准库实现、零 pip install、不调 LLM**
+2. **Strict typing** — pyright / mypy 全覆盖
+3. **Test coverage gate** — CI 强制覆盖率门槛
+4. **No silent fallbacks** — 错误必须显式，不允许 try/except 吞错
+5. **Progressive disclosure** — SKILL.md < 5000 token，详细分到 `references/`
+
+### 6 类安全风险 + 工具
+
+`skill-security-auditor` 安装前扫：
+
+| 风险类型 | 扫描内容 |
+|---|---|
+| **Command injection** | shell 调用是否安全 |
+| **Code execution** | exec/eval 是否滥用 |
+| **Data exfiltration** | 网络外发是否可疑 |
+| **Prompt injection** | skill 内容是否被外部 prompt 操控 |
+| **Supply chain** | 依赖是否可信 |
+| **Privilege escalation** | 权限是否被放大 |
+
+- **CI 集成**：`scripts/check_plugin_json.py --all` 在 `ci-quality-gate.yml` 每 PR 跑
+- **分支保护**：feature → dev → main，main 禁直推
+
+### 跨源关联
+
+- vs `superpowers`（deep-dive）：本 = **skill 库**（338+ 数量 + 11-file 模板）；那 = **14 skill 方法论体系**（数量少但强制）——**库 vs 框架**
+- vs `claude-skills-blog`（brief）：本 = **已写好的 skill 集合**（实际可用）；那 = **写 skill 的设计哲学**（meta-level）——**实例 vs 元方法**
+- vs `anth-agent-skills`（brief）：本 = **社区贡献**（338+ skills 跨 13 平台）；那 = **Anthropic 官方 4 类示例**（docx/pdf/pptx/xlsx + 简单示例）——**社区 vs 官方**
+- vs `qodo-merge`（brief）：本 = **广义 skill 库**（任何任务）；那 = **单一垂直 agent**（PR 自动化）——**横向广度 vs 纵向深度**
+
+### 教程章节候选
+
+1. **「Skill 库架构模式」章**：Path-B 11-file contract 作为「可复用 skill 模板」教学
+2. **「13 平台分发策略」章**：convert.sh 工作流 + 各平台输出格式差异
+3. **「工程治理 5 条硬规则」章**：stdlib-only / strict typing / coverage gate / no silent fallback / progressive disclosure
+4. **「Skill 安全审计」章**：skill-security-auditor 6 类风险 + CI 集成
+5. **「Domain 分类 vs 功能分类」章**：按角色（c-level / engineering）vs 按工具（filesystem / git）——分类法选择
+6. **「权威溯源密度」章**：每 ref 5-7 source 的工程价值（学术 canon + 行业 best practice）

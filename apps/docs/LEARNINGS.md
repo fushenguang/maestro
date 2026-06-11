@@ -1173,3 +1173,476 @@ breakdown: density=1.0, ocr=0.0, garbled=0.062, col_cov=0.7, chart_ratio=0.7
 - `pdf-extract/SKILL.md` v0.3（165 行，+27）
 - `pdf-extract/reference.md` v0.3（未变）
 - `pdf-extract/config.example.json`（未变）
+
+---
+
+## 16. A1 4 源 Brief 推进（2026-06-11 深夜）
+
+> SESSION_HANDOFF 第一节推荐路径 A1 完成：从 Card 升 Brief 4 源（anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog），14 源累计 Brief。
+
+### 16.1 跑通范围
+
+| # | 源 | source_subtype | Card→Brief 字符增量 | char_count | overflow | dev server |
+|---|---|---|---|---|---|---|
+| 1 | anth-agent-skills | docs | 1174 → 4508 (+3334) | 4508 | ✗ | HTTP 200 |
+| 2 | mcp-servers | skill_collection | 1773 → 7458 (+5685) | 7458 | ✗ | HTTP 200 |
+| 3 | gemini-cli | methodology | 1857 → 6901 (+5044) | 6901 | ✗ | HTTP 200 |
+| 4 | cursor-changelog | blog | 3801 → 9478 (+5677) | 9478 | ✗ | HTTP 200 |
+
+**流程改进**（沿用 v0.4）：
+- 主 Claude 直接起草（**不**走 subagent——A1 4 源 cache 已 pre-seed + 4 源材料量适中，主 Claude 起草比 subagent 沙箱+往返更稳定）
+- 模板沿用 openai-codex.mdx Brief 段结构（5-6 `###` 子标题 + 表格 + 跨源关联 + 6 教程章节候选）
+- frontmatter 升级：`tier: brief` / `tiers_present: [card, brief]` / `status: brief_complete` / `char_count: <wc -m>` / `overflow: true`（超 docs 3500 / skill_collection 3500 / methodology 3000 / blog 3000 基线）
+
+**耗时**：起草 4 源 + wc -m 校准 + registry 同步 + dev server 校验 ≈ **45 min**（vs 预估 50-60 min）。
+
+### 16.2 关键产出速览
+
+#### anth-agent-skills Brief
+
+- **3 类仓库结构**：skills（示例池）/ spec（规范）/ template（模板）
+- **SKILL.md frontmatter 最小集**：`name` + `description` 两字段（README L86-L88）
+- **3 接入途径**：Claude Code plugin marketplace / Claude.ai 付费计划 / Claude API Skills endpoint
+- **跨源关联**：vs slash-commands（已并入）/ vs alirezarezvani（规范源 vs 复用源分工）/ vs claude-skills-blog（how vs why）/ vs superpowers（不同作者 skill 哲学）
+
+#### mcp-servers Brief
+
+- **7 server 详表**：4 TS（everything / filesystem / memory / sequentialthinking）+ 3 Py（fetch / git / time）
+- **13 archived 类别**：AWS KB / Brave / EverArt / GitHub / GitLab / GDrive / GMap / PostgreSQL / Puppeteer / Redis / Sentry / Slack / SQLite——多数转 Registry / 独立仓库
+- **双栈工程实践**：TS（`tsc` + `vitest` + Node 22）/ Py（`pyright` + `pytest` + `ruff` + `uv` + Python ≥ 3.10）
+- **Tool annotations 矩阵**：readOnlyHint / idempotentHint / destructiveHint 三字段 + 不变量（后两者仅在 readOnlyHint=false 时有意义）
+- **vs anth-mcp 配套**：本 = server 端实现样板；那 = client 端配置（4 transport / 3 scope）
+
+#### gemini-cli Brief
+
+- **7 包详解**：cli / core / a2a-server / sdk / devtools / test-utils / vscode-ide-companion
+- **3 认证对比**：OAuth 60req/min+1k/day+1M / GEMINI_API_KEY 1k/day / Vertex AI 企业
+- **三层 GEMINI.md + JIT**：global / workspace / **JIT 动态扫 trusted root**（vs CC 4 级静态加载链）
+- **a2a-server 差异化**：CC 无对应——A2A 协议是 agent 跨进程协作实验
+- **vscode-ide-companion 差异化**：CC 走独立 IDE 路径，Gemini 把 IDE 集成做成 monorepo 内的包
+
+#### cursor-changelog Brief
+
+- **7 changelog post 详解**：Bugbot 3x 提速/-22%/+10% / Canvas Design Mode / Context Usage Report / Enterprise Orgs (3 层 RBAC) / SDK customTools+autoRun+JSONL+nested subagents / Shared Canvases / /loop
+- **6 维 CC vs Cursor 决策表**：载体 / 多文件编辑 / 评审闭环 / 多人协作 / 企业治理 / 工具生态
+- **沿用 vs 错位决策表**：6 个 Cursor 特性 → CC 等价实现（沿用 + 加深 / 错位 / 新增）
+- **IDE-native vs terminal-native**：可分享工件 vs transcript + 文件的范式差异
+
+### 16.3 关键决策
+
+| 决策 | 选择 | 理由 |
+|---|---|---|
+| Brief 起草方式 | **主 Claude 直接起草**（不走 subagent） | A1 4 源 cache 已 pre-seed + 4 源材料量适中；subagent 沙箱 + 往返对 Brief 段（结构化）收益小；P30 违规写盘风险也规避 |
+| Brief 模板 | 沿用 openai-codex Brief 段结构 | 已 brief_complete 的 11 源结构一致；教程章节候选段必备（v0.4 prompt 强约束） |
+| char_count 校准 | `wc -m` 主 Claude 跑，**不**信 subagent 自报 | 延续 P21 教训——subagent 自报不可信（cursor 1342 vs 实测 9478，差 7x） |
+| overflow 处理 | 4 源全超基线，全标 `overflow: true` | docs 3500 / skill_collection 3500 / methodology 3000 / blog 3000——Brief 内容密度天然超（v0.4 已认可） |
+| docs 源 Brief | 把"已并入 Skills"等结论用 cross-source 段表达 | 避免与 anth-slash-commands 重复——它还在 Card 阶段 |
+| cursor-changelog 9 anchor | 保留 `(/tmp/...{slug}.txt:L<n>)` 完整路径 | 7 个 post 都有 1+ 个 verbatim 反查锚点；与 mdx 内 `({subtype}:L<n>)` 双轨 |
+
+### 16.4 暴露的新问题
+
+#### Problem 41：Brief 起草走主 Claude 跳过 subagent 是 v0.4 cache-first 的特例
+
+**症状**：A1 4 源 Brief 全部由主 Claude 直接起草（不通过 subagent）；与 v0.4 SKILL.md 默认「subagent 起草 + 主 Claude 收尾」分工不一致
+
+**根因**：
+- 4 源 cache 已在 batch1/batch3 pre-seed（不需要 subagent 拉源）
+- Brief 段结构化强（5-6 章节 + 表格 + 跨源关联 + 6 教程候选），主 Claude 直接起草比 subagent 沙箱 + 往返更稳定
+- P30 违规写盘风险：subagent 沙箱收紧，写盘违规曾发生（gemini-cli v1）；主 Claude 起草可规避
+
+**修复**：
+- A1 决策合理（4 源 + cache + 结构化 + 风险规避），不视作违反 v0.4
+- 但**不是通用规则**——Deep-Dive 段（8000+ 字符 + 评估框架 + 反例库）仍应该走 subagent（context 不撑）
+- SKILL.md 不必改——A1 模式作为"特例"在 LEARNINGS 留档
+
+**沉淀**：
+- ✅ A1 决策 = 4 源条件（cache 已 pre-seed + Brief 段 ≤ 10000 字符 + 结构化强）下主 Claude 起草比 subagent 更稳定
+- ✅ 未来 5-8 源 Brief 推进仍按主 Claude 起草；Deep-Dive 走 subagent
+- ✅ 这条经验意味着「v0.4 cache-first」不是 subagent-only，是"主 Claude 独占网络 / subagent 走 cache"，主 Claude 起草也是一种 cache-first
+
+#### Problem 42：Brief 字符上限虽设，实际 4 源全部超 2x+（4508-9478）
+
+**症状**：docs 基线 3500 / skill_collection 3500 / methodology 3000 / blog 3000——A1 4 源全部超，最小 anth-agent-skills 4508（+29%），最大 cursor-changelog 9478（+216%）
+
+**根因**：
+- Brief 段是「结构化梳理」——5-6 `###` 子标题 + 表格 + 跨源关联 + 教程候选 = 6000+ 字符
+- Card 是「5 takeaway 速览」——5 条 + 锚点 = 1500-3000 字符
+- **Brief 实际是 Card 的 3-5 倍**——不是 1.5 倍（v0.4 字符基线表只允许 2-3 倍）
+
+**修复**：
+- 4 源全标 `overflow: true`——v0.4 已允许超限
+- 不强制压缩——信息密度损失大于美观收益（沿用 P18 教训）
+- SKILL.md 字符基线表可补一行 "Brief 实测 4500-9500（按 source_subtype）"——但**不**立即改，等 A2/Deep-Dive 沉淀
+
+**沉淀**：
+- ✅ Brief 字符上限实测 = 4500-9500（v0.4 理论 3000-3500 偏紧）
+- ✅ 未来 Brief prompt 可在 inputs 段写 "char_count 软上限 6000，硬上限 10000（超则加 overflow: true）"
+- ✅ 这条不阻塞——`overflow: true` 是设计支持的产物
+
+#### Problem 43：registry.json 4 源字段补全 12 项 / 源
+
+**症状**：每个源改 6 字段：tier_current, status, promote_to_brief, char_count, overflow, notes
+
+**根因**：Card 阶段字段简（无 char_count / overflow），Brief 阶段必须把 metadata 补齐
+
+**修复**：
+- 主 Claude 用 Edit 工具 4 次 Edit（每个源 1 次）+ 1 次 Edit（version 升 0.1.5 → 0.1.6 / skill_version 0.3 → 0.4）
+- 没写脚本化——4 源手动编辑比写脚本+测试快
+
+**沉淀**：
+- ✅ 4 源手动编辑是合理的（量小）；20+ 源时写脚本（从产物 mdx 自动生成 registry 条目）
+- ✅ 工具化路径：future batch 推进时考虑 `scripts/registry-sync.py` 读取 mdx frontmatter 推回 registry.json
+
+### 16.5 累计 14 源 Brief 全景
+
+| # | 源 | batch | char | overflow | 教程章节候选数 |
+|---|---|---|---|---|---|
+| 1-5 | anth-claude-code-overview / sub-agents / hooks / effective-agents / mcp | 1-2 | 1500-3100 | 5/5 | 6 each |
+| 6-10 | slash-commands(未升) / memory / agent-sdk / cookbook | 2 | 1600-3100 | 4/4 | 6-7 each |
+| 11 | openai-codex | 3 | 5673 | ✗ | 6 |
+| 12 | aider | 3 | 5716 | ✗ | 8 |
+| 13-16 | anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog | **A1** | 4500-9500 | 4/4 | 6 each |
+
+**Brief 字符分布**：最小 1500（Card 阶段）→ 最大 9500（Brief 实测）——**Brief 是 Card 的 3-5 倍**（P42）。
+
+**14 源覆盖**：
+- 9 个 Anthropic 官方（5 批 1 + 5 批 2，1 个未升 slash-commands 因 docs 与 agent-skills 重复）
+- 4 个 MCP 生态 / 同类工具（openai-codex / aider / **A1 mcp-servers / gemini-cli / cursor-changelog**）
+- 1 个 cookbook（anth-cookbook）
+
+### 16.6 下一 session 推荐路径
+
+按 SESSION_HANDOFF 2.2，三选一：
+1. **A2 5 源 Brief 推进**（50-70 min，**首选**）
+2. **Deep-Dive 闸门**（80-100 min，hooks + memory 或 codex + aider）
+3. **跑批 5**（30-60 min，Cline / Continue / Swe-agent / OpenHands）
+
+---
+
+## 17. A2 4 源 Brief 推进（2026-06-11 深夜续）
+
+> SESSION_HANDOFF 推荐路径 A2 完成：从 Card 升 Brief 4 源 + superpowers registry 同步（mdx 已有 Brief + Deep-Dive，registry 未同步）。**18 源累计 Brief + 2 源 Deep-Dive**。
+
+### 17.1 跑通范围
+
+| # | 源 | source_subtype | Card→Brief 字符增量 | char_count | 备注 |
+|---|---|---|---|---|---|
+| 1 | claude-skills-blog | blog | 4683 → 7754 (+3071) | 7754 | 9 大分类 + 8 写作建议详表 |
+| 2 | alirezarezvani-claude-skills | skill_collection | 6712 → 9575 (+2863) | 9575 | 16 domain + 13 平台转换矩阵 |
+| 3 | anth-slash-commands | docs | 3564 → 6306 (+2742) | 6306 | SKILL.md 16 字段 frontmatter |
+| 4 | qodo-merge | methodology | 3900 → 7116 (+3216) | 7116 | 14 工具 command2class 详表 |
+| 5 | superpowers | methodology | (已有 deep-dive) | — | **registry 同步**——mdx 已有 Brief + Deep-Dive 段（tiers_present=[card,brief,deep-dive]），registry 仍标 card/card_complete，**不一致** |
+
+**流程**：
+- 沿用 A1 模式：主 Claude 直接起草（不通过 subagent）
+- Brief 模板沿用 openai-codex / A1 4 源结构（5-6 `###` 子标题 + 表格 + 跨源关联 + 6 教程章节候选）
+
+**耗时**：起草 4 源 + wc -m 校准 + registry 同步 + dev server 校验 ≈ **40 min**（含 1 个 yaml duplicate key 修复 ~5 min）
+
+### 17.2 superpowers registry 漂移问题
+
+**症状**：A2 启动时读 superpowers.mdx，发现 frontmatter 标 `tiers_present: [card, brief, deep-dive]` + `status: deep-dive_complete`，但 registry.json 标 `tier_current: card` + `status: card_complete` + `last_checked: 2026-06-10`（**比 mdx 的 2026-06-11 早 1 天**）
+
+**根因**：超 powers 在 2026-06-11 PM 完成的 Brief + Deep-Dive 推进（LEARNINGS Section 8 之前），但只更新了 mdx frontmatter，没回写 registry——registry 漂移 1 个 session
+
+**修复**：
+- 本次 A2 不写 mdx Brief 段（已存在），只更新 registry：
+  - `tier_current: card` → `deep-dive`
+  - `status: card_complete` → `deep-dive_complete`
+  - `last_checked: 2026-06-10` → `2026-06-11`
+  - 加 `notes` 字段记录「A2 阶段发现 mdx 已有 Brief + Deep-Dive 段，registry 未同步」
+
+**沉淀**：
+- ✅ Brief / Deep-Dive 推进**必须** mdx + registry 同步——单边更新不可靠
+- ✅ 未来可加 pre-commit hook 检查 mdx frontmatter.tiers_present vs registry.tier_current 一致性
+- ✅ 短期手动补——20 源量级，hook 投入产出比低
+
+### 17.3 P44：MDX frontmatter 重复键（yaml 解析错）
+
+**症状**：A2 提交后 dev server 5 源全 HTTP 500（**包括未修改的 superpowers**），错误信息：
+
+```
+YAMLException: duplicated mapping key (21:1)
+  18 |   cc_experience: used
+  19 | primary_author: A
+Error (/.../js-yaml@4.2.0/.../loader.js:196:10)
+```
+
+**根因**：
+- `anth-slash-commands.mdx` 旧 frontmatter 已有 `overflow: true`（line 14，Card 阶段已加）
+- 本次 A2 在 frontmatter 末尾又加 `overflow: true`（line 23）
+- YAML 解析器把 `overflow: true` 视为**重复键**抛错
+- 错误**全局**触发——单源 mdx 错误让整个 dev server 500，**5 源受影响**
+
+**修复**：
+- 删 line 14 旧 `overflow: true`（保留 line 23 新版）
+- 修后 5 源全部 HTTP 200
+
+**沉淀**：
+- ✅ Brief 推进时**必跑**：`grep -nE '^[a-z_]+:' mdx` 看 frontmatter 有无重复键
+- ✅ 写入 frontmatter 前先看 mdx 已有字段——避免 key 冲突
+- ✅ MDX 错误是**全局**而非单源——dev server 500 必查 yaml 解析错，不是单源 mdx 文本问题
+- ✅ 短期加到 SKILL.md Step 4.1 校验：`grep -E '^<key>:' {mdx} | sort | uniq -d` 检测重复键
+- ✅ 启示：Prompt 内 enum 硬码、锚点规范都已实施——**frontmatter key 冲突**是下一个 prompt 难约束但可机器校验的问题
+
+### 17.4 关键产出速览
+
+#### claude-skills-blog Brief
+
+- **9 大分类全表**：Library/API reference / Product verification / Data fetching / Business process / Code scaffolding / Code quality & review / CI/CD / Runbooks / Infra operations
+- **8 条写作建议详表**：每条配反例 + 正例
+- **Gotchas section 3 反例**：订阅表 / 字段名差异 / Staging 假阳性
+- **Description 字段是触发器不是摘要**：session 启动时扫，1024 字符上限
+- **Folder 结构 progressive disclosure**：metadata (~100 token) → instructions (< 5000) → references (按需)
+- **4 种高级模式**：Dynamic context / On-demand hook / Plugin marketplace / PreToolUse 衡量
+
+#### alirezarezvani-claude-skills Brief
+
+- **16 domain 主题分布**：engineering / engineering-team / business-operations / business-growth / product-team / marketing / c-level-advisor / finance / ra-qm-team / research / research-ops / commercial / compliance-os / productivity / orchestration / markdown-html
+- **13 平台转换矩阵**：convert.sh 15 秒全平台转，CC / Codex / Gemini CLI / Cursor / Aider / Kilo / Windsurf / OpenCode / Augment / Antigravity / Hermes / Mistral Vibe / OpenClaw
+- **Path-B 11-file contract**：3 stdlib tools + 3 references × 5-7 sources + 1 template + cs-* agent + /cs:* command + plugin.json + SKILL.md
+- **5 条工程治理硬规则**：Algorithm over AI / Strict typing / Test coverage gate / No silent fallbacks / Progressive disclosure
+- **6 类安全风险扫描**：command injection / code execution / data exfiltration / prompt injection / supply chain / privilege escalation
+
+#### anth-slash-commands Brief
+
+- **4 级加载范围**：enterprise > personal > project > plugin（plugin 命名空间 `plugin-name:skill-name`）
+- **SKILL.md 16 字段 frontmatter 详表**：name / description / when_to_use / argument-hint / arguments / disable-model-invocation / user-invocable / allowed-tools / disallowed-tools / model / effort / context: fork / agent / hooks / paths / shell
+- **关键对立**：disable-model-invocation（user-only） vs user-invocable（model-only）
+- **Dynamic context 注入**：`!cmd` 在加载时跑 + 4 类环境变量
+- **8 个内置 bundled skills**：/code-review / /batch / /debug / /loop / /claude-api / /run / /verify / /run-skill-generator
+
+#### qodo-merge Brief
+
+- **14 工具 command2class 路由**：review / describe / improve / ask / update_changelog / add_docs / generate_labels / help_docs / help_message / line_questions / similar_issue / compliance_check / code_suggestions / config
+- **11 git_providers + 7 部署形态**：GitHub / GitLab / Bitbucket / Azure DevOps / Gitea 等 + GitHub App / Webhook / CLI / Action / Docker
+- **Dynaconf 三层配置**：defaults → user → repo 链式覆盖
+- **LiteLLM 100+ model**：fallback_models / model_weak / model_reasoning
+- **PR Compression**：超大 PR 自适应切分 + token-aware patch fitting
+- **SDK 化入口**：`PRAgent(ai_handler=LangChainAIHandler())` + GitHub Action 12 行 YAML
+
+#### superpowers registry 同步
+
+- mdx 已有 Brief + Deep-Dive 段（tiers_present=[card,brief,deep-dive]）
+- registry 漂移 1 个 session（标 card，但实际 deep-dive）
+- 本次同步：tier_current=deep-dive / status=deep-dive_complete / last_checked=2026-06-11
+
+### 17.5 关键决策
+
+| 决策 | 选择 | 理由 |
+|---|---|---|
+| Brief 起草方式 | **主 Claude 直接起草**（沿用 A1）| 4 源 cache 已 pre-seed + Brief 段结构化 + 规避 P30 写盘违规 |
+| superpowers 处理 | **只同步 registry**，不改 mdx | mdx 已有 Brief + Deep-Dive；本次只补 registry 漂移 |
+| 4 源同时起草 vs 串行 | 同时起草 | 沿用 A1 模式，无外部依赖 |
+| 跨源关联角度 | 选**强对照**（vs 同 subtype 或同 origin）| claude-skills-blog vs anth-agent-skills（how vs what）/ alirezarezvani vs superpowers（库 vs 框架）/ anth-slash-commands vs superpowers（官方 vs 社区）/ qodo-merge vs anth-effective-agents（具体 vs 哲学）|
+
+### 17.6 累计 Brief 18 源 + Deep-Dive 2 源全景
+
+**Brief（18 源）**：
+
+| 类别 | 源 |
+|---|---|
+| **Anthropic 官方（9 源）** | claude-code-overview / agent-skills / sub-agents / hooks / effective-agents / mcp / slash-commands / memory / agent-sdk / cookbook（10 源）|
+| **同类工具 / MCP 生态（4 源）** | openai-codex / aider / mcp-servers / gemini-cli / cursor-changelog / qodo-merge（6 源）|
+| **Skill 库（1 源）** | alirezarezvani-claude-skills |
+| **设计哲学（1 源）** | claude-skills-blog |
+
+**Deep-Dive（2 源）**：
+
+| 源 | 状态 |
+|---|---|
+| **ai-coding-guide-zh** | deep-dive_complete（pre-batch）|
+| **superpowers** | deep-dive_complete（A2 同步 registry）|
+
+**未升级 Brief 5 源**：superpowers（实际 deep-dive）/ claude-skills-blog（已升）/ alirezarezvani（已升）/ slash-commands（已升）/ qodo-merge（已升）——**全部完成**。
+
+**20 源覆盖**：
+- 6 个 subtype 全覆盖（methodology / blog / tutorial / skill_collection / docs / cookbook）
+- 2 个 Deep-Dive 锚点源（ai-coding-guide-zh 中文 + superpowers 英文）
+
+### 17.7 下一 session 推荐路径
+
+按 SESSION_HANDOFF 2.2，三选一（**Brief 已全部完成**）：
+
+1. **Deep-Dive 闸门**（80-100 min，**首选**）：
+   - 18 Brief 源中选 1-2 升 Deep-Dive（高价值候选：hooks + memory / codex + aider / claude-skills-blog）
+   - Deep-Dive 必须含「正反双面 + 评估框架 + 决策表」三件套（沿用 ai-coding-guide-zh 模板）
+   - 重点：claude-skills-blog（Anthropic 实战 tips 反向审计我们自己的 SKILL.md）/ hooks（CC hook 完整 contract + 8 条安全基线）
+
+2. **跑批 5**（30-60 min）：
+   - 同类工具补完：Cline / Continue / Swe-agent / OpenHands（横向广度）
+   - subagent 走 v0.4 cache-first 流程
+
+3. **批 4 启动**（用户决策）：
+   - 学术 PDF H1-H12 清单（用户给 URL / 路径 / DOI / 主题）
+   - pdf-extract v0.3 已就绪，simple / layout / auto 模式 production
+
+---
+
+## 18. Deep-Dive 闸门：hooks + memory + claude-skills-blog（2026-06-11 深夜续）
+
+> SESSION_HANDOFF 推荐路径「Deep-Dive 闸门」完成。3 源从 Brief 升 Deep-Dive，含 hooks（CC 核心机制 + 8 条安全基线 + 5 层作用域链）+ memory（CLAUDE.md 4 级加载 + 子目录懒加载）+ claude-skills-blog（**反向审计 research-source SKILL.md**）。**Deep-Dive 累计 5 源**。
+
+### 18.1 跑通范围
+
+| # | 源 | source_subtype | Brief→Deep-Dive 字符增量 | char_count | 主要价值 |
+|---|---|---|---|---|---|
+| 1 | anth-hooks | docs | 4896 → 13672 (+8776) | 13672 | 5 类 handler × 3 层事件 + 8 条安全基线 + 6 盲点 |
+| 2 | anth-memory | docs | 5932 → 13296 (+7364) | 13296 | 双层机制 4 维对比 + 4 级加载 + 6 盲点 |
+| 3 | claude-skills-blog | blog | 7754 → 18560 (+10806) | 18560 | 9 分类 × 8 建议 0/1/2 评分 + 反向审计 research-source 5/16 → 12/16 |
+
+**流程**：沿用 A1 / A2 模式——主 Claude 直接起草（不通过 subagent）；template 沿用 ai-coding-guide-zh 三件套（**主题 1: 评估框架 / 主题 2: 可复用资产 / 主题 3: 反面 5+ 盲点 / 主题 4: 沿用 vs 错位决策表**）。
+
+**耗时**：3 源起草 + wc -m 校准 + registry 同步 + dev server 校验 ≈ **50 min**（含 char_count 1-off 校正 ~3 min）
+
+### 18.2 关键决策
+
+| 决策 | 选择 | 理由 |
+|---|---|---|
+| Deep-Dive 主题数 | **4 主题**（评估框架 / 资产 / 反面 / 决策表）| 沿用 ai-coding-guide-zh 模板，**4 件套是 tutorial 候选最直接的输出**|
+| hooks 主题 1 | **Hook 完整 Contract 详表**（5 类 × 3 层 × 契约）| Brief 已 5 段速览，Deep-Dive 必须**字段级精确化**——否则读者用错契约|
+| hooks 主题 2 | **8 条安全基线**（核心 5 必查 + 3 必防 + shell 模板）| 安全是 hook 头号风险；8 条是「不犯致命错」的下限——教程必讲|
+| memory 主题 1 | **双层机制 4 维对比**（CLAUDE.md vs auto memory 8 维）| Brief 已 6 takeaway，Deep-Dive 必须**结构化对比**——避免混用|
+| memory 主题 2 | **4 级加载链 + 子目录懒加载 + path-scoped rules 三件套** | 三层抽象是 CC memory 设计的核心——单讲任一层不够|
+| claude-skills-blog 主题 3 | **反向审计 research-source SKILL.md 5/16 → 12/16** | Deep-Dive 最具行动指引的部分——**不是赞美，是改进路线**|
+| 反面盲点数 | 5-6 条 / 源 | 沿用 P11 教训「反例 ≥ 5 条 + 每条配启示」|
+| 沿用 vs 错位决策 | 6-7 行表 / 源 | 直接给教程开 OpenSpec change 用，**不重新设计章节序**|
+| 教程章节候选 | 6-7 个 / 源 | 沿用 Brief 末尾，Deep-Dive 段是「未来 Deep-Dive 候选」——但本身已 Deep-Dive，所以候选是「教程主章」而非「Deep-Dive 再升」|
+
+### 18.3 关键产出速览
+
+#### anth-hooks Deep-Dive
+
+- **主题 1**：5 类 handler 形态（command / http / mcp_tool / prompt / agent）+ 6 类事件三层（会话/轮次/工具）+ exit code 契约（0 成功 / 2 阻塞 / 其它非阻塞）+ http 契约 + PreToolUse 特化字段（`permissionDecision` 4 态 + `updatedInput`）+ 配置 3 层结构 + 5 层作用域链（managed / user / project / local / plugin / 内联）+ 企业管控 `allowManagedHooksOnly`
+- **主题 2**：8 条安全基线（系统全权限 / 命令注入 / 路径穿越 / 相对路径歧义 / 直读 secret / 无 controlling terminal v2.1.139+ / 无 timeout / 敏感信息泄露）+ `pre-bash-validator.sh` 实战模板
+- **主题 3**：6 盲点（调试难 / matcher 表达力弱 / stdin 阻塞 / OSC 字符兼容性 / 性能开销 / 跨平台 terminalSequence 兼容）
+- **主题 4**：vs Cursor /review / openai-codex hooks / GitHub Actions 4 工具 6 维对照 + 7 行沿用/错位决策表
+
+#### anth-memory Deep-Dive
+
+- **主题 1**：CLAUDE.md vs auto memory 8 维对比（谁写 / 范围 / 存储 / 加载 / 注入位置 / 约束力 / 可关闭 / 跨机同步）+ 核心区分（都是「指南」非「强制」）
+- **主题 2**：4 级加载链（Managed > User > Project > Local）+ 子目录懒加载（cwd 之上启动即注入 / 之下按需挂入）+ `.claude/rules/` + `paths:` frontmatter + 三件套组合
+- **主题 3**：6 盲点（Managed policy 0 信任 / 25KB 截断知识丢失 / `/compact` 子目录不 re-inject / 跨机不共享 / sub-agent memory 混淆 / Managed vs project 冲突静默）
+- **主题 4**：vs Cursor `.cursorrules` / Aider `CONVENTIONS.md` / Codex `AGENTS.md` 4 工具 7 维对照 + 7 行沿用/错位决策表
+
+#### claude-skills-blog Deep-Dive（**反向审计**）
+
+- **主题 1**：9 大分类判定流程 + 8 写作建议 0/1/2 评分表（满分 16 / 优秀 ≥ 12 / 及格 ≥ 8 / 不及格 < 8）+ 双轴决策矩阵
+- **主题 2**：8 建议完整 checklist（自检问句 + 反例 + 正例）+ 实战 description 模板（含触发关键词埋点）+ `/careful` / `/freeze` hook 完整配置
+- **主题 3**：**反向审计 `research-source/SKILL.md` 5/16 → 12/16 改进路线**
+  - 5 关键问题：缺 Gotchas 段（0）/ 缺 scripts/ 目录（0）/ description 缺 Do NOT use for / 拆 references 弱 / 缺 use-your-judgment
+  - 3 项立即可改：description 加 Do NOT / 加 Gotchas 段（沉淀 P17-44）/ 加 `scripts/` 目录
+  - A/B 评估：改前 5/16 触发率 ~60% → 改后目标 12/16 触发率 > 85%（用 PreToolUse 衡量）
+- **主题 4**：6 盲点（元方法缺 / 9 分类软边界 / Gotchas 沉淀机制 / on-demand 选型 / Do NOT use for 缺 / 衡量外链）+ vs superpowers `writing-skills` / alirezarezvani Path-B 11-file 对照 + 7 行沿用/错位决策表
+
+### 18.4 关键沉淀
+
+#### P45：Deep-Dive 「三件套 + 1 模板」是教程候选最直接输出
+
+**症状**：A2 完成的 3 源 Deep-Dive 各产 4 主题（评估框架 / 资产 / 反面 / 决策表），**4 主题直接对应教程主章**——hooks 的「8 条安全基线」= 教程「Hook 安全」章 / memory 的「4 级加载链 + 子目录懒加载 + path-scoped rules」= 教程「跨会话持久化」章 / claude-skills-blog 的「反向审计」= 教程「Skill 设计」章。
+
+**根因**：Deep-Dive 的 4 主题天然是教程章节——因为它们都已经是「**结构化 + 行动指引**」的形态，比 Brief 更深，比 free-form 笔记更收敛。
+
+**沉淀**：
+- ✅ Deep-Dive 4 主题模板 = **教程章节生成的 4 个 slot**——直接 1:1 映射
+- ✅ 「反例 5+ 条 + 启示」模板对教程**最有差异化价值**——能直接做「避免常见坑」章
+- ✅ 「沿用 vs 错位决策表」是开 OpenSpec change 的第一手输入——**不要再设计章节序**
+- ✅ 启示：Deep-Dive 不是「研究的终点」，是「教程大纲的起点」——每个 Deep-Dive 完成后应**直接产出 1 份 OpenSpec change 提案**
+
+#### P46：反向审计「自己 SKILL.md」是 Deep-Dive 最有行动价值的子类型
+
+**症状**：claude-skills-blog Deep-Dive 的主题 3 反向审计 `research-source` SKILL.md，**发现 5/16 不及格**——`## Gotchas` 段缺失（0 分）/ `scripts/` 目录缺失（0 分）/ description 缺 Do NOT use for（1 分）/ progressive disclosure 弱（1 分）/ 缺 use-your-judgment（1 分）。
+
+**根因**：我们自己写 SKILL.md 时**只关注功能完整性**（Step 1-6 + 硬约束 + 跨源关联），**没**用任何「Skill 设计哲学」标准（Anthropic 9 分类 + 8 建议）做自检。
+
+**修复**：
+- 立即：3 项可改（description + Gotchas 段 + scripts/ 目录）
+- 目标：5/16 → 12/16（优秀线）
+- 测量：PreToolUse hook 记录触发率（官方 example code 引用）
+
+**沉淀**：
+- ✅ **每个「如何写 X」的源**（claude-skills-blog / superpowers writing-skills / alirezarezvani Path-B）都该走「反向审计自己仓库同类资产」——这是 Deep-Dive 最有回报的子类型
+- ✅ 反向审计的 0/1/2 评分表比赞美清单更有用——**负面信号更 actionable**
+- ✅ 未来 5 个 SKILL（research-source / pdf-extract / + 3 待写）都该做一次反向审计——可以提为 SKILL.md 维护 SOP
+- ✅ 启示：**研究外部源的最大价值不是借鉴，是「反向发现自己的盲点」**
+
+#### P47：CC hook 「调试难」是教程必讲的工程现实
+
+**症状**：hooks Deep-Dive 主题 3 盲点 1 揭示——hook 跑错时 CC 只给 `exit 2` 但 stderr 进 agent context，**开发者在 terminal 看不到**。文档没给原生 debug 工具。
+
+**根因**：CC hook 是「event-driven 自动化」——设计哲学是「能跑就行」，不是「能调试」。
+
+**修复路径**：
+- 教程必配「Hook 调试模板」——wrapper script 写日志到 `${CLAUDE_PROJECT_DIR}/.claude/hook-debug.log`
+- 给「3 步调试法」：加 `set -x` → 重跑 → 看日志
+- 「死循环防御」——timeout 强制 + `set -euo pipefail`
+
+**沉淀**：
+- ✅ 任何「自动化 + 不可见」的工具（hook / CI / systemd / crontab）都该配「调试模板」+ 「超时」——这是工程现实
+- ✅ 教程必给 `pre-bash-validator.sh` 完整模板——比让读者自己拼更省时间
+- ✅ 启示：**教程 1/3 内容是「文档里没有的东西」**（盲点 / 调试 / 反例）——比复制官方文档价值大
+
+#### P48：CC memory 「子目录不 re-inject」是 compact 后的常见翻车点
+
+**症状**：memory Deep-Dive 盲点 3 揭示——`/compact` 后**根目录 CLAUDE.md 重新读盘 re-inject**；**子目录 CLAUDE.md 不会自动 re-inject**。如果 Claude 之前依赖某个子目录 CLAUDE.md 的规则，compact 后**规则在 context 里消失**。
+
+**根因**：CC 实现细节，文档没说，但**影响所有 monorepo 用户**。
+
+**修复路径**：
+- 教程必警告——**关键指令**（如「不要动 secrets」）必须放**根 CLAUDE.md**，不放子目录
+- monorepo 实战模板：root + 1 个子目录被读时只挂入这 2 个 CLAUDE.md
+- 子目录懒加载的**隐性成本**——compact 后丢规则
+
+**沉淀**：
+- ✅ 「指南」类机制（CLAUDE.md / auto memory）的所有「compact 行为差异」都该列出来——读者用错就翻车
+- ✅ 教程「指南 vs 强制」章必须强调——**关键指令用 hook（强制）**而非 CLAUDE.md（指南）
+- ✅ 启示：CC 设计哲学是「**让开发者主动选硬约束工具**」——不默认强加——这是学习成本之一
+
+### 18.5 累计 Deep-Dive 5 源全景
+
+| # | 源 | source_subtype | char_count | 教程主章对应 |
+|---|---|---|---|---|
+| 1 | **ai-coding-guide-zh** | tutorial | (大) | 「教程」教程——anchor 源 |
+| 2 | **superpowers** | methodology | (大) | 「Skill 体系」教程 |
+| 3 | **claude-skills-blog** | blog | 18560 | **「如何写 Skill」教程** + 反向审计 research-source |
+| 4 | **anth-hooks** | docs | 13672 | **「Hooks + 自动化与治理」教程** |
+| 5 | **anth-memory** | docs | 13296 | **「跨会话持久化」教程** |
+
+**Deep-Dive 5 源恰好是教程大纲的核心**：
+- 3 个 Anthropic 官方机制（hooks / memory / claude-code-overview-Brief）= 教程 3 主章
+- 1 个 Skill 设计哲学（claude-skills-blog）+ 1 个 Skill 方法论（superpowers）= 教程 2 主章
+- 1 个中文教程范本（ai-coding-guide-zh）= 教程**评估框架**
+
+**启示**：Deep-Dive 累计 5 源已**够教程大纲用**——可以开始 OpenSpec change 提案（教程大纲生成）。
+
+### 18.6 累计 Brief 18 源 + Deep-Dive 5 源 全景
+
+| 类别 | Brief (18) | Deep-Dive (5) |
+|---|---|---|
+| **Anthropic 官方 (10)** | claude-code-overview / agent-skills / sub-agents / effective-agents / mcp / slash-commands / agent-sdk / cookbook (8 Brief) | **hooks / memory** (2 Deep-Dive) |
+| **同类工具 / MCP 生态 (6)** | openai-codex / aider / mcp-servers / gemini-cli / cursor-changelog / qodo-merge (6 Brief) | — |
+| **Skill 库 (1)** | alirezarezvani-claude-skills (1 Brief) | — |
+| **设计哲学 (1)** | — | **claude-skills-blog** (1 Deep-Dive) |
+| **方法论 (1)** | — | **superpowers** (1 Deep-Dive) |
+| **中文教程 (1)** | — | **ai-coding-guide-zh** (1 Deep-Dive) |
+
+### 18.7 下一 session 推荐路径
+
+按 SESSION_HANDOFF 2.2 + 本次 Deep-Dive 沉淀：
+
+1. **教程大纲 OpenSpec change 提案**（**新选项**，Deep-Dive 沉淀价值兑现）：
+   - 5 Deep-Dive 源已够——直接进 openspec/changes/<id>/ 写教程大纲
+   - 沿用 hooks / memory / claude-skills-blog Deep-Dive 的「主题 1-4」作为教程主章
+   - 沿用/错位决策表**直接**作为章节序的输入（不重新设计）
+
+2. **跑批 5**（30-60 min）：
+   - 同类工具补完：Cline / Continue / Swe-agent / OpenHands（横向广度）
+   - subagent 走 v0.4 cache-first 流程
+
+3. **批 4 启动**（用户决策）：
+   - 学术 PDF H1-H12 清单
+   - pdf-extract v0.3 已就绪
+
+4. **反向审计其他 SKILL**（P46 沉淀）：
+   - pdf-extract v0.3 SKILL.md 也可走反向审计
+   - 未来 3 个待写 SKILL 都该做一次

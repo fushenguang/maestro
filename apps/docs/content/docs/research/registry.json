@@ -1,15 +1,31 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.8",
   "schema_version": "2026-06-11",
   "updated_at": "2026-06-11",
-  "skill_version": "0.3",
+  "skill_version": "0.4",
   "output_dir": "apps/docs/content/docs/research/",
   "audience_axes": {
-    "cs_background": ["yes", "partial", "no"],
-    "devops": ["low", "mid", "high"],
-    "cc_experience": ["newbie", "used", "advanced"]
+    "cs_background": [
+      "yes",
+      "partial",
+      "no"
+    ],
+    "devops": [
+      "low",
+      "mid",
+      "high"
+    ],
+    "cc_experience": [
+      "newbie",
+      "used",
+      "advanced"
+    ]
   },
-  "tiers": ["card", "brief", "deep-dive"],
+  "tiers": [
+    "card",
+    "brief",
+    "deep-dive"
+  ],
   "gates": {
     "current": 1,
     "description": "Gate 1 = Card 全源；Gate 2 = Brief 推广子集；Gate 3 = Deep-Dive 高价值"
@@ -20,24 +36,36 @@
       "url": "https://github.com/obra/superpowers",
       "source_type": "repo",
       "source_subtype": "methodology",
-      "tier_current": "card",
-      "status": "card_complete",
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": true,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "newbie" },
-      "last_checked": "2026-06-10"
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "newbie"
+      },
+      "last_checked": "2026-06-11",
+      "notes": "A2 阶段发现 mdx 已有 Brief + Deep-Dive 段 (tiers_present=[card,brief,deep-dive])，仅 registry 未同步；本任务同步 registry：tier_current=deep-dive / status=deep-dive_complete / 补 last_checked=2026-06-11"
     },
     {
       "slug": "claude-skills-blog",
       "url": "https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills",
       "source_type": "article",
       "source_subtype": "blog",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
-      "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
-      "last_checked": "2026-06-10"
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
+      "promote_to_brief": true,
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
+      "last_checked": "2026-06-11",
+      "char_count": 18560,
+      "overflow": true,
+      "notes": "Anthropic 官方 lessons learned + Skill 设计哲学；Deep-Dive 推进完成 (主题 1: 9 大分类 × 8 写作建议 0/1/2 评分双轴评估框架 + 主题 2: 8 建议完整 checklist + 实战 description 模板 + /careful /freeze hook 完整配置 + 主题 3: 反向审计 research-source SKILL.md 5/16 → 12/16 改进路线 + 3 项立即可改 + 主题 4: 5+ 盲点 元方法/9 分类软边界/Gotchas 沉淀机制/on-demand 选型/Do NOT use for/衡量内置 + 主题 5: vs superpowers writing-skills / alirezarezvani Path-B 11-file + 6 教程章节候选)"
     },
     {
       "slug": "ai-coding-guide-zh",
@@ -48,7 +76,11 @@
       "status": "deep-dive_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": true,
-      "audience_tags": { "cs_background": "partial", "devops": "mid", "cc_experience": "newbie" },
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "mid",
+        "cc_experience": "newbie"
+      },
       "last_checked": "2026-06-11",
       "notes": "中文社区覆盖最广的 Claude Code 教程；三工具横向；v4.3 发布于 2026-06-10；作为正反两面评估锚点"
     },
@@ -57,13 +89,19 @@
       "url": "https://github.com/alirezarezvani/claude-skills",
       "source_type": "repo",
       "source_subtype": "skill_collection",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "high", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "high",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
-      "notes": "343+ skills × 13 平台；stdlib-only Python；企业级工程治理；10 维框架验证样本"
+      "char_count": 9575,
+      "overflow": true,
+      "notes": "343+ skills × 13 平台；stdlib-only Python；企业级工程治理；10 维框架验证样本；A2 Brief 推进完成 (16 domain 主题分布详表 + 13 平台转换矩阵 convert.sh 一键 + Path-B 11-file contract 标准化 + 5 条工程治理硬规则 + skill-security-auditor 6 类风险 + 6 教程章节候选)"
     },
     {
       "slug": "anth-claude-code-overview",
@@ -74,7 +112,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "newbie" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "newbie"
+      },
       "last_checked": "2026-06-11",
       "batch": 1,
       "tier_group": "Anthropic 官方",
@@ -86,16 +128,22 @@
       "mirror_url": "https://github.com/anthropics/skills",
       "source_type": "article",
       "source_subtype": "docs",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 1,
       "tier_group": "Anthropic 官方",
       "fetched_via_fallback": true,
-      "notes": "docs.claude.com geo-block 回退到 anthropics/skills README"
+      "char_count": 4508,
+      "overflow": true,
+      "notes": "docs.claude.com geo-block 回退到 anthropics/skills README；A1 Brief 推进完成 (3 类仓库结构 skills/spec/template + SKILL.md frontmatter 最小 2 字段 + 3 接入途径 plugin/Claude.ai/API + vs slash-commands 已并入 + vs alirezarezvani 规范源/复用源分工 + 6 教程章节候选)"
     },
     {
       "slug": "anth-sub-agents",
@@ -106,7 +154,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "low", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "low",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 1,
       "tier_group": "Anthropic 官方",
@@ -117,15 +169,21 @@
       "url": "https://docs.claude.com/en/docs/claude-code/hooks",
       "source_type": "article",
       "source_subtype": "docs",
-      "tier_current": "brief",
-      "status": "brief_complete",
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
       "promote_to_brief": true,
-      "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "high", "cc_experience": "used" },
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "high",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 1,
       "tier_group": "Anthropic 官方",
-      "notes": "hooks 机制官方权威；body 2044 超 1500；v0.5 Brief 已完成 (5 类 handler + 3 层事件 + 执行契约 + 5 层作用域链 + 8 条安全基线 + 6 教程章节候选)"
+      "char_count": 13672,
+      "overflow": true,
+      "notes": "hooks 机制官方权威；Deep-Dive 推进完成 (主题 1: 5 类 handler × 3 层事件 × exit code 契约 × http 契约 × PreToolUse 特化字段 × 配置 3 层结构 × 5 层作用域链 + 主题 2: 8 条安全基线 + 5 必查 + 3 必防 + pre-bash-validator.sh 模板 + 主题 3: 6 盲点 调试难/matcher 弱/stdin 阻塞/OSC 兼容/性能开销/跨平台 + 主题 4: vs Cursor /review / openai-codex / GitHub Actions 6 维对照 + 沿用/错位决策表 + 6 教程章节候选)"
     },
     {
       "slug": "anth-effective-agents",
@@ -136,7 +194,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "low", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "low",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 1,
       "tier_group": "Anthropic 官方",
@@ -151,7 +213,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
@@ -162,31 +228,42 @@
       "url": "https://docs.claude.com/en/docs/claude-code/slash-commands",
       "source_type": "article",
       "source_subtype": "docs",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "low", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "low",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
+      "char_count": 6306,
       "overflow": true,
-      "notes": "Custom commands 已并入 Skills 体系；commands/foo.md ≡ skills/foo/SKILL.md；body 2181 超 1500"
+      "notes": "Custom commands 已并入 Skills 体系；commands/foo.md ≡ skills/foo/SKILL.md；A2 Brief 推进完成 (4 级加载范围 enterprise/personal/project/plugin + SKILL.md 16 字段 frontmatter 详表 + disable-model-invocation vs user-invocable 对立 + Dynamic context 注入 !cmd + 参数与命名参数 + 8 个内置 bundled skills + 6 教程章节候选)"
     },
     {
       "slug": "anth-memory",
       "url": "https://docs.claude.com/en/docs/claude-code/memory",
       "source_type": "article",
       "source_subtype": "docs",
-      "tier_current": "brief",
-      "status": "brief_complete",
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
       "promote_to_brief": true,
-      "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
-      "notes": "CLAUDE.md 4 级加载 + auto memory；CLAUDE.md = 指南、hook = 拦截；body 2733 超 1500；v0.5 Brief 已完成 (双层机制 + 4 级加载链 + 子目录懒加载 + .claude/rules 拆分 + auto memory 存储 + /memory vs /compact 差异 + 7 教程章节候选)"
+      "char_count": 13296,
+      "overflow": true,
+      "notes": "CLAUDE.md 4 级加载 + auto memory；CLAUDE.md = 指南、hook = 拦截；Deep-Dive 推进完成 (主题 1: 双层机制 4 维对比 谁写/范围/加载/约束力 + 主题 2: 4 级加载链 + 子目录懒加载 + .claude/rules/ paths: frontmatter 三件套 + 主题 3: 6 盲点 managed 0 信任/25KB 截断/compact 子目录不 re-inject/跨机不共享/sub-agent memory 混淆/managed vs project 冲突 + 主题 4: vs Cursor .cursorrules / Aider CONVENTIONS.md / Codex AGENTS.md 4 工具 7 维对照 + 沿用/错位决策表 + 7 教程章节候选)"
     },
     {
       "slug": "anth-agent-sdk",
@@ -197,7 +274,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "advanced" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "advanced"
+      },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
@@ -213,7 +294,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "low", "cc_experience": "newbie" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "low",
+        "cc_experience": "newbie"
+      },
       "last_checked": "2026-06-11",
       "batch": 2,
       "tier_group": "Anthropic 官方",
@@ -224,17 +309,21 @@
       "url": "https://github.com/modelcontextprotocol/servers",
       "source_type": "repo",
       "source_subtype": "skill_collection",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
-      "overflow": false,
-      "char_count": 1773,
-      "notes": "MCP 官方 reference servers 集合（7 个：everything / fetch / filesystem / git / memory / sequentialthinking / time）；13 个 archived；生产集成走 MCP Registry"
+      "overflow": true,
+      "char_count": 7458,
+      "notes": "MCP 官方 reference servers 集合（7 个：everything / fetch / filesystem / git / memory / sequentialthinking / time）；13 个 archived；生产集成走 MCP Registry；A1 Brief 推进完成 (7 server 详表 + 13 archived 类别 + monorepo 双栈 TS/Py 工程实践 + Tool annotations 3 字段矩阵 + 客户端 mcpServers JSON 4 字段 + vs anth-mcp server 端/client 端配套分工 + 6 教程章节候选)"
     },
     {
       "slug": "openai-codex",
@@ -245,7 +334,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "advanced" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "advanced"
+      },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
@@ -257,56 +350,68 @@
       "url": "https://github.com/google-gemini/gemini-cli",
       "source_type": "repo",
       "source_subtype": "methodology",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
       "overflow": true,
-      "char_count": 1857,
+      "char_count": 6901,
       "fetched_via_fallback": true,
-      "notes": "Google 官方 Gemini CLI；TS + Ink + 7 包 monorepo；Gemini 3 + 1M context；3 认证 / 3 MCP transport / 三层 GEMINI.md；含 a2a-server 包（CC 无对应）；subagent v1 因 API 429 失败，v2 走 pre-seeded cache"
+      "notes": "Google 官方 Gemini CLI；TS + Ink + 7 包 monorepo；Gemini 3 + 1M context；3 认证 OAuth/API key/Vertex AI / 3 MCP transport / 三层 GEMINI.md + JIT 动态扫 trusted root；含 a2a-server 包（CC 无对应）+ vscode-ide-companion；subagent v1 因 API 429 失败，v2 走 pre-seeded cache；A1 Brief 推进完成 (7 包详解 cli/core/a2a-server/sdk/devtools/test-utils/vscode-ide-companion + 3 认证对比 + 三层 GEMINI.md+JIT vs CC 4 级加载链 + MCP/Hooks/Skills/Subagents/A2A 全部对标 + 6 教程章节候选)"
     },
     {
       "slug": "qodo-merge",
       "url": "https://github.com/The-PR-Agent/pr-agent",
       "source_type": "repo",
       "source_subtype": "methodology",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "partial", "devops": "high", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "high",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
-      "overflow": false,
-      "char_count": 1778,
+      "char_count": 7116,
+      "overflow": true,
       "original_url": "https://github.com/qodo-ai/qodo-merge",
       "redirect_reason": "2025 Qodo 捐给社区，原 repo 404，迁到 The-PR-Agent/pr-agent",
-      "notes": "vertical PR 自动化 agent (PR-Agent)；14 工具 command2class 路由；Prompt 即配置 (Dynaconf)；LiteLLM 多 Provider；PR Compression；11 git_providers + 7 servers 形态；与 CC generalist 形成对比 (Problem 28：源 URL 失效需 redirect_url 字段)"
+      "notes": "vertical PR 自动化 agent (PR-Agent)；14 工具 command2class 路由；Prompt 即配置 (Dynaconf)；LiteLLM 多 Provider；PR Compression；11 git_providers + 7 servers 形态；与 CC generalist 形成对比 (Problem 28：源 URL 失效需 redirect_url 字段)；A2 Brief 推进完成 (14 工具详表 review/describe/improve/ask 等 + 11 git_providers + 7 部署形态 GitHub App/CLI/Action/Docker + Dynaconf 三层配置 + LiteLLM 100+ model + PR Compression 自适应切分 + SDK 化入口 + 治理走向 + 6 教程章节候选)"
     },
     {
       "slug": "cursor-changelog",
       "url": "https://cursor.com/changelog",
       "source_type": "article",
       "source_subtype": "blog",
-      "tier_current": "card",
-      "status": "card_complete",
-      "promote_to_brief": null,
+      "tier_current": "brief",
+      "status": "brief_complete",
+      "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",
       "overflow": true,
-      "char_count": 3801,
+      "char_count": 9478,
       "fetched_via_fallback": true,
       "mirror_url": "https://docs.cursor.com (原 docs SPA 不可 curl)",
-      "notes": "cursor.com/docs SPA fallback 到 changelog 静态页 (Problem 27)；Bugbot 提速/降价 / Composer 2.5 / Canvas Design Mode / Enterprise Orgs / SDK customTools + autoRun / Shared Canvases / /loop；6 维 CC 对比；char_count 3801 远超 1500 (subagent 自报 1342 严重偏低)"
+      "notes": "cursor.com/docs SPA fallback 到 changelog 静态页 (Problem 27)；Bugbot 提速/降价 / Composer 2.5 / Canvas Design Mode / Enterprise Orgs / SDK customTools + autoRun / Shared Canvases / /loop；A1 Brief 推进完成 (7 changelog post 详解 Bugbot/Canvas/Design/Enterprise/SDK/Shared/Loop + 6 维 CC vs Cursor 决策表 + 沿用 vs 错位决策表 + vs Codex/Aider/Gemini-cli 横向对比 + 6 教程章节候选)"
     },
     {
       "slug": "aider",
@@ -317,7 +422,11 @@
       "status": "brief_complete",
       "promote_to_brief": true,
       "promote_to_deep_dive": null,
-      "audience_tags": { "cs_background": "yes", "devops": "mid", "cc_experience": "used" },
+      "audience_tags": {
+        "cs_background": "yes",
+        "devops": "mid",
+        "cc_experience": "used"
+      },
       "last_checked": "2026-06-11",
       "batch": 3,
       "tier_group": "MCP 生态 + 同类工具",

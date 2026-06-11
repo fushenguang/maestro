@@ -1,8 +1,8 @@
 # SESSION HANDOFF — Claude Code 调研流水线
 
-> 本次 session：2026-06-11（全天 + 晚）— 累计 **20 源 Gate 1** + 6 commits
-> 关键进展：research-source skill v0.3 → **v0.4**（P26-30 合并）+ 新建 **pdf-extract skill v0.1 → v0.3**（P34-P38 修复）
-> 下一 session 启动建议：先读本文件 + `LEARNINGS.md` Section 12-15，**第一件事跑批 5**（同类工具补完 / tutorial 增 1-2）
+> 本次 session：2026-06-11（全天 + 晚 + 深夜 23:xx）— 累计 **20 源 Gate 1** + **A1 4 源 Brief 推进** + 6 commits
+> 关键进展：research-source skill v0.3 → **v0.4**（P26-30 合并）+ 新建 **pdf-extract skill v0.1 → v0.3**（P34-P38 修复）+ **A1 4 源 Brief 推进完成**
+> 下一 session 启动建议：先读本文件 + `LEARNINGS.md` Section 12-16，**第一件事 = 选 1-2 源升 Deep-Dive 或继续 Brief 推进（claude-skills-blog / alirezarezvani / slash-commands / qodo-merge / superpowers 5 源候选）**
 
 ---
 
@@ -27,15 +27,26 @@
 - 学术 12 篇 PDF H1-H12 暂未跑：**用户没 H1-H12 清单** + 担心资料库太大
 - pdf-extract skill 已建好等清单；批 4 留待用户提供源后再启动
 
-### 0.5 6 commits 推送
+### 0.5 A1 4 源 Brief 推进完成（2026-06-11 深夜）
+
+- **anth-agent-skills** (Card → Brief)：仓库 3 类结构 (skills/spec/template) + SKILL.md frontmatter 最小 2 字段 + 3 接入途径 + vs slash-commands 已并入 + 6 教程章节候选；char_count 4508
+- **mcp-servers** (Card → Brief)：7 server 详表 + 13 archived 类别 + monorepo 双栈 TS/Py 工程实践 + Tool annotations 3 字段矩阵 + 客户端 mcpServers JSON 4 字段 + vs anth-mcp 配套分工 + 6 教程章节候选；char_count 7458
+- **gemini-cli** (Card → Brief)：7 包详解 (cli/core/a2a-server/sdk/devtools/test-utils/vscode-ide-companion) + 3 认证 OAuth/API key/Vertex + 三层 GEMINI.md+JIT + MCP/Hooks/Skills/Subagents/A2A 全部对标 + 6 教程章节候选；char_count 6901
+- **cursor-changelog** (Card → Brief)：7 changelog post 详解 + 6 维 CC vs Cursor 决策表 + 沿用 vs 错位决策表 + 6 教程章节候选；char_count 9478
+- **累计 Brief 14 源**（5 批 1 + 5 批 2 + 4 A1）
+- **dev server 校验**：4 源全部 HTTP 200，无 MDX 解析错（P39 防御通过：grep `<[0-9]` 0 命中）
+- **registry.json**：version 0.1.5 → 0.1.6 / skill_version 0.3 → 0.4
+
+### 0.6 6 commits 推送
 ```
 c4c1471 feat(skill): pdf-extract v0.3 — 修 P38 (旋转 90° 文本过滤) + CJK 文档化
 5b1e77d feat(skill): pdf-extract v0.2 — 修 P34-P37 (双栏 / 图表过滤 / quality 5 维 / x_tolerance CLI)
 abf2cce feat(skill): pdf-extract v0.1 — Standalone PDF 抽取 skill
 6ff8648 docs(research): LEARNINGS Section 12 (批 3 跑通) + Section 13 (pdf-extract v0.1)
 b6aab29 feat(research): skill v0.4 (合并 Problem 26-30)
+[A1 待 commit]
 ```
-累计：6 commits / +1873 行 / 0 冲突
+累计：6 commits / +1873 行 / 0 冲突（A1 4 源 mdx 改动 + registry 升 0.1.6 待 commit）
 
 ---
 
@@ -87,44 +98,39 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 
 ### 2.1 累计目标进度
 
-- 已完成：**20 源**（4 既有 + 16 本 session 新跑）
+- 已完成：**20 源 Gate 1** + **14 源 Brief**（A1 完成）
 - 上 session 锁定目标：32-45 源
 - **剩余**：12-25 源
 - 预计还需 2-3 批 × ~30-60 min = 1-2 session 完成
 
-### 2.2 推荐路径（**下 session 第一件事：A1 4 源 Brief 推进**）
+### 2.2 推荐路径（**下 session 第一件事：A2 = 5 源 Brief 推进或选 1-2 升 Deep-Dive**）
 
-**步骤**（按顺序）：
+**A1 已完成**（4 源 Brief 推进），下 session 三选一：
 
-1. **A1 4 源 Brief 推进**（50-60 min）：
-   - `anth-agent-skills`（Skills 官方定义 + frontmatter 事实标准）
-   - `mcp-servers`（MCP 官方 7 reference servers 联 `anth-mcp` Brief 配套）
-   - `gemini-cli`（CC 同类 + 1M context + a2a-server 实验）
-   - `cursor-changelog`（IDE-native vs CC terminal 横向对比）
-   - 每个走标准模板：append Brief 段 + 更新 frontmatter（tier/status/tiers_present/char_count/promote_to_brief）+ registry.json 标 promote_to_brief: true
+1. **A2 5 源 Brief 推进**（50-70 min，**首选**）：
+   - `claude-skills-blog`（Anthropic 官方 lessons learned + 设计哲学）
+   - `alirezarezvani-claude-skills`（343+ skills × 13 平台，skill_collection 唯一巨型源）
+   - `anth-slash-commands`（已并入 Skills 体系，补 Brief 与 anth-agent-skills 配套）
+   - `qodo-merge`（vertical PR agent，与 CC generalist 形成对比）
+   - `superpowers`（既有 Card，可升级 Brief；14 skill 方法论体系）
 
-2. **A1 跑完后可选**：
-   - 继续 Brief：claude-skills-blog / alirezarezvani / slash-commands / qodo-merge / superpowers 5 源
-   - Deep-Dive 闸门：11 Brief 源选 1-2 升 Deep-Dive（如 hooks + memory 或 codex + aider）
-   - 跑批 5：同类工具 Cline / Continue / Swe-agent / OpenHands（横向广度）
+2. **Deep-Dive 闸门**（80-100 min）：
+   - 14 Brief 源中选 1-2 升 Deep-Dive（高价值候选：hooks + memory / codex + aider）
+   - Deep-Dive 必须含「正反双面 + 评估框架 + 决策表」三件套（沿用 ai-coding-guide-zh 模板）
 
-3. **MDX 字符陷阱**（**P39 新增**）：
-   - `<数字` 在 MDX 文本中触发 JSX 解析错误（**必须** `&lt;` 转义）
-   - backtick 包裹的 `<X>` 标签**不**触发（已实测）
-   - 新增 Brief 后**必跑** `pnpm dev --filter=docs` 验证无 JSX 解析错
-   - 已知触发：openai-codex L42 / L79 (`<500 LoC`) 已修（79a4e71）
+3. **跑批 5**（30-60 min）：
+   - 同类工具补完：Cline / Continue / Swe-agent / OpenHands（横向广度）
+   - subagent 走 v0.4 cache-first 流程
 
-4. **docs landing 404 防御**（**P40 新增**）：
-   - `content/docs/<dir>/` 子目录无 `index.mdx` 时，子目录路径（`/docs/<dir>`）200，但**根路径** `/docs` 404
-   - 防御：`content/docs/index.mdx` 必建（c07160b 修复）
+### 2.3 跑前 Checklist（A2 / Deep-Dive / 批 5 三选一）
 
-5. **批 6+：根据新 session 进度决定**
-
-### 2.3 批 4 启动条件
-
-- 学术 PDF H1-H12 清单（用户给 URL / 路径 / DOI / 主题）
-- 当前 pdf-extract v0.3 已就绪：simple 模式 production / layout + auto 模式 production（双栏 + 图表过滤 + 旋转 word 过滤都修好）
-- pdf-extract 与 research-source 集成路径：PDF → pdf-extract → cache → subagent 走 cache-first（沿用 v0.4 硬约束 #12）
+- [ ] 读本文件（已反映 A1 末态：14 Brief + 0 Deep-Dive 增量）
+- [ ] 读 `LEARNINGS.md` Section 12-16
+- [ ] 看 `registry.json` 当前状态（20 源 + 14 Brief + 6 subtype + version 0.1.6 + skill_version 0.4）
+- [ ] 看 `.claude/skills/research-source/SKILL.md` 当前 v0.4（P26-30 已合并）
+- [ ] 看 `.research-cache/raw-fetches/batch{1,2,3}/` 持久缓存（A1 cache 还在）
+- [ ] 确认 dev server 是否还在跑（PID 13336，port 3000）；不在就 `cd apps/docs && pnpm dev`
+- [ ] **第一件事**：A2 5 源 Brief / Deep-Dive / 批 5 三选一
 
 ### 2.4 跑批 5 配套优化（可选）
 
@@ -133,18 +139,29 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 - 429 重派机制（v0.4 Step 3.1）
 - 如跑 GitHub 大仓库，用 `git -c http.version=HTTP/1.1 -c http.postBuffer=524288000` fallback
 
+### 2.5 P39 防御（MDX `<数字` JSX 解析错）
+
+- A1 4 源 grep `<[0-9]` 全 0 命中（已验）
+- backtick 包裹的 `<X>` 不触发
+- 已知触发：openai-codex L42 / L79 (`<500 LoC`) 已修（79a4e71）
+
+### 2.6 P40 防御（docs landing 404）
+
+- `content/docs/index.mdx` 必建（c07160b 已修）
+- A1 不涉及 docs 目录变更，无影响
+
 ---
 
 ## 3. 启动前 Checklist（下 session）
 
-- [ ] 读本文件（已反映本 session 末态：11 Brief + 2 fix + 13 commits）
-- [ ] 读 `LEARNINGS.md` Section 12-15（批 3 + pdf-extract v0.1/v0.2/v0.3 全部沉淀）
-- [ ] 看 `registry.json` 当前状态（20 源 + 11 Brief + 6 subtype + skill_version 0.4）
+- [ ] 读本文件（已反映 A1 末态：14 Brief + version 0.1.6 + skill_version 0.4）
+- [ ] 读 `LEARNINGS.md` Section 12-16（批 3 + pdf-extract v0.1/v0.2/v0.3 + A1 4 源 Brief 沉淀）
+- [ ] 看 `registry.json` 当前状态（20 源 + 14 Brief + 6 subtype + version 0.1.6）
 - [ ] 看 `.claude/skills/research-source/SKILL.md` 当前 **v0.4**（P26-30 已合并）
 - [ ] 看 `.claude/skills/pdf-extract/SKILL.md` 当前 **v0.3**（P34-P38 已修）
-- [ ] 看 `.research-cache/raw-fetches/batch{1,2,3}/` 持久缓存
-- [ ] 确认 dev server 是否还在跑（PID 10060，port 3000）；不在就 `cd apps/docs && pnpm dev`
-- [ ] **第一件事：A1 4 源 Brief 推进**（anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog）
+- [ ] 看 `.research-cache/raw-fetches/batch{1,2,3}/` 持久缓存（A1 4 源 cache 仍在）
+- [ ] 确认 dev server 是否还在跑（PID 13336，port 3000）；不在就 `cd apps/docs && pnpm dev`
+- [ ] **第一件事**：A2 5 源 Brief / Deep-Dive 选 1-2 / 批 5 三选一
 
 ---
 
@@ -217,4 +234,4 @@ dev server 仍应在跑；不在就 `cd apps/docs && pnpm dev`。
 
 ## 7. SESSION_HANDOFF 更新结束
 
-下 session 开始时，按 Checklist Section 3 执行；**第一件事 A1 4 源 Brief 推进**（anth-agent-skills / mcp-servers / gemini-cli / cursor-changelog）。
+A1 4 源 Brief 推进完成。下 session 开始时，按 Checklist Section 3 执行；**第一件事：A2 5 源 Brief / Deep-Dive / 批 5 三选一**。

@@ -4,9 +4,14 @@ description: Anthropic 官方关于「如何写好一个 Claude Code skill」的
 slug: claude-skills-blog
 url: https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills
 source_type: article
-tier: card
-status: card_complete
-last_checked: 2026-06-10
+source_subtype: blog
+tier: deep-dive
+tiers_present:
+  - card
+  - brief
+  - deep-dive
+status: deep-dive_complete
+last_checked: 2026-06-11
 published_date: 2026-06-03
 reading_time: 5 min
 primary_author: Anthropic Claude Code Team
@@ -14,8 +19,10 @@ audience_tags:
   cs_background: yes
   devops: mid
   cc_experience: used
-promote_to_brief: null
-promote_to_deep_dive: null
+char_count: 18560
+overflow: true
+promote_to_brief: true
+promote_to_deep_dive: true
 ---
 
 # Lessons from building Claude Code — How we use skills
@@ -57,3 +64,406 @@ promote_to_deep_dive: null
 - 原文 #use-on-demand-hooks — `/careful`（PreToolUse matcher on Bash）与 `/freeze`（Edit/Write 限目录）配置思路
 - 原文 #distributing-skills — 两种分发路径的取舍
 - 原文 #measuring-skills — PreToolUse hook 衡量用法的 example code 链接
+
+## Brief（梳理）
+
+### 9 大 Skill 分类全表
+
+| # | 分类 | 核心职责 | 真实案例（原文）|
+|---|---|---|---|
+| 1 | **Library / API reference** | 让 agent 知道「用什么工具能做什么」| `billing-lib` |
+| 2 | **Product verification** | **影响最大**——跑 e2e 验真 / 反例检测 | `signup-flow-driver` / `checkout-verifier` / `tmux-cli-driver` |
+| 3 | **Data fetching** | 把跨表/跨仓数据查询封装 | `funnel-query` |
+| 4 | **Business process** | 把组织内 SOP 翻译给 agent | `standup-post` |
+| 5 | **Code scaffolding** | 起项目 / 添功能的标准模板 | （未具名）|
+| 6 | **Code quality & review** | 评审 / 改写 / adversarial review | `adversarial-review` / `babysit-pr` |
+| 7 | **CI/CD** | 流水线相关操作 | （未具名）|
+| 8 | **Runbooks** | 应急响应（oncall / incident）| `oncall-runner` |
+| 9 | **Infra operations** | 基础设施变更 | `dependency-management` |
+
+- **核心原则**：「最佳 skill 干净归一类；横跨多类的 skill 会让 agent 困惑」——description 字段同时写多类会污染触发判定
+- **投资回报排序**：**Product verification > 其他**——Anthropic 官方「花一周把 verification skills 写好是值得的」
+
+### 8 条写作建议（每条配反例与正例）
+
+| # | 建议 | 反例 | 正例 |
+|---|---|---|---|
+| 1 | **Don't state the obvious** | "Use the read tool to read files" | 直接说「用 read tool」不写「Claude 是个 agent 能读文件」|
+| 2 | **Build a gotchas section**（**最高信号**）| 把已知坑散在各处 | 单列 `## Gotchas` 段，按真实失败点积累 |
+| 3 | **Use the file system & progressive disclosure** | 大 SKILL.md 一次全塞 | 主 SKILL.md < 5000 token，详细放 `references/` `scripts/` `assets/` |
+| 4 | **Avoid railroading Claude** | "Step 1: do X. Step 2: do Y" | "Use your judgment to pick the right approach" |
+| 5 | **Think through the setup** | 假设用户已有 config | 在 `config.json` 显式要求 + 用 `AskUserQuestion` 确认 |
+| 6 | **Write descriptions for the model, not for humans** | "A skill for handling PDFs" | `"Extracts text and tables from PDF files. Use when user mentions PDFs, forms, or document extraction."` |
+| 7 | **Help Claude remember** | 每次让 agent 重新发现 | `${CLAUDE_PLUGIN_DATA}` 持久化日志 / state |
+| 8 | **Store scripts and generate code** | 把所有代码都贴 SKILL.md | 复杂逻辑落 `scripts/`，让 agent 跑而不是读 |
+
+- **Gotchas section 三个反例**（原文 #build-a-gotchas-section）：
+  - 订阅表：`The subscriptions table is append-only. The row you want is the one with the highest version, not the most recent created_at.`
+  - 字段名差异：API 字段 `customer_id` 在 DB 是 `user_id`
+  - Staging 假阳性：staging 环境的脏数据让 `get_latest()` 返回不期望值
+
+### Description 字段是触发器不是摘要
+
+- **session 启动时扫所有 skill 的 description**——Claude 据此决定「这个请求有没有 skill 可用」
+- **关键词埋点**：例：在 description 里加 `"babysit"` 触发关键词，让用户在 prompt 提到 babysit 时自动激活
+- **1024 字符上限**——既要描述「做什么」也要描述「何时触发」
+- **官方 spec**（agentskills.io）：name 1-64 字符（小写字母数字+hyphen，不以 - 开头/结尾，无连续 --）+ 必须匹配父目录名
+
+### Folder 结构（Skill ≠ 单 .md 文件）
+
+```
+skill-name/
+├── SKILL.md           # frontmatter + 主体（< 5000 token）
+├── scripts/           # 可执行代码
+├── references/        # 详细文档（按需加载）
+└── assets/            # 模板 / 配置 / 数据
+```
+
+- **Progressive disclosure**：metadata (~100 token) → instructions (< 5000) → references (按需)
+- **vs 单 .md 误解**：最大误解是「skill 就是一个 markdown 文件」——实际是文件夹
+
+### 4 种高级模式
+
+#### 模式 1：Dynamic context 注入（``!cmd``）
+
+- 在 SKILL.md 写 `` !`git status` `` → 加载时跑命令，stdout 替换占位符进 prompt
+- **禁用**：settings 加 `disableSkillShellExecution: true`（不影响 bundled / managed skills）
+
+#### 模式 2：On-demand hook
+
+- `/careful`：PreToolUse hook 拦截 `Bash` 工具 `rm -rf` 类危险命令
+- `/freeze`：Edit/Write 工具限制只能改某个目录
+- 思路：**让 Claude 主动触发安全门**——而不是 prompt 提醒
+
+#### 模式 3：Plugin marketplace 规模化
+
+- 小团队：检入 `./.claude/skills`（私有）
+- 规模化：plugin marketplace（公开 + 安装时 setup flow）
+- **分发哲学**：marketplace 能做「装完即用」的 setup flow——不只发布 skill，还发布 onboarding
+
+#### 模式 4：PreToolUse hook 衡量
+
+- 记录 skill 使用频次 → 找出热门 / 未触发的 skill
+- 官方放 example code——衡量是「二次优化」的输入
+
+### 跨源关联
+
+- vs `anth-agent-skills`（brief）：本 = **Anthropic 实战 tips**（how-to-write）；那 = **官方 spec**（what-is-skill）——**how vs what**
+- vs `alirezarezvani-claude-skills`（brief）：本 = **写作哲学**（描述质量、gotchas 优先）；那 = **skill 库全景**（338+ skills 主题分布）——**元 vs 库**
+- vs `superpowers`（deep-dive）：本 = 「**单个 skill 怎么写**」；那 = 「**skill 体系的工作流**」（何时触发哪个 skill）——**单点 vs 系统**
+- vs `anth-slash-commands`（brief）：本 = **Skills 完整设计哲学**；那 = **SKILL.md frontmatter 16 字段契约**——**why vs what-fields**
+
+### 教程章节候选
+
+1. **「如何写一个 Skill」checklist 章**：8 条建议做成 8-step checklist + 9 分类决策树
+2. **「Gotchas section 写法」章**：3 个反例 + 模板（`## Gotchas` 段结构化）
+3. **「Description 字段触发器写法」章**：关键词埋点 + 5 个正反例
+4. **「Progressive disclosure：SKILL.md 控制在 < 5000 token」章**：主 SKILL.md + references 分层
+5. **「Plugin marketplace vs in-repo」章**：分发路径决策表（团队规模 × 安全要求 × 维护成本）
+6. **「Skill 衡量：PreToolUse hook 用法」章**：找出热门/未触发的 skill 做二次优化
+
+---
+
+## Deep-Dive（深读）
+
+### 主题 1：9 大分类 × 8 写作建议 评估框架（双轴）
+
+把 Brief 已说的 9 大分类和 8 写作建议**组合成评估矩阵**——既是评判别人 skill 的工具，也是**反向审计**自己 SKILL.md 的 checklist。
+
+#### 1.1 9 大分类判定（先问「它属于哪一类」）
+
+| 分类 | 一句话判定 | 反例（不该归这类的）|
+|---|---|---|
+| **Library / API reference** | 教「用什么工具能做什么」| 教「业务流程」（→ Business process）|
+| **Product verification** | 跑 e2e 验真 | 教「代码风格」（→ Code quality）|
+| **Data fetching** | 跨表/跨仓数据查询 | 跑测试（→ Product verification）|
+| **Business process** | SOP 翻译 | 写代码（→ Code scaffolding）|
+| **Code scaffolding** | 起项目 / 添功能模板 | 评审（→ Code quality）|
+| **Code quality & review** | 评审 / 改写 / adversarial | 部署（→ CI/CD）|
+| **CI/CD** | 流水线 | 应急响应（→ Runbooks）|
+| **Runbooks** | oncall / incident | 基础设施变更（→ Infra operations）|
+| **Infra operations** | 基础设施变更 | 业务流程（→ Business process）|
+
+- **核心规则**：**干净归一类**——跨多类的 skill 让 agent 困惑
+- **判定流程**：读者问「我要写一个 skill」→ 第一问「它解决哪一类问题？」→ 单选 9 类之一
+
+#### 1.2 8 写作建议 checklist（每条 0/1/2 分）
+
+| # | 建议 | 0 分（差）| 1 分（部分）| 2 分（好）|
+|---|---|---|---|---|
+| 1 | Don't state the obvious | 写"Claude 是个 agent" | 偶尔有冗余 | 全无冗余 |
+| 2 | Build a gotchas section | 无 gotchas 段 | 有但散落各处 | 单列 `## Gotchas` 段 |
+| 3 | Progressive disclosure | 主 SKILL.md > 10K token | 偶尔有 references/ | 主 < 5K + references/ 分层 |
+| 4 | Avoid railroading | 全是 step-by-step | 混合 | 大半"用判断" |
+| 5 | Think through the setup | 假设 config 就绪 | 部分显式 | config.json + AskUserQuestion |
+| 6 | Description for model | "A skill for X" | 简单写"用 when" | 完整描述 + 触发关键词 |
+| 7 | Help Claude remember | 无持久化 | 部分 | `${CLAUDE_PLUGIN_DATA}` 完整 |
+| 8 | Store scripts & generate code | 全贴 SKILL.md | 偶尔 scripts/ | scripts/ 完整 + 复杂逻辑外移 |
+
+- **满分 16**；**优秀 ≥ 12**；**及格 ≥ 8**；**< 8 视为不及格**——重写而不是修补
+
+#### 1.3 双轴决策（先分类，再打分）
+
+```
+         0  1  2
+1 Lib ─── ─── ───
+2 Ver ─── ─── ───  ← 优先投资
+3 Data ─── ─── ───
+4 Biz ─── ─── ───
+5 Scaf ─── ─── ───
+6 Qua ─── ─── ───
+7 CI ─── ─── ───
+8 Run ─── ─── ───
+9 Inf ─── ─── ───
+```
+
+- **纵轴**：9 大分类（选一类）
+- **横轴**：8 写作建议（0/1/2 分）
+- **热点**：Product verification（官方说"花一周值得"）+ Q2 gotchas section（最高信号）
+
+### 主题 2：8 写作建议完整 Checklist 模板
+
+下面把 8 建议**具体化到可执行 checklist**——每条配「自检问句 + 反例 + 正例」，可直接搬进教程。
+
+| # | 建议 | 自检问句 | 反例 | 正例 |
+|---|---|---|---|---|
+| 1 | **Don't state the obvious** | "我有没有写 Claude 已知的事？"| "Use the read tool to read files" | 直接说「用 read tool」不写「Claude 是个 agent 能读文件」|
+| 2 | **Build a gotchas section** | "我有没有 `## Gotchas` 段？"| 把已知坑散在各处 | 单列 `## Gotchas`，按真实失败点积累 |
+| 3 | **Progressive disclosure** | "SKILL.md < 5000 token？"| 大 SKILL.md 一次全塞 | 主 < 5K + 详细分 `references/` `scripts/` `assets/` |
+| 4 | **Avoid railroading** | "我有没有给 Claude 选择空间？"| "Step 1: do X. Step 2: do Y" | "Use your judgment to pick the right approach" |
+| 5 | **Think through the setup** | "用户上手会卡在哪？"| 假设 config 就绪 | 在 `config.json` 显式要求 + 用 `AskUserQuestion` 确认 |
+| 6 | **Description for model** | "Description 含触发关键词？"| "A skill for handling PDFs" | `"Extracts text... Use when user mentions PDFs, forms, or document extraction."` |
+| 7 | **Help Claude remember** | "我有没有持久化机制？"| 让 agent 重新发现 | `${CLAUDE_PLUGIN_DATA}` 完整日志 + state |
+| 8 | **Store scripts & generate code** | "复杂逻辑外移了吗？"| 所有代码贴 SKILL.md | 复杂逻辑落 `scripts/`，agent 跑而不是读 |
+
+#### 实战描述模板
+
+```yaml
+---
+name: pdf-form-extractor
+description: Extracts text and tables from PDF files, fills PDF forms, and merges
+  multiple PDFs. Use when working with PDF documents or when the user mentions
+  PDFs, forms, or document extraction. Triggers on: "extract PDF", "PDF form",
+  "merge PDFs", "fill PDF form".
+---
+```
+
+- **关键字段**：
+  - 第 1 句：做什么（"Extracts text and tables"）
+  - 第 2 句：何时触发（"Use when user mentions PDFs"）
+  - 第 3 段：**关键词埋点**（"Triggers on: ..."）—— session 启动时扫这些词判定激活
+
+#### `/careful` / `/freeze` hook 实战
+
+**`/careful`**（拦截危险 Bash）：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command' | grep -qE 'rm\\s+-rf?\\s+/|sudo\\s'; then echo 'DENY' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+- **触发方式**：user 显式 `/careful` 激活（`disable-model-invocation: true`）
+- **效果**：所有 Bash 调用先过 validator；rm -rf / 和 sudo 直接 DENY
+
+**`/freeze`**（限制目录）：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path' | grep -vE '^/Users/me/project/src/'; then echo 'OUTSIDE /src' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+- **效果**：Edit/Write 只能改 `/Users/me/project/src/` 内的文件——其他路径 DENY
+
+### 主题 3：反向审计我们自己的 `research-source/SKILL.md`
+
+最有价值的 Deep-Dive 用途——**用 8 建议逐条审计** `research-source` skill：
+
+#### 当前 SKILL.md frontmatter
+
+```yaml
+---
+name: research-source
+description: |
+  研究一个资料源（GitHub repo / 文章 / 教程 / skill collection）并产出 Card（速览）/ Brief（梳理）/ Deep-Dive（深读）。
+  在用户提到「研究 X」、「写 card」、「出 brief」、「deep-dive」、「调研这个 repo」时使用。
+---
+```
+
+#### 逐条打分（满分 16 / 当前评估）
+
+| # | 建议 | 当前分 | 证据 | 改进 |
+|---|---|---|---|---|
+| 1 | Don't state the obvious | **2** | 全文无 "Claude 是个 agent" 类冗余 | 维持 |
+| 2 | Build a gotchas section | **0** | **无 `## Gotchas` 段**——LEARNINGS Section 1-17 全是 gotchas，没进 SKILL.md | **加 `## Gotchas` 段**沉淀 P17-44 |
+| 3 | Progressive disclosure | **1** | 主 SKILL.md ~150 行 < 5000 token；但 references/ 仅 1 个 reference.md | **拆 SKILL.md**：主留 Step 1-6 概述，详细放 `references/step-{1-6}.md` |
+| 4 | Avoid railroading | **1** | Step 1-6 偏 step-by-step；fallback 块给了"路径"但缺选择空间 | **关键决策点加 "use your judgment"**（如"何时用 subagent vs 主 Claude 直接起草"）|
+| 5 | Think through the setup | **0** | 假设用户已知 `--tier` `--subtype` 等参数；无 `config.json` 或 `AskUserQuestion` | **加 setup 段**：「首次使用先看 Step 1 拉取部分确认 WebFetch 是否需要 fallback」|
+| 6 | Description for model | **1** | description 含触发关键词（"研究 X"/"写 card"/"出 brief"等），但**缺"何时不触发"** | **加反例**："Do NOT use for: 修改代码 / 写文档 / 跑测试" |
+| 7 | Help Claude remember | **0** | 无 `${CLAUDE_PLUGIN_DATA}` 持久化；hard constraints 没 cache | **加 session 缓存**：把 `audience_tags` enum 白名单 / 锚点格式 cache 起来避免每次重读 |
+| 8 | Store scripts & generate code | **0** | **完全无 `scripts/` 目录**——所有逻辑在 SKILL.md 文本里 | **加 `scripts/`**：`fetch-with-fallback.sh` / `validate-frontmatter.py` / `wc-m-char-count.sh` |
+
+**当前总分：5/16（不及格）**
+
+#### 改进优先级（基于 5/16 现状）
+
+1. **加 `## Gotchas` 段**（0 → 2）——把 LEARNINGS Section 17 关键 5 个 Problem 沉淀进 SKILL.md
+2. **加 `scripts/` 目录**（0 → 2）——把 3 个 shell / python 脚本从文档迁出
+3. **description 加 "Do NOT use for"**（1 → 2）——避免误触发
+4. **拆 SKILL.md references/**（1 → 2）——主 < 100 行，详细分 6 个 step 文件
+5. **加 use-your-judgment 段**（1 → 2）——关键决策点给选择空间
+
+**目标：5/16 → 12/16（优秀线）**
+
+#### 立即可改的 3 项
+
+```yaml
+# 1. description 加 Do NOT use for
+description: |
+  研究一个资料源（GitHub repo / 文章 / 教程 / skill collection）并产出 Card（速览）/ Brief（梳理）/ Deep-Dive（深读）。
+  在用户提到「研究 X」、「写 card」、「出 brief」、「deep-dive」、「调研这个 repo」时使用。
+  Do NOT use for: 修改代码 / 写文档 / 跑测试 / 单纯查文档——那些用 Read 工具。
+```
+
+```markdown
+## Gotchas（v0.4 沉淀）
+
+- **docs.claude.com 在本机 region 触发 geo-block**——回退到 `raw.githubusercontent.com/anthropics/*`（P17）
+- **Subagent 沙箱无网**——主 Claude pre-seed cache + subagent 走 cache-first（P26）
+- **MDX `<数字` 触发 JSX 解析错**——`&lt;` 转义（P39）
+- **chars 不一致**——用 `wc -m` 实测，不要 subagent 自报（P21）
+- **写盘违规**——subagent prompt 必含「禁止 Write/Edit」工具级禁令（P30）
+```
+
+```text
+scripts/
+├── fetch-with-fallback.sh   # Step 1 拉取 + fallback 链
+├── validate-frontmatter.py  # Step 4.1 schema 校验
+└── wc-m-char-count.sh       # Step 5 char_count 实测
+```
+
+#### A/B 评估建议
+
+改前 vs 改后：
+- **改前**：5/16，description 触发率 ~60%（凭经验估）
+- **改后目标**：12/16，触发率 > 85%
+- **测量方式**：PreToolUse hook 记录 skill 使用频次（官方 example code 链接见 Card 段）
+
+### 主题 4：批判性审视 —— 反面分析（5+ 盲点）
+
+#### 盲点 1：8 建议无"如何用判断"的元方法
+
+**症状**：建议 4 "Avoid railroading" 说"用 Claude judgment"——但**没教**「什么场景该 judgment、什么场景该 step-by-step」。
+
+**对照**：superpowers 的 `writing-skills` 元流程给 5 步（写第一版 → 对抗性测试 → 改 → A/B 评估 → 贡献）——**有元方法**。
+
+**对我们的启示**：教程应加「元方法论」章——「何时 strict step-by-step / 何时 judgment」决策树。
+
+#### 盲点 2：9 分类的"软边界"没说清
+
+**症状**：「Product verification」vs「Code quality & review」都涉及跑测试，**边界模糊**。
+
+**对照**：PMBOK 知识领域有明确 "process group" 划分；CC 9 分类**没**给判定规则。
+
+**对我们的启示**：教程给 9 分类**判别流程**——输入问题描述 → 走判别树 → 单选一类。
+
+#### 盲点 3：Gotchas section 的"沉淀机制"没说
+
+**症状**：建议 2 "Build a gotchas section"——但**没教**「gotcha 从哪来」「怎么积」「多久 review 一次」。
+
+**对照**：Aider 的 "conventions.md 维护周期" 文档化；CC 9 大分类**没**给 gotchas 沉淀 SOP。
+
+**对我们的启示**：教程"gotchas section 维护"——每 5 次使用复盘一次，按"真实失败点"积累。
+
+#### 盲点 4：`/careful` / `/freeze` 的"反例"没给
+
+**症状**：示例给 hook 配置——但**没教**「什么场景用 `/careful` 而非 `/freeze`」。
+
+**对照**：CC 6 类 hook 事件有清晰分工；`/careful` vs `/freeze` **语义重叠区没说**。
+
+**对我们的启示**：教程"on-demand hook 选型"——`/careful` 拦危险命令，`/freeze` 限目录，**两者可叠加**。
+
+#### 盲点 5：description "Do NOT use for" 没建议
+
+**症状**：建议 6 "Description for model"——但**没**显式说"加 Do NOT use for 段"。
+
+**对照**：agentskills.io spec 也没说——**这是一个 gap**。
+
+**对我们的启示**：教程补充——**description 末尾加 "Do NOT use for: X / Y / Z"**——降低误触发率。
+
+#### 盲点 6：衡量 example code 引用但没内置
+
+**症状**：原文说"找 example code"——**链接外部**而非内置到 skill。
+
+**对照**：superpowers 的 `using-superpowers` 内置 bootstrap 机制；CC 衡量**外链**。
+
+**对我们的启示**：教程给"内置 PreToolUse 衡量模板"——避免读者去外部找。
+
+### 主题 5：与同类工具的「沿用 vs 错位」决策表
+
+"如何写 skill" 不只 CC 一家——superpowers、alirezarezvani 都有 skill 哲学。
+
+| 概念 | claude-skills-blog | superpowers `writing-skills` | alirezarezvani Path-B 11-file |
+|---|---|---|---|
+| **元方法** | 8 建议（无元流程）| 5 步元流程（写→测→改→评估→贡献）| 11-file contract |
+| **分类** | 9 大分类 | 14 skill 体系 | 16 domain |
+| **评估** | PreToolUse 衡量（外链）| A/B 评估（强制）| 6 类安全审计 |
+| **Hooks** | `/careful` / `/freeze` | on-demand PreToolUse | skill-security-auditor |
+| **教程定位** | 教程「如何写 Skill」主轴 | 教程「方法论」主轴 | 教程「工程治理」章引用 |
+
+**沿用 vs 错位决策**：
+
+| 特性 | 教程决策 | 理由 |
+|---|---|---|
+| 9 大分类 | **沿用** | 读者写 skill 必先分类 |
+| 8 写作建议 | **沿用** | 审计 checklist 直接抄 |
+| Gotchas section | **沿用 + 加深** | 加 "沉淀 SOP"（盲点 3）|
+| Description for model | **沿用 + 错位** | 加 "Do NOT use for"（盲点 5）|
+| `/careful` / `/freeze` | **沿用** | 教程「安全」章直接用 |
+| 衡量方法 | **沿用 + 错位** | 内置 PreToolUse 模板（盲点 6）|
+| 元方法（5 步）| **错位** | superpowers 独有，**教程不展开**——读者看 superpowers 即可 |
+
+### 可直接复用的资产清单
+
+1. **9 大分类判定流程**（主题 1.1）——读者写 skill 必先问"哪一类"
+2. **8 写作建议 0/1/2 评分表**（主题 1.2）——评判 / 审计任何 skill 的工具
+3. **8 建议完整 checklist**（主题 2）——自检问句 + 反例 + 正例
+4. **实战 description 模板**（主题 2）——含触发关键词埋点
+5. **`/careful` / `/freeze` hook 完整配置**（主题 2）——PreToolUse 实战
+6. **反向审计 `research-source` 结果**（主题 3）——5/16 → 12/16 改进路线
+7. **3 项立即可改清单**（主题 3）——description 增 Do NOT / Gotchas 段 / scripts/ 目录
+8. **A/B 评估建议**（主题 3）——PreToolUse 触发率改前 vs 改后
+
+### 教程章节候选（Deep-Dive 阶段会展开）
+
+1. **「如何写一个 Skill」主章**：9 分类判定 + 8 建议 checklist + 实战 description 模板
+2. **「Skill Gotchas 段沉淀 SOP」章**（盲点 3）：5 次使用复盘 + 真实失败点积累
+3. **「Description for model + Do NOT use for」章**（盲点 5）：触发器写法 + 误触发防御
+4. **「`/careful` / `/freeze` 实战」章**：on-demand hook 选型 + 完整配置
+5. **「Skill 衡量：PreToolUse hook 模板」章**（盲点 6）：内置模板（不再外链）
+6. **「Skill 反向审计」章**：8 建议 0/1/2 评分 + 改进优先级（用 `research-source` 5/16 → 12/16 作 case）
