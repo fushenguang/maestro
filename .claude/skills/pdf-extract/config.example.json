@@ -1,0 +1,31 @@
+{
+  "version": "0.1",
+  "default_mode": "auto",
+  "max_bytes_per_file": 80000,
+  "ocr": {
+    "languages": ["eng"],
+    "tesseract_cmd": null,
+    "dpi": 200
+  },
+  "layout": {
+    "scale": 1.5,
+    "column_detection_method": "bbox_cluster",
+    "min_column_gap_ratio": 0.15,
+    "y_tolerance": 3
+  },
+  "quality_check": {
+    "min_quality_score": 0.6,
+    "checks": {
+      "anchor_density": {
+        "min_chars_per_page": 100
+      },
+      "ocr_likely": {
+        "common_mistakes": ["l1", "0O", "rn m"]
+      },
+      "garbled_ratio": {
+        "max_unprintable_ratio": 0.05
+      }
+    }
+  },
+  "fallback_chain": ["layout", "ocr"]
+}
