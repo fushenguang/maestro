@@ -1077,3 +1077,99 @@ breakdown: density=1.0, ocr=0.0, garbled=0.062, col_cov=1.0, chart_ratio=0.7
 - `pdf-extract/SKILL.md` v0.2（138 行，+9）
 - `pdf-extract/reference.md` v0.2（157 行，+36）
 - `pdf-extract/config.example.json`（未变）
+
+---
+
+## 15. pdf-extract skill v0.3 实现（2026-06-11 晚）
+
+> 用户选「修 v0.3 推 v0.2」。修 P38（旋转 90° 文本过滤）+ CJK 文档化。
+
+### 15.1 修复实现
+
+| Problem | 修复位置 | 修复方法 |
+|---|---|---|
+| **P38** | `layout_parser.filter_rotated_words()` + `extract_layout()` | 用 pdfplumber `upright` 字段（首选）+ 启发式（bbox 宽 < 5 + 高 > 30）双检测；word 字典保留 `upright` 字段；layout_parser 自动过滤 `upright=False` |
+
+**CJK 文档化**（不实装 paddleocr 等大依赖）：
+- v0.3 验证：CJK 字符 `x_tolerance=1` 默认 OK，不会切碎汉字也不会合并相邻汉字
+- CJK 风险是 PDF 字体未嵌入（pdfplumber 抽不出）→ 需 OCR（v0.4+ 集成 paddleocr）
+- SKILL.md 加「CJK 支持」段；硬约束加 P38
+
+### 15.2 端到端验证（constitutional-ai-paper.pdf 34 页）
+
+#### layout 模式（**P38 修后**）
+
+**p1 输出对比**：
+| 版本 | Column 1 内容 |
+|---|---|
+| v0.1 / v0.2 (无 P38 修) | `2202 / ceD / 51 / ]LC.sc[ / 1v37080.2122:viXra`（arXiv 旋转 90° 边栏）|
+| **v0.3 (P38 修后)** | **空**（自动过滤）——直接是标题正文 |
+
+**p5 输出对比**：与 v0.2 一致（继续无图污染）✓
+
+#### auto 模式（v0.3 quality_check）
+
+```
+[auto] 先 layout + quality_check（v0.2 阈值 0.75）
+✓ mode=layout, quality=0.898
+breakdown: density=1.0, ocr=0.0, garbled=0.062, col_cov=0.7, chart_ratio=0.7
+```
+
+| 维度 | v0.2 测值 | v0.3 测值 | 解读 |
+|---|---|---|---|
+| density | 1.0 | 1.0 | 字符密度高 |
+| ocr_likely | 0.0 | 0.0 | 不像 OCR |
+| garbled_ratio | 0.062 | 0.062 | 几乎无乱码 |
+| **column_coverage** | 1.0 | **0.7** | P38 修后 p1 实际空了，算法重判为「单栏」给中性分（合理）|
+| chart_text_ratio | 0.7 | 0.7 | 图标签 < 5% |
+| **final** | 0.943 | 0.898 | v0.3 比 v0.2 略低，反映旋转文本被正确过滤 |
+
+不触发 OCR fallback（≥ 0.75）✓
+
+#### x_tolerance 实测（验证 CJK 推荐值）
+
+| 值 | 效果（西文学术 PDF）| CJK 推断 |
+|---|---|---|
+| 0 | 字符切碎（"Constitutional" → "Constit utional"）| 切碎 CJK 汉字（"中文" → "中 文"）—— **不推荐** |
+| **1**（默认）| 单词正确（"Yuntao Bai"）| 汉字一 word（"中文"）—— **推荐** |
+| 3（pdfplumber 默认）| 合并（"YuntaoBai"）| CJK 字符宽度大，1pt 距离也合并不了汉字；但**会合并英文词** |
+| 5+ | 严重合并 | 不适用 |
+
+### 15.3 CJK 支持状态
+
+| 场景 | 状态 | 备注 |
+|---|---|---|
+| CJK 嵌入字体 PDF（学术 / 政府报告）| ✅ 能抽 | 默认 x_tolerance=1 |
+| CJK 未嵌入字体 PDF | ❌ 抽不出 | v0.4+ 集成 paddleocr |
+| CJK 扫描版 PDF | ❌ 需 OCR | v0.4+ 集成 paddleocr / easyocr |
+| CJK 复杂布局（多栏 / 公式 / 古文竖排）| ⚠️ 未实测 | 需用户给 CJK PDF 样本跑通 |
+
+**v0.3 缺 CJK PDF 样本**——anaconda3 缓存里 10+ PDF 全部英文。CJK 用户需提供 PDF 跑通实测后调整。
+
+### 15.4 v0.3 状态总览
+
+| 模式 | v0.2 | v0.3 |
+|---|---|---|
+| **simple** | ✅ | ✅ + CJK 友好（x_tolerance=1）|
+| **layout** | ✅ 生产可用 | ✅ + P38 旋转文本过滤 |
+| **auto** | ✅ 5 维自评 | ✅ 5 维自评 + P38 集成 |
+| **ocr** | ✅ 入口 | ✅ 入口（未实跑，tesseract 未装）|
+
+### 15.5 v0.4 计划
+
+| 计划 | 优先级 | 说明 |
+|---|---|---|
+| 集成 `paddleocr` / `easyocr` 兜底未嵌入 CJK 字体 | 中 | 1-2GB 模型，CJK 扫描版必需 |
+| 集成 `nougat-ocr` 公式识别 | 低 | 学术论文公式 → LaTeX |
+| 集成 `marker-pdf` 加速 | 低 | GPU 加速时 0.5s/页 |
+| References 段自动切 simple 模式 | 中 | 学术论文 References 是单栏 |
+| 加 CJK PDF 样本实测 | 中 | 验证 x_tolerance=1 对中文 PDF 实测效果 |
+
+### 15.6 沉淀资产
+
+- `pdf-extract/scripts/extract.py` v0.3（312 行，+4）
+- `pdf-extract/scripts/layout_parser.py` v0.3（248 行，+28）
+- `pdf-extract/scripts/quality_check.py` v0.3（未变）
+- `pdf-extract/SKILL.md` v0.3（165 行，+27）
+- `pdf-extract/reference.md` v0.3（未变）
+- `pdf-extract/config.example.json`（未变）

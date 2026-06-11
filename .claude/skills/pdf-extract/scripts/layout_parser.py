@@ -32,6 +32,31 @@ def filter_words_in_images(words: list[dict], image_bboxes: list[tuple],
     return [w for w in words if not in_any_image(w["bbox"])]
 
 
+def filter_rotated_words(words: list[dict], require_upright: bool = True) -> list[dict]:
+    """过滤旋转 90°/180°/270° 的 word（修 P38）。
+    旋转 word 通常是 PDF 边栏标签（如 arXiv 左侧竖排 ID），不是正文。
+
+    两种检测（任一即过滤）：
+      1. pdfplumber `upright` 字段 = False（首选，准确）
+      2. 启发式：word 宽 < 5 且高 > 30（竖向，宽度极小）
+
+    Returns: 过滤后的 words
+    """
+    def is_rotated(w):
+        # 方法 1：upright 字段
+        if "upright" in w and w["upright"] is False:
+            return True
+        # 方法 2：启发式（bbox 宽 < 5 + 高 > 30）
+        wx0, wy0, wx1, wy1 = w["bbox"]
+        width = wx1 - wx0
+        height = wy1 - wy0
+        if width < 5 and height > 30:
+            return True
+        return False
+
+    return [w for w in words if not is_rotated(w)]
+
+
 def cluster_lines(words, y_tolerance: float = 3.0):
     """按 y 坐标聚类成行。
     words: [{"text": str, "bbox": (x0, y0, x1, y1)}, ...]
@@ -155,15 +180,19 @@ def parse_columns_from_words(words: list[dict], page_width: float,
                              min_gap_ratio: float = 0.15,
                              image_bboxes: list[tuple] | None = None,
                              min_lines_per_col: int = 3) -> dict:
-    """主入口 v0.2。
-    words: [{"text": str, "bbox": (x0, y0, x1, y1)}, ...]
+    """主入口 v0.3。
+    words: [{"text": str, "bbox": (x0, y0, x1, y1), "upright": bool?}, ...]
     image_bboxes: 图表 bbox 列表（修 P35）
+    v0.3 加：自动过滤 upright=False 的旋转 word（修 P38）
     Returns: {"text": str, "lines": list, "columns": int, "column_boundaries": [...]}
     """
     if not words:
         return {"text": "", "lines": [], "columns": 1, "column_boundaries": [(0, page_width)]}
 
-    # 0. 过滤图区域 word（修 P35）
+    # 0a. 过滤旋转 word（修 P38：arXiv 边栏竖排标签等）
+    words = filter_rotated_words(words)
+
+    # 0b. 过滤图区域 word（修 P35）
     if image_bboxes:
         words = filter_words_in_images(words, image_bboxes)
 

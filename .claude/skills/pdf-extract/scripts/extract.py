@@ -56,14 +56,15 @@ def extract_layout(pdf_path: str) -> list[dict]:
     pages = []
     with pdfplumber.open(pdf_path) as pdf:
         for i, page in enumerate(pdf.pages, 1):
-            # 提 words：每个 word 含 bbox
+            # 提 words：每个 word 含 bbox + upright（修 P38）
             words = page.extract_words(x_tolerance=5, y_tolerance=3,
                                        keep_blank_chars=False)
-            # 转成 layout_parser 期望的格式
+            # 转成 layout_parser 期望的格式（保留 upright 字段）
             word_dicts = [
                 {
                     "text": w["text"],
                     "bbox": (w["x0"], w["top"], w["x1"], w["bottom"]),
+                    "upright": w.get("upright", True),  # pdfplumber 默认 True
                 }
                 for w in words
             ]
@@ -72,7 +73,7 @@ def extract_layout(pdf_path: str) -> list[dict]:
                 (img["x0"], img["top"], img["x1"], img["bottom"])
                 for img in page.images
             ]
-            # 解析 → 按栏重组
+            # 解析 → 按栏重组（修 P38：自动过滤旋转 word）
             result = layout_parser.parse_columns_from_words(
                 word_dicts, page.width, page.height,
                 image_bboxes=image_bboxes,

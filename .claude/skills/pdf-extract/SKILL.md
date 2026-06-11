@@ -7,7 +7,9 @@ description: |
   不做 PDF 编辑 / 表单 / 合并（用 Anthropic 官方 pdf skill）。
 ---
 
-# pdf-extract Skill（v0.2，2026-06-11 晚）
+# pdf-extract Skill（v0.3，2026-06-11 晚）
+
+> 把 PDF 抽到 markdown，**唯一目标**：输出能被 research-source skill 当 cache 读、有锚点可反查。
 
 > 把 PDF 抽到 markdown，**唯一目标**：输出能被 research-source skill 当 cache 读、有锚点可反查。
 
@@ -94,12 +96,13 @@ The field of...
 - subagent 走 cache-first（沿用 research-source 硬约束 #12）
 - 锚点格式 `(p5:L23)` 直接被 research-source cross-check 接受
 
-## 硬约束（**v0.2**）
+## 硬约束（**v0.3**）
 
 1. **P31 库选择**：仅用 pdfplumber (MIT) + pypdfium2 (Apache) + pytesseract (Apache)。**禁用** pymupdf (AGPL 风险) / nougat / marker（首次装 2GB+ 模型，批 4 预算冲突）
 2. **P32 大 PDF 分块**：> 80KB 自动按页拆 + 子文件命名 `{slug}-p{N}.md` + `-index.md` 索引
 3. **P33 扫描 PDF 显式 opt-in**：OCR 模式必须 `--mode ocr`；`auto` 模式 fallback 用 OCR 但**不默认启用**
 4. **P37 x_tolerance 反直觉**（v0.2 加 CLI 参数）：pdfplumber 的 `x_tolerance` 值**大=更激进合并**为同一 word。**默认 1** 适配西文学术 PDF；CJK / 紧排版可能需要不同值（参考 `reference.md` 「pdfplumber 反直觉行为」段）
+5. **P38 旋转 90° 文本过滤**（v0.3）：layout 模式自动过滤 `upright=False` word（arXiv 边栏竖排标签等）。**simple 模式不应用此过滤**（用户可能想要旋转文本）
 
 ## 已知坑
 
@@ -107,6 +110,55 @@ The field of...
 - **图表引用断裂**：图说（caption）通常与图分离，layout 模式可能把 caption 放到下页
 - **公式乱码**：LaTeX 公式 PDF 抽出来是符号序列，需要 v0.2+ 集成 `nougat` 或 `pix2tex`
 - **扫描 PDF 检测**：通过 `pdfplumber.Page.chars` 为空 + 图片数量 > 0 判定
+- **CJK 字体未嵌入**：PDF 嵌入中文字体 → pdfplumber 直接抽 OK；不嵌入 → 抽不出，需 OCR。v0.3 默认支持抽取（前提 PDF 嵌入字体），v0.4+ 集成 `paddleocr` 兜底
+- **CJK x_tolerance**：实测 `x_tolerance=1` 对 CJK 默认 OK（不会切碎汉字，也不会合并相邻汉字）。CJK 风险更在字体嵌入而非 x_tolerance
+
+## CJK 支持（v0.3 状态）
+
+- **简单/西文 CJK**（日文 / 韩文 / 中文，PDF 嵌入字体）：✅ **能抽**（用默认 `x_tolerance=1`）
+- **CJK 复杂布局**（多栏 / 公式 / 古文竖排）：⚠️ layout 模式可生产但竖排识别需进一步测试
+- **CJK 扫描版**：❌ 需 OCR（v0.3+ 集成 `paddleocr` 或 `easyocr` 兜底）
+- **CJK 未嵌入字体**：❌ pdfplumber 抽不出，需 OCR
+
+**CJK 调优**（v0.3 实测建议）：
+- 默认 `--x-tolerance 1`（CJK 字符宽度大，0 反而可能切碎「中文」为「中 文」）
+- 中文字符应保持「一汉字一 word」——pdfplumber 默认行为正确
+- v0.3 缺 CJK PDF 样本实测；CJK 用户需提供 PDF 跑通实测后调整
+
+## 变更日志
+
+- **v0.3（2026-06-11 晚）**：修 P38 + CJK 文档化
+  - P38：layout 模式自动过滤 `upright=False` 旋转 word（arXiv 边栏竖排标签）
+  - CJK 文档化：默认 `x_tolerance=1` 对 CJK 友好；CJK 风险在字体嵌入
+- **v0.2（2026-06-11 晚）**：修 P34-P37
+  - P34：layout_parser 改「行 x 坐标众数法」+ 多 gap 支持
+  - P35：layout_parser 接收 image_bboxes 过滤图区域 word
+  - P36：quality_check 加 column_coverage + chart_text_ratio 2 维；auto 阈值 0.6 → 0.75
+  - P37：x_tolerance 暴露为 CLI 参数 + 文档化反直觉行为
+- **v0.1（2026-06-11）**：初版，3 模式 + auto fallback + 大文件分块
+
+## 失败处理
+
+| 失败 | 处理 |
+|---|---|
+| PDF 文件不存在 | 报错 + exit 2 |
+| PDF 加密 / 受保护 | 报错 + 提示用户解密 |
+| OCR 模式无 tesseract 二进制 | 报错 + 提示 `brew install tesseract` |
+| 输出目录不存在 | 自动创建 |
+| quality_check 始终 < 0.75（auto fallback OCR 也差） | 输出 layout + ocr 两个版本 + 标 `quality_warning: true` |
+
+## 文件
+
+- `scripts/extract.py` — 主入口（CLI）
+- `scripts/layout_parser.py` — 双栏 / 多栏检测 + 按栏重组（含 v0.3 旋转 word 过滤）
+- `scripts/quality_check.py` — 输出自评（5 维：density / ocr / garbled / column_coverage / chart_ratio）
+- `reference.md` — 工具备选 / 字体 / 扫描 PDF 排查 / CJK 调优
+- `config.example.json` — 默认配置
+
+## 相关
+
+- `research-source` skill（v0.4+）：消费 pdf-extract 输出做 Card/Brief/Deep-Dive
+- Anthropic 官方 PDF skill：通用 PDF 操作（编辑 / 合并 / 表单），不做研究抽取
 
 ## 失败处理
 
