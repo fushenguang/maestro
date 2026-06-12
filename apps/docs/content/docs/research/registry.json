@@ -1,7 +1,7 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "schema_version": "2026-06-11",
-  "updated_at": "2026-06-11",
+  "updated_at": "2026-06-12",
   "skill_version": "0.4",
   "output_dir": "apps/docs/content/docs/research/",
   "audience_axes": {
@@ -433,6 +433,27 @@
       "char_count": 5716,
       "fetched_via_fallback": true,
       "notes": "Aider-AI/aider OSS terminal pair programmer；三支柱：git-first + 14+ edit format + pluggable LLM (litellm)；Repo-map = RAG-for-codebase；chat modes (code/ask/architect/help)；零 telemetry / Apache 2.0；CC 最直接同类工具；subagent v1 网络拒，v2 走 pre-seeded cache (Problem 26)；v0.5 Brief 已完成 (3 大支柱详解 + 14+ edit format + pluggable LLM + Repo-map + 4 chat modes + 6 维 CC 对比 + 8 教程章节候选)"
+    },
+    {
+      "slug": "tutorial-projects",
+      "url": "apps/docs/RESEARCH_BRIEF.md",
+      "source_type": "article",
+      "source_subtype": "blog",
+      "tier_current": "card",
+      "status": "card_complete",
+      "promote_to_brief": null,
+      "promote_to_deep_dive": null,
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "low",
+        "cc_experience": "newbie"
+      },
+      "last_checked": "2026-06-12",
+      "batch": 4,
+      "tier_group": "项目选题调研（4 类合成）",
+      "char_count": 30701,
+      "overflow": true,
+      "notes": "批 4 调研：4 类项目共 20 个候选（每类 5 个），按 brief 结构 (技术栈/复杂度/核心功能/CC 功能映射/情绪锚点/可扩展性/风险) 出 card。v0.3 (2026-06-12 晚) 增 4 个 Tauri/Rust 候选（含 1 Bevy）：Bevy 2D 平台跳跃 / Tauri Markdown 笔记 / Tauri Git 客户端 / Tauri 代码片段管理器。Rust 相关 5/16 (31%) → 9/20 (**45%**); Tauri 3 → **6 个**; Bevy **1 个**。**Tauri 6 个候选是核心差异化卖点**——父项目 Maestro 栈。**重要：本批次三路网络工具均不可用** (mcp__brave-search fetch failed / WebSearch 400 / WebFetch 未尝试) — 候选基于 brief 方向 + 训练数据中已验证的成熟项目型（含真实开源参考：bevyengine/bevy / masscode-io/masscode / extrawurst/gitui / logseq / Obsidian / ripgrep / fd），**非实时 trending 验证**。下游 Gate 2 (Brief) 须补做实时验证。推荐主推 8 个：Snake+排行榜 / Markdown→微信 / 付费 Newsletter / Anki 间隔重复卡 / Tauri 桌面贪吃蛇 / Tauri Markdown 笔记 / Tauri 桌面 Anki / Tauri Git 客户端。char_count 30701 远超 blog 上限 1500 — 标 overflow（合成源天然密度高）。"
     }
   ]
 }

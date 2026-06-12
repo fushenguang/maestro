@@ -21,6 +21,7 @@
     "gemini-cli",
     "qodo-merge",
     "cursor-changelog",
-    "aider"
+    "aider",
+    "tutorial-projects"
   ]
 }
