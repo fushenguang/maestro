@@ -1,7 +1,7 @@
 {
   "version": "0.1.9",
   "schema_version": "2026-06-11",
-  "updated_at": "2026-06-12",
+  "updated_at": "2026-06-13",
   "skill_version": "0.4",
   "output_dir": "apps/docs/content/docs/research/",
   "audience_axes": {
@@ -454,6 +454,69 @@
       "char_count": 30701,
       "overflow": true,
       "notes": "批 4 调研：4 类项目共 20 个候选（每类 5 个），按 brief 结构 (技术栈/复杂度/核心功能/CC 功能映射/情绪锚点/可扩展性/风险) 出 card。v0.3 (2026-06-12 晚) 增 4 个 Tauri/Rust 候选（含 1 Bevy）：Bevy 2D 平台跳跃 / Tauri Markdown 笔记 / Tauri Git 客户端 / Tauri 代码片段管理器。Rust 相关 5/16 (31%) → 9/20 (**45%**); Tauri 3 → **6 个**; Bevy **1 个**。**Tauri 6 个候选是核心差异化卖点**——父项目 Maestro 栈。**重要：本批次三路网络工具均不可用** (mcp__brave-search fetch failed / WebSearch 400 / WebFetch 未尝试) — 候选基于 brief 方向 + 训练数据中已验证的成熟项目型（含真实开源参考：bevyengine/bevy / masscode-io/masscode / extrawurst/gitui / logseq / Obsidian / ripgrep / fd），**非实时 trending 验证**。下游 Gate 2 (Brief) 须补做实时验证。推荐主推 8 个：Snake+排行榜 / Markdown→微信 / 付费 Newsletter / Anki 间隔重复卡 / Tauri 桌面贪吃蛇 / Tauri Markdown 笔记 / Tauri 桌面 Anki / Tauri Git 客户端。char_count 30701 远超 blog 上限 1500 — 标 overflow（合成源天然密度高）。"
+    },
+    {
+      "slug": "humanizer",
+      "url": "https://github.com/blader/humanizer",
+      "source_type": "repo",
+      "source_subtype": "methodology",
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
+      "promote_to_brief": true,
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "low",
+        "cc_experience": "used"
+      },
+      "last_checked": "2026-06-13",
+      "batch": 5,
+      "tier_group": "去 AI 味写作调研",
+      "char_count": 7128,
+      "notes": "基于 Wikipedia Signs of AI writing 的 Claude Code skill；33 种 AI 文本模式 + 声纹校准 + 双轮重写审计；MIT 许可；v2.8.0；与 renwei-writing 互补——提供技术骨架（检测引擎），renwei 提供哲学框架（少动/保手迹）。Deep-Dive 推进完成（主题 1: 33 模式中文化可移植性三档分析 高适配18/需适配10/低适配5 + 主题 2: vs renwei 6 维对比 + 主题 3: 三层架构设计 哲学层/检测层/审计层 + 关键设计决策 适用范围/语言策略/激进程度/声纹库）。"
+    },
+    {
+      "slug": "renwei-writing",
+      "url": "https://github.com/orange2ai/renwei-writing",
+      "source_type": "repo",
+      "source_subtype": "methodology",
+      "tier_current": "deep-dive",
+      "status": "deep-dive_complete",
+      "promote_to_brief": true,
+      "promote_to_deep_dive": true,
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "low",
+        "cc_experience": "used"
+      },
+      "last_checked": "2026-06-13",
+      "batch": 5,
+      "tier_group": "去 AI 味写作调研",
+      "char_count": 6422,
+      "notes": "中文 AI 写作去味心法；人味儿三要素（位置/代价/手迹）+ 六条操作规则 + 真实失败案例解剖 + 中文适配事后检查清单；开源/个人免费，商业需授权。与 humanizer 互补——提供哲学框架（少动/保手迹/隐形是上限），humanizer 提供技术骨架。Deep-Dive 推进完成（主题 1: vs humanizer 哲学层对比 + 主题 2: checklist 与 33 模式对应关系 + 主题 3: gotchas 机制对 skill 设计的启发 + 主题 4: 两个源合成 /de-ai skill 完整方案 三层架构 + 关键创新点 声纹库/激进度分级/教程场景优化/持续 gotchas）。"
+    },
+    {
+      "slug": "de-ai-skill",
+      "url": ".claude/skills/de-ai/SKILL.md",
+      "source_type": "article",
+      "source_subtype": "methodology",
+      "tier_current": "card",
+      "status": "card_complete",
+      "promote_to_brief": null,
+      "promote_to_deep_dive": null,
+      "audience_tags": {
+        "cs_background": "partial",
+        "devops": "low",
+        "cc_experience": "used"
+      },
+      "last_checked": "2026-06-13",
+      "batch": 5,
+      "tier_group": "去 AI 味写作调研",
+      "based_on": [
+        "humanizer",
+        "renwei-writing"
+      ],
+      "notes": "基于 humanizer + renwei-writing 深度调研合成的中文技术写作去 AI 味 skill。三层架构（哲学层 + 检测层 + 审计层）+ 四步工作流（判断动不动 → 检测 AI 味五组 20+ 模式 → 自审计 → 交代改动）+ 教程写作 Top 6 高频 AI 味专项优化。已在 6 篇教程上跑过审查验证（9 处建议改动，0.36% 改动率）。位于 .claude/skills/de-ai/SKILL.md，共 4771 字符，MIT 许可。Card 完成。后续：持续在实际教程写作中使用并迭代，积累教程写作专用 gotchas。"
     }
   ]
 }

@@ -1,0 +1,39 @@
+{
+  "slug": "renwei-writing",
+  "url": "https://github.com/orange2ai/renwei-writing",
+  "source_type": "repo",
+  "source_subtype": "methodology",
+  "tiers_present": ["card", "brief", "deep-dive"],
+  "status": "deep-dive_complete",
+  "last_checked": "2026-06-13",
+  "primary_author": "橘子 (Orange) & Cola",
+  "license": "开源/个人免费，闭源商业需商业授权",
+  "char_count": 6422,
+  "audience_tags": {
+    "cs_background": "partial",
+    "devops": "low",
+    "cc_experience": "used"
+  },
+  "promote_to_brief": true,
+  "promote_to_deep_dive": true,
+  "fetched_via": "git clone --depth=1",
+  "description_short": "中文 AI 写作去味心法 — 改完之后那个人还在。三要素（位置/代价/手迹）+ 六条操作规则 + 事后检查清单",
+  "cross_check_anchors": [
+    "SKILL.md:L18-L26 (失败案例开头)",
+    "SKILL.md:L29-L42 (人味儿三要素)",
+    "SKILL.md:L44-L57 (六条操作规则)",
+    "case-study.md:L1-L81 (完整失败解剖)",
+    "post-edit-checklist.md:L1-L108 (六组中文适配检查)"
+  ],
+  "key_features": [
+    "renwei_triad_position_cost_handwriting",
+    "subtract_only_principle",
+    "rough_edges_as_handwriting",
+    "no_beautiful_sentences_alarm",
+    "post_edit_checklist_chinese_adapted",
+    "gotchas_from_real_failures",
+    "two_layer_structure_principles_then_checklist"
+  ],
+  "complementary_sources": ["humanizer"],
+  "next_steps": "已与 humanizer 交叉分析，产出四主题（哲学层对比 / checklist 模式对应 / gotchas 机制 / 合成方案）。建议直接基于本源的六条操作规则 + humanizer 的 33 种模式合成 /de-ai skill。"
+}
