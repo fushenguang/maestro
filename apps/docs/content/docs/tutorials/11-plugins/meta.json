@@ -1,9 +1,0 @@
-{
-  "title": "篇十一：插件系统",
-  "description": "CC 插件生态总览 + 知识工作插件 + 自定义插件开发。扩展 CC 的能力边界。",
-  "pages": [
-    "01-plugin-ecosystem",
-    "02-knowledge-work-plugins",
-    "03-custom-plugin-dev"
-  ]
-}

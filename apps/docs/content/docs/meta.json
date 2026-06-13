@@ -2,11 +2,6 @@
   "title": "文档",
   "description": "Claude Code 教程 — 文档导航",
   "pages": [
-    "index",
-    "tutorials",
-    "research",
-    "video",
-    "podcast",
-    "comic"
+    "index"
   ]
 }
