@@ -1,0 +1,30 @@
+---
+title: "02. 网络环境"
+description: "GitHub 访问、Anthropic API 连接——中国大陆用户使用 Claude Code 必须解决的网络问题。"
+audience: "🟢 零基础可读"
+cc_version: "2.1.176"
+research_sources: []
+---
+
+> 🚧 本章尚未撰写。
+
+## 计划覆盖
+
+- **GitHub 访问**：clone 仓库、下载 Release、GitHub Actions——CC 重度依赖 GitHub
+- **Anthropic API 连通性**：CC 需要持续访问 API 端点
+- **代理配置**：终端代理、Git 代理、CC 代理——三层都要配
+- **关于 VPN**：本教程不写 VPN 选择和配置（原因：推荐具体服务商有合规风险；每个人的网络环境不同，没有通用方案），但你需要确保终端里的 `curl https://api.anthropic.com` 能通
+
+## 自检
+
+终端里跑通这两条命令——这是后续所有章节的前置条件：
+
+```bash
+curl -s https://api.anthropic.com/v1/messages | head -1
+# 应该返回错误 JSON（不是连接超时）——说明能访问 Anthropic API
+
+git clone https://github.com/anthropics/claude-code.git /tmp/cc-test && rm -rf /tmp/cc-test
+# 能 clone 成功——说明 GitHub 通
+```
+
+如果上面两条有一条不通——先解决网络再往下走。后面所有内容都依赖这两个连通性。

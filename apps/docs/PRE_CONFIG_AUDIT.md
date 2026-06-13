@@ -10,7 +10,7 @@
 
 | 维度 | 当前状态 | 评分 |
 |---|---|---|
-| Claude Code 版本 | 2.1.167 | 最新 |
+| Claude Code 版本 | 2.1.176 | 最新 |
 | 默认模型 | **MiniMax-M3**（非 Claude，走 `api.minimaxi.com/anthropic` 反代） | ⚠️ 偏离 CLAUDE.md「Claude LLM 负责规划」的设定 |
 | 已装插件 | 2 个（superpowers、mcp-server-dev，**都是项目级**，非全局） | ⚠️ 项目级，非用户级 |
 | 仓库内 Skill | 1 个（我们新建的 `research-source`） | 极少 |
@@ -43,7 +43,7 @@
 
 | 项 | 值 |
 |---|---|
-| 版本 | **2.1.167**（`/opt/homebrew/Caskroom/claude-code@latest/2.1.167/claude`） |
+| 版本 | **2.1.176**（`/opt/homebrew/Caskroom/claude-code@latest/2.1.176/claude`） |
 | 安装方式 | Homebrew Cask |
 | 配置目录 | `/Users/sunny/.claude/`（13MB） |
 | 项目配置目录 | `/Users/sunny/Desktop/Workspace/CogitoTech/maestro/.claude/` |

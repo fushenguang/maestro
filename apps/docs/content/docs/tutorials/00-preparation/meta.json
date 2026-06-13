@@ -1,0 +1,10 @@
+{
+  "title": "准备篇：开始之前",
+  "description": "教程地图 + 工具准备 + 网络环境 + 免费资源——在正式开始前把环境搭好，把能用的资源攥在手里。",
+  "pages": [
+    "00-tutorial-map",
+    "01-tools",
+    "02-network",
+    "03-resources"
+  ]
+}

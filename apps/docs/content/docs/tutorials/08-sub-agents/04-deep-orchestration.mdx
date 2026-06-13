@@ -1,0 +1,22 @@
+---
+title: "04. 多 Agent 编排 ⭐"
+description: "并行 vs Pipeline 的决策树 + Workflow 脚本编排 + 循环直到收敛模式。一个 CC 不够用时的正确打开方式。"
+audience: "🔴 需要并发编程基础"
+cc_version: "2.1.176"
+research_sources:
+  - anth-sub-agents
+---
+
+> 🚧 本章尚未撰写。
+
+**配项目**：用 Workflow 脚本编排 3 个 agent——一个审代码、一个写测试、一个修 bug——同时进行。
+
+## ⭐ 深入篇 · 需要深入理解
+
+## 计划覆盖
+
+- 并行 (parallel)：独立任务同时跑——Wall-clock = 最慢的那个
+- Pipeline：任务有依赖关系——前一阶段的输出是后一阶段的输入
+- Workflow 脚本：用 JavaScript 编排复杂的多 agent 流程
+- 循环直到收敛：未知数量的发现任务——找到无新发现为止
+- 常见错误：不需要 barrier 却加了——浪费等待时间

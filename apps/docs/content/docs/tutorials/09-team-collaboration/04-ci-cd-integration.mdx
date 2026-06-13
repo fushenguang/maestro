@@ -1,0 +1,19 @@
+---
+title: "04. CI/CD 集成"
+description: "把 CC 嵌入 CI/CD——测试挂了自动调 SDK 修、PR 自动 review、常规任务用 API 直调。从人机对话到系统间对话。"
+audience: "🔴 需要 CI/CD 经验"
+cc_version: "2.1.176"
+research_sources:
+  - anth-agent-sdk
+---
+
+> 🚧 本章尚未撰写。
+
+**配项目**：给团队 CI 加一个「自动修 bug」步骤——测试挂了 → CC 分析错误日志 → 生成修复 → 自动提 PR。
+
+## 计划覆盖
+
+- 3 种集成模式：CLI 调用 / SDK 嵌入 / API 直调
+- CI/CD 中的 CC：不是替代 CI，是补充 CI 做不到的事
+- 自动修 bug 流水线：测试失败 → CC 分析 → 修复 → 验证 → PR
+- 安全边界：CI 中的 CC 权限必须比人用的更严格

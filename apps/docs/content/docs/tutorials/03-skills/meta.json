@@ -1,0 +1,13 @@
+{
+  "title": "篇三：Skill 系统",
+  "description": "从写第一个 Skill 到企业级 Skill 管理——把口述经验变成可复用资产。企业中非常看重的能力。",
+  "pages": [
+    "01-basics-concept",
+    "02-basics-first-skill",
+    "03-basics-templates",
+    "---",
+    "04-deep-design-methodology",
+    "05-deep-scoring-system",
+    "06-deep-enterprise-management"
+  ]
+}

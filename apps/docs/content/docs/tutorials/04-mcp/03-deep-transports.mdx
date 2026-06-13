@@ -1,0 +1,21 @@
+---
+title: "03. 3 种 Transport 原理与选型 ⭐"
+description: "stdio / SSE / streamable HTTP——三种传输方式的底层差异、性能特点和适用场景。"
+audience: "🔴 需要网络协议基础"
+cc_version: "2.1.176"
+research_sources:
+  - anth-mcp
+---
+
+> 🚧 本章尚未撰写。
+
+**配项目**：对比同一 MCP Server 在 3 种 transport 下的行为差异——延迟、连接稳定性、并发能力。
+
+## ⭐ 深入篇 · 需要深入理解
+
+## 计划覆盖
+
+- stdio：本地进程通信——最快但限于本机
+- SSE：Server-Sent Events——单向流，适合实时推送
+- streamable HTTP：双向流——最灵活但延迟最高
+- 选型决策树：按场景选 transport

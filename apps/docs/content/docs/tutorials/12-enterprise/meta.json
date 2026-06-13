@@ -1,0 +1,10 @@
+{
+  "title": "篇十二：企业部署 & 治理",
+  "description": "安全模型、合规审计、SSO/OAuth、Managed Policy——从个人工具到企业级基础设施。",
+  "pages": [
+    "01-security-model",
+    "02-compliance-audit",
+    "03-sso-oauth",
+    "04-managed-policy"
+  ]
+}

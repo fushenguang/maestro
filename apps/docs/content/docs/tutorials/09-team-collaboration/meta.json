@@ -1,0 +1,10 @@
+{
+  "title": "篇九：团队协作",
+  "description": "3-5 人团队使用 Claude Code 的完整方案——共享规范、AI Code Review、CI/CD 集成。从单人到团队的关键跨越。",
+  "pages": [
+    "01-team-setup",
+    "02-shared-conventions",
+    "03-ai-code-review",
+    "04-ci-cd-integration"
+  ]
+}

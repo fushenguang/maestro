@@ -1,0 +1,9 @@
+{
+  "title": "篇十四：生态 & 工具",
+  "description": "同类工具横向对比 + Agent SDK & API 集成 + 社区资源索引。从 CC 用户到生态参与者。",
+  "pages": [
+    "01-tool-comparison",
+    "02-agent-sdk",
+    "03-community-resources"
+  ]
+}

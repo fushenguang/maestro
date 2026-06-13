@@ -1,0 +1,10 @@
+{
+  "title": "篇二：配置 Claude Code",
+  "description": "从裸跑到高效——settings.json、模型代理、权限系统、superpowers 生态工具。让你的 CC 不再是出厂设置。",
+  "pages": [
+    "01-settings-basics",
+    "02-model-proxy",
+    "03-permissions",
+    "04-superpowers-ecosystem"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "title": "篇十三：项目实战",
+  "description": "8 个完整项目——Tauri 桌面三连 + 商业 Newsletter + 学习工具 + Bevy 游戏 + 工程方法论。从做到做成。",
+  "pages": [
+    "01-tauri-snake",
+    "02-tauri-notes",
+    "03-tauri-git-client",
+    "04-paid-newsletter",
+    "05-anki",
+    "06-math-game",
+    "07-bevy-platformer",
+    "08-engineering-methodology"
+  ]
+}

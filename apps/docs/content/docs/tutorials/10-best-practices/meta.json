@@ -1,0 +1,10 @@
+{
+  "title": "篇十：最佳实践",
+  "description": "Prompt 工程 + Git 工作流 + 社区最佳实践（融合 ECC + CCBP）+ 反模式避坑。让 CC 快且可靠。",
+  "pages": [
+    "01-prompt-engineering",
+    "02-community-patterns",
+    "03-git-workflow",
+    "04-anti-patterns"
+  ]
+}

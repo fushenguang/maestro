@@ -1,0 +1,11 @@
+{
+  "title": "篇八：Sub-agents",
+  "description": "从第一次并行开发到多 Agent 编排——一个 CC 不够用的时候，让多个 Agent 同时干活。",
+  "pages": [
+    "01-basics-concept",
+    "02-basics-first-agent",
+    "---",
+    "03-deep-agent-types",
+    "04-deep-orchestration"
+  ]
+}

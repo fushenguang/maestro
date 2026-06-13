@@ -1,0 +1,11 @@
+{
+  "title": "篇四：MCP 协议",
+  "description": "让 CC 不再是一个聪明的孤岛。从连接第一个 MCP Server 到自建 Server 发布到 Registry。",
+  "pages": [
+    "01-basics-concept",
+    "02-basics-first-server",
+    "---",
+    "03-deep-transports",
+    "04-deep-build-server"
+  ]
+}
