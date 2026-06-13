@@ -1,0 +1,13 @@
+{
+  "title": "教程",
+  "description": "Claude Code 中文教程 — 用项目学 CC",
+  "pages": [
+    "00-tutorial-map",
+    "01-installation",
+    "02-dialogue-basics",
+    "03-snake-game-1",
+    "04-snake-game-2",
+    "05-hooks-deep-dive",
+    "feedback"
+  ]
+}

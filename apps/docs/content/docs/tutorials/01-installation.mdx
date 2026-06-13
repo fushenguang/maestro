@@ -1,0 +1,210 @@
+---
+title: "01. 安装配置：从零到跑通第一个 prompt"
+description: "装好 Claude Code + 配置模型 + 跑通第一个对话。覆盖中国大陆用户的实际障碍——支付、网络、API key 获取。"
+audience: "🟡 需要编程基础"
+cc_version: "2.1.174"
+research_sources:
+  - anth-claude-code-overview
+---
+
+> Tips: 后面用 **CC** 表示 Claude Code。省 8 个字符，少打很多字。
+
+## 你要装的是什么
+
+Claude Code 是一个**命令行工具**。不是你浏览器里打开的东西，不是你 IDE 插件——是 terminal 里敲 `claude` 然后回车的那种工具。
+
+它本身免费。但跑起来需要一个能调用大模型的 API key。对中国用户来说，最省事的选择：
+
+| 方案 | API 来源 | 月费估算 | 中国用户体验 |
+|---|---|---|---|
+| **A（推荐）** | DeepSeek V4 Pro | ¥10-30 | 🟢 支付宝/微信充值，免翻墙 |
+| **B** | Anthropic 官方 | $15-50+ | 🔴 需翻墙 + 海外信用卡 |
+
+本教程统一使用方案 A。把精力省下来写代码，别耗在支付和网络上。
+
+## 第一步：安装 CC
+
+### macOS
+
+**方式一（推荐）：一行命令**
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+这是官方首推的安装方式。装完自动在后台更新，不用手动升级。
+
+**方式二：Homebrew**
+
+```bash
+brew install --cask claude-code
+```
+
+选 `claude-code@latest` 可以拿到最新版（但不会自动更新，需要手动 `brew upgrade`）。
+
+> **真实经历**：Mac M1 下用 brew 安装，可能遇到更新失败。即使开了 VPN，也可能报 SSL 或连接错误。如果 `brew upgrade claude-code` 反复失败——试这个：
+>
+> ```bash
+> export https_proxy=http://127.0.0.1:7897 && arch -arm64 brew upgrade claude-code@latest
+> ```
+>
+> 这是真实踩过的坑。如果还是不行——退回方式一，`curl` 那条命令对网络的容忍度更高。
+
+装完验证：
+
+```bash
+claude --version
+```
+
+打印出 `2.x.x` 就装好了。
+
+### Windows
+
+**PowerShell（推荐）：**
+
+```powershell
+irm https://claude.ai/install.ps1 | iex
+```
+
+**CMD：**
+
+```batch
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+```
+
+> 注意分辨终端类型：PowerShell 的提示符是 `PS C:\>`，CMD 的提示符是 `C:\>`。上面两条命令不能混用。
+
+### Linux
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+Debian/Ubuntu 也可以用 `apt`，Fedora 用 `dnf`，Alpine 用 `apk`。详见[官方文档](https://code.claude.com/docs/en/setup)。
+
+---
+
+## 第二步：搞到 API Key
+
+### DeepSeek（推荐）
+
+1. 打开 [platform.deepseek.com](https://platform.deepseek.com)
+2. 注册——中国大陆手机号直接收验证码
+3. 充值——支付宝/微信扫码，最低 10 块钱，够你玩一两周
+4. 左侧菜单 → API Keys → 创建
+5. 复制那个 `sk-` 开头的字符串。**不要发给任何人。这个 key 代表你的钱包。**
+
+### Anthropic（备选）
+
+如果你坚持用 Claude 官方模型——下面是你需要翻过去的东西。其他人跳过。
+
+**第一座山：网络。** `console.anthropic.com` 在中国大陆无法直接访问。你需要代理。
+
+**第二座山：手机号。** 注册可能要求短信验证。中国大陆手机号有时能收到，有时不能。
+
+**第三座山：付款。** Anthropic API 需要绑定信用卡。中国大陆发行的 Visa/Mastercard 不一定能绑上。
+
+翻过去了？登录 [console.anthropic.com](https://console.anthropic.com)，Workbench → API Keys → 创建。复制那个 `sk-ant-` 开头的字符串。
+
+---
+
+## 第三步：让 CC 用上你的 Key
+
+### 推荐方式：用 cc-switch 管理
+
+[cc-switch](https://github.com/farion1231/cc-switch)（[ccswitch.io](https://ccswitch.io/zh/)）是一个开源工具，专门帮 CC 用户切换和管理模型配置。不用手动编辑 settings.json，不用记 endpoint 地址。
+
+安装：
+
+```bash
+# 通过 Claude Code 的插件系统安装
+claude plugin install cc-switch@claude-plugins-official
+```
+
+安装后在 CC 里运行 `/cc-switch`，按提示选择 DeepSeek 并填入你的 API key。搞定。
+
+### 手动配置（如果你想折腾）
+
+创建或编辑 `~/.claude/settings.json`：
+
+**macOS / Linux：**
+```bash
+mkdir -p ~/.claude
+cat > ~/.claude/settings.json << 'EOF'
+{
+  "env": {
+    "ANTHROPIC_API_KEY": "sk-你的deepseek-key",
+    "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic"
+  }
+}
+EOF
+```
+
+**Windows（PowerShell）：**
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude"
+@"
+{
+  "env": {
+    "ANTHROPIC_API_KEY": "sk-你的deepseek-key",
+    "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic"
+  }
+}
+"@ | Out-File -FilePath "$env:USERPROFILE\.claude\settings.json" -Encoding UTF8
+```
+
+把 `sk-你的deepseek-key` 换成你第二步拿到的真实 key。
+
+---
+
+## 第四步：跑通第一个 prompt
+
+终端里输入：
+
+```bash
+claude
+```
+
+看到 `>` 提示符？输入：
+
+```
+你好，用一句话介绍你自己。
+```
+
+CC 回复了一句话——**装好了。**
+
+如果报了错：
+
+| 症状 | 大概率是 |
+|---|---|
+| `claude: command not found` | 安装没成功。重跑第一步的安装命令。|
+| `401 Unauthorized` | API key 没配对。检查 `sk-` 前缀是否完整。|
+| `Connection refused` / 超时 | 如果用 Anthropic 官方模型——需要代理。如果用 DeepSeek——检查 endpoint 是否为 `https://api.deepseek.com/anthropic`（末尾没有 `/v1`）。|
+| `429 Too Many Requests` | DeepSeek 余额用完了。去 platform.deepseek.com 充值。|
+
+---
+
+## 验证一切就绪
+
+在 CC 里问：
+
+```
+你连接的是哪个模型？
+```
+
+它应该回答 DeepSeek V4 Pro（或你配的模型名）。回答正确——一切就绪。
+
+---
+
+## 接下来
+
+两个选择：
+
+- **继续 02 章（对话基础）**——学会控制 CC 的行为边界。不然你让它修一个 bug，它可能重写你整个项目。
+- **直接跳到 03 章（贪吃蛇）**——你已经装好了，先做个能玩的东西出来，爽一把。
+
+如果你从没跟 CC 正经合作过——建议先读 02。不是因为它难，是因为 CC 的默认行为很容易吓到你。
+
+---
+
+**下一章：02. 对话基础——学会让 CC 只做你想要的，不多做。**

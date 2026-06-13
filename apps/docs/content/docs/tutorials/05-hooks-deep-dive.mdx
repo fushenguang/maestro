@@ -1,0 +1,470 @@
+---
+title: "05. Hooks 深度：5 类 handler × 3 层事件——从安全底线到完整工作流"
+description: "你的黑名单永远漏。白名单策略 + PreToolUse 权限闸口 + 5 层作用域链 + 8 条安全基线。把 Hook 从'能跑'写到'能防'。"
+audience: "🟡 需要编程基础"
+cc_version: "2.1.174"
+research_sources:
+  - anth-hooks
+---
+
+第 04 章你写了一个 PostToolUse Hook——CC 改完 `.ts` 文件自动跑 `tsc --noEmit`。它跑了三天，拦住了 11 次类型错误。
+
+第四天，你说：
+
+> 帮我把排行榜数据导出成 CSV
+
+CC 说"好"，然后执行了：
+
+```bash
+cat src/main.ts > /tmp/leaderboard-export.csv
+```
+
+你愣了一下——它用 `cat` 覆盖了一个系统临时文件。没出事，但你知道：**你的 Hook 有洞。**
+
+更让你不安的是：同事 clone 了你的项目。他的 CC session 里没有你的 Hook。他让 CC "清理一下未使用的依赖"——CC 执行了 `rm -rf node_modules && npm install`。这次也没出事。但下次呢？
+
+你的 PostToolUse Hook 只在 CC **改完代码后**检查类型。它管不了 CC **执行命令前**拦截危险操作。它管不了同事的机器上没有这个 Hook。它更管不了——你拦了 `rm -rf` 和 `DROP TABLE`，但 CC 还能执行 `DELETE FROM`、`chmod 777`、`git push --force`、`curl ... | bash`。
+
+这一章不是教你"再写一个 Hook"。是教你**Hook 的完整模型**——5 类 handler、3 层事件、5 层作用域、8 条安全基线。读完你能设计一个从安全底线到自动验证的完整 Hook 体系。
+
+## 第一堵墙：黑名单永远漏
+
+你第 04 章自检写了一个 PreToolUse Hook，拦截 `rm -rf` 和 `DROP TABLE`。用了一天，你意识到这个名单可以无限长：
+
+| 你拦了 | CC 还能执行 |
+|---|---|
+| `rm -rf /` | `rm -r ./*` |
+| `DROP TABLE` | `DELETE FROM users WHERE 1=1` |
+| `chmod 777` | `chown -R $(whoami) /etc` |
+| `git push --force` | `git push origin +main` |
+| `curl ... \| bash` | `wget -O - ... \| sh` |
+
+**黑名单策略的本质缺陷：你只能拦住你知道的坏东西。CC 总能找到你不知道的等价写法。**
+
+## PreToolUse：把黑名单翻成白名单
+
+PreToolUse 是 Hook 系统里**唯一能在 CC 执行操作前拦截并改写输入**的事件。你的策略不该是"列出所有坏命令"——而是"只允许已知的好命令"。
+
+在 `.claude/hooks/pre-bash-validator.sh`：
+
+```bash
+#!/usr/bin/env bash
+# PreToolUse Hook：Bash 命令白名单
+# CC 每次执行 Bash 命令前，stdin 会收到：
+# { "tool": "Bash", "toolInput": { "command": "..." } }
+set -euo pipefail
+
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.toolInput.command')
+
+# 白名单：只允许这些命令模式
+if [[ "$COMMAND" =~ ^(npm|yarn|pnpm|git|ls|cat|grep|find|wc|head|tail|mkdir|touch|cp|mv|echo|curl|npx|node|python3|cargo)\  ]]; then
+  exit 0  # 放行
+fi
+
+# 其他一切——拦截
+echo "BLOCKED: 命令 '$COMMAND' 不在白名单中" >&2
+exit 2  # exit 2 = 阻塞，stderr 会反馈给 CC
+```
+
+把这个 Hook 挂到 PreToolUse：
+
+```json
+// .claude/settings.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-bash-validator.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+现在让 CC 试一下：
+
+> 帮我看看 node_modules 里有没有 leftover 文件
+
+CC 可能会尝试 `find node_modules -name "*.tmp"`——白名单放行。
+
+但如果它尝试 `sudo npm install -g something`——拦截。`sudo` 不在白名单里。
+
+### exit code 契约
+
+你刚才看到了 `exit 0` 和 `exit 2`。这是 command hook 和 CC 之间的契约——不是所有非零都是"拦截"：
+
+| exit code | 语义 | CC 的行为 |
+|---|---|---|
+| `0` | 成功 | hook 输出注入 agent context，CC 继续 |
+| `2` | **阻塞** | stderr 注入 agent context，CC 停下来解释为什么被拦 |
+| 其他非 0（1, 127...）| 非阻塞失败 | 错误进 stderr，**CC 继续执行** |
+
+**`exit 1` 不阻塞——只有 `exit 2` 阻塞。** 这是新手最容易踩的坑。写了一个 `exit 1` 以为拦住了——CC 照样执行。
+
+### 不只是拦截：改写输入
+
+PreToolUse 还能**改写** CC 要执行的命令——不只是 allow/deny。这是其他事件没有的能力。
+
+场景：CC 想执行 `npm install`——但你希望它永远加 `--legacy-peer-deps`：
+
+```bash
+#!/usr/bin/env bash
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.toolInput.command')
+
+# 改写：npm install 永远带 --legacy-peer-deps
+if [[ "$COMMAND" =~ ^npm\ install\  ]] && [[ ! "$COMMAND" =~ --legacy-peer-deps ]]; then
+  NEW_COMMAND="${COMMAND} --legacy-peer-deps"
+  echo "$INPUT" | jq --arg cmd "$NEW_COMMAND" '.toolInput.command = $cmd'
+  exit 0
+fi
+
+cat <<< "$INPUT"
+exit 0
+```
+
+当 Hook 的 stdout 输出一个 JSON——CC 用这个 JSON 替换原始输入。没有 JSON 输出 = 不改写，原始输入原样执行。
+
+## 第二堵墙：同事的机器上没有 Hook
+
+你的 `.claude/hooks/` 目录在项目根目录。你 `git commit` 了。同事 pull 下来——Hook 是有了，但 `settings.json` 里的 Hook 注册在你的 `~/.claude/settings.json`（用户级）。
+
+同事的机器没有这个注册。Hook 脚本躺在项目目录里，但 CC 不知道要跑它。
+
+## 5 层作用域链：把 Hook 放在对的地方
+
+CC 的 Hook 配置有 5 层——从"只对我生效"到"对全公司强制生效"：
+
+```
+~/.claude/settings.json        ← 用户级：我所有项目通用
+.claude/settings.json          ← 项目级：commit 进 git，团队共享
+.claude/settings.local.json    ← 项目本地：gitignore，我的私人偏好
+插件 hooks/hooks.json           ← 插件级：第三方 Skill 自带
+skill / agent frontmatter       ← 内联级：仅这个 Skill / Agent 生效
+```
+
+**优先级（从高到低）：managed（企业托管）> user > project > local > plugin > 内联。**
+
+关键选择：
+
+| 你想做的事 | 放哪一层 |
+|---|---|
+| "我所有项目都不让 CC 用 sudo" | `~/.claude/settings.json`（user 级）|
+| "这个项目的所有人改完 .ts 文件自动跑 tsc" | `.claude/settings.json`（project 级，commit）|
+| "我在这个项目里允许 CC 用 sudo（就我自己的机器）" | `.claude/settings.local.json`（gitignore）|
+| "这个 Skill 被调用时自动注入环境变量" | Skill frontmatter（内联级）|
+
+**同名 event + 同名 matcher 的 Hook 不互相覆盖——全部执行。** 用户级设了 PreToolUse Bash 拦截、项目级也设了——两个都跑。顺序是从低优先级到高优先级。
+
+### 企业管控：`allowManagedHooksOnly`
+
+如果你在一个企业环境里，管理员可以设：
+
+```json
+{
+  "allowManagedHooksOnly": true
+}
+```
+
+这个开关一开——user、project、plugin 三层 Hook **全部失效**。只有企业 IT 统一管理的 managed hook 能跑。对个人开发者不重要，但如果你在评估 CC 能不能上生产——第 20 章会回来讲企业治理。
+
+## 第三堵墙：不是所有决策都能用 bash 脚本
+
+你的白名单脚本跑了一周。然后你遇到了新问题：
+
+- 你想在 CC 每次启动时自动注入今天的 Git 状态——"当前分支 `feat/login`，上一次 commit 是 2 小时前，有 3 个未暂存文件"
+- 你想在 CC 请求访问一个 MCP 工具时，查一下这个工具是不是在企业审批清单里
+- 你想在 CC 改完代码后，让另一个 LLM 判断改动是否合理——"这个 commit 的改动范围是否和 commit message 匹配"
+
+这三个需求——bash 脚本做不到。第一个需要读 Git 状态（bash 可以，但你想用结构化 JSON 注入上下文）。第二个需要查外部 API。第三个需要 LLM 推理。
+
+## 5 类 Handler：不只是 shell 命令
+
+CC 的 Hook 支持 5 种处理器形态：
+
+| Handler | 形态 | 什么时候用 |
+|---|---|---|
+| **`command`** | shell 命令（stdin JSON）| 简单决策——拦截、改写、快速验证 |
+| **`http`** | HTTP 端点（POST JSON → 2xx + JSON）| 需要外部状态——PR status、DB 查询、审批系统 |
+| **`mcp_tool`** | 调用已有的 MCP 工具 | 复用已有能力——比如用 GitHub MCP 查 PR 状态 |
+| **`prompt`** | 用 LLM 做决策 | 需要推理——"这个改动是否合理" |
+| **`agent`** | 独立 subagent 判断 | 需要 LLM 推理 + 使用工具——"检查这个 PR 的代码质量" |
+
+### 场景 A：启动时注入 Git 状态（SessionStart + command）
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session-context.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+```bash
+#!/usr/bin/env bash
+# session-context.sh：每次 session 启动，告诉 CC 项目当前状态
+BRANCH=$(git branch --show-current)
+LAST_COMMIT=$(git log -1 --format="%s (%cr)")
+UNSTAGED=$(git diff --name-only | wc -l | tr -d ' ')
+
+cat <<EOF
+当前项目状态：
+- 分支：$BRANCH
+- 最近提交：$LAST_COMMIT
+- 未暂存文件：$UNSTAGED 个
+EOF
+```
+
+这个 Hook 的 stdout 会注入到 CC 的上下文中——每个新 session，CC 都知道项目"在哪"。
+
+### 场景 B：代码改完后 LLM 审（PostToolUse + prompt）
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "检查刚才的代码改动：1) 改动范围是否合理 2) 是否有明显的安全风险 3) 是否引入了新的依赖。如果三个答案都是'否'——回复 OK。否则回复 WARNING + 具体原因。"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+这个 Hook 在每次 Edit/Write 后触发——用一个独立的 LLM 调用审查改动。不是替代 code review——是**每次改动的即时嗅觉检查**。
+
+### 场景 C：MCP 工具调用前查审批清单（PreToolUse + http）
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "http",
+            "url": "https://your-company.com/api/hook-approval",
+            "method": "POST"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+HTTP Hook 发 POST 到你的审批服务。服务返回 2xx + JSON：
+
+```json
+{
+  "decision": "block",
+  "reason": "MCP 工具 'github.push' 需要经理审批"
+}
+```
+
+或者放行：
+
+```json
+{
+  "decision": "approve"
+}
+```
+
+## 全景图：3 层事件 × 5 类 Handler
+
+把 Hooks 系统看全——3 层事件是"什么时候触发"，5 类 handler 是"触发后怎么处理"：
+
+| 层级 | 事件 | 典型用途 |
+|---|---|---|
+| **会话级** | `SessionStart` | 注入项目上下文（Git 状态、CI 结果）|
+| | `SessionEnd` | 清理临时文件、上报 session 统计 |
+| | `Stop` | CC 要停了——阻止它（force continue）|
+| | `Notification` | 自定义通知方式 |
+| **轮次级** | `UserPromptSubmit` | 输入验证、敏感词过滤 |
+| | `SubagentStart` | 给 subagent 注入额外指令 |
+| | `SubagentStop` | 监管 subagent 的输出 |
+| **工具级** | `PreToolUse` | **权限闸口 + 输入改写**（最重的事件）|
+| | `PostToolUse` | 自动验证、回滚检测、审计日志 |
+| | `PermissionRequest` | 替换 CC 默认的权限弹窗 |
+
+### 工具级事件的能力差异
+
+`PreToolUse` 和 `PostToolUse` 看起来对称——但能力不对等：
+
+| 能力 | PreToolUse | PostToolUse |
+|---|---|---|
+| 阻止执行 | ✅（`exit 2` / `decision: "block"`）| ❌（已经执行完了）|
+| 改写输入 | ✅（`updatedInput`）| ❌ |
+| 自动重试 | ❌ | ✅（检测失败 → 让 CC 重做）|
+| 验证结果 | ❌ | ✅（检查输出是否符合预期）|
+
+**PreToolUse 守门。PostToolUse 验货。** 两者互补，不是替代。
+
+## 8 条安全基线
+
+Hook 以**系统用户全权限**运行——这是所有安全问题的根源。8 条基线，来自官方文档和实践踩坑：
+
+| # | 陷阱 | 场景 | 防御 |
+|---|---|---|---|
+| 1 | **全权限执行** | hook 脚本里的 `rm -rf $DIR`，`$DIR` 为空 → 删根目录 | Hook 内部做权限收敛，用 `set -u` 防止空变量 |
+| 2 | **命令注入** | `eval "$USER_INPUT"`，输入含 `; rm -rf /` | 永远 `"$VAR"` 双引号，永不用 `eval` |
+| 3 | **路径穿越** | Hook 写文件到 `../../../etc/passwd` | 校验路径前缀必须在 `${CLAUDE_PROJECT_DIR}/` 内 |
+| 4 | **相对路径** | Hook 用 `./scripts/cleanup.sh`，但 cwd 不可预期 | 永远用 `${CLAUDE_PROJECT_DIR}` 做绝对路径 |
+| 5 | **密钥泄露** | Hook 把 `.env` 内容写到日志 | 显式排除 `.env` / `.git` / `*.pem` / `*credentials*` |
+| 6 | **无超时** | 死循环 Hook → CC 永远卡住 | 每个 Hook 设 `timeout: N`（默认 60s）|
+| 7 | **无 controlling terminal**（v2.1.139+）| 老代码里 `echo "\a" > /dev/tty` 失效 | 改用 `terminalSequence` 字段 |
+| 8 | **matcher 太窄** | `matcher: "Bash"` 漏了 `BashOutput`、`BashKill` | matcher 尽量宽，Hook 内部做精细判断 |
+
+### 安全模板：生产级 PreToolUse Bash 拦截器
+
+把之前学的拼起来——一个考虑了 8 条基线的完整版本：
+
+```bash
+#!/usr/bin/env bash
+# .claude/hooks/pre-bash-validator.sh
+# 生产级 PreToolUse Bash 拦截器
+set -euo pipefail
+
+# 基线 4：强制绝对路径
+cd "${CLAUDE_PROJECT_DIR}"
+
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.toolInput.command // empty')
+
+# 基线 3：防止空命令
+if [[ -z "$COMMAND" ]]; then
+  exit 0
+fi
+
+# 基线 5：禁止读取敏感文件
+if echo "$COMMAND" | grep -qE '(\.env|\.pem|credentials|\.git/config|id_rsa)'; then
+  echo "BLOCKED: 禁止读取敏感文件" >&2
+  exit 2
+fi
+
+# 基线 8：白名单策略（宽匹配 + 内部分类判断）
+# 开发命令——完全放行
+if [[ "$COMMAND" =~ ^(npm|yarn|pnpm|npx|node|python3|tsc|vitest|cargo)\  ]]; then
+  exit 0
+fi
+
+# Git 命令——放行常规操作，拦截 force push
+if [[ "$COMMAND" =~ ^git\  ]]; then
+  if echo "$COMMAND" | grep -qE '(push\s+.*(--force|--delete)|push\s+.*\+|reset\s+--hard)'; then
+    echo "BLOCKED: 危险的 git 操作。如需 force push——用 --force-with-lease 替代" >&2
+    exit 2
+  fi
+  exit 0
+fi
+
+# 文件操作——仅允许项目目录内
+if [[ "$COMMAND" =~ ^(ls|cat|head|tail|grep|find|wc|mkdir|touch|cp|mv|echo)\  ]]; then
+  # 基线 3：检查路径是否在项目内
+  if echo "$COMMAND" | grep -qE '\.\./|/etc|/var|/home|/root|/tmp'; then
+    echo "BLOCKED: 文件操作超出项目目录" >&2
+    exit 2
+  fi
+  exit 0
+fi
+
+# curl / wget——仅允许已知安全 URL
+if [[ "$COMMAND" =~ ^(curl|wget)\  ]]; then
+  if echo "$COMMAND" | grep -qE 'https://(registry\.npmjs|github\.com|api\.github\.com)'; then
+    exit 0
+  fi
+  echo "BLOCKED: 网络请求目标不在白名单中" >&2
+  exit 2
+fi
+
+# 其他一切——拦截
+echo "BLOCKED: 命令 '$COMMAND' 不在白名单中" >&2
+exit 2
+```
+
+这个模板覆盖了 8 条基线中的 6 条（1-5 + 8）。基线 6（timeout）在 settings.json 里配。基线 7（terminalSequence）用于通知类 Hook。
+
+## 调试 Hook：你需要的工具
+
+Hook 跑在后台——你看不到 stdout，stderr 会被 CC 吞掉。调试方法是把输出写到专用日志：
+
+```bash
+#!/usr/bin/env bash
+# 每个 Hook 的第一行——写到调试日志
+exec 2>"${CLAUDE_PROJECT_DIR}/.claude/hook-debug.log"
+
+set -euo pipefail
+echo "$(date +%Y-%m-%dT%H:%M:%S%z) [pre-bash-validator] triggered" >&2
+# ... 你的 Hook 逻辑 ...
+```
+
+然后用 `tail -f .claude/hook-debug.log` 实时看 Hook 的执行情况。
+
+另一个常见陷阱：**matcher 表达力有限。** `matcher: "Bash|Edit"` 是 OR，但 `matcher: "Bash AND NOT *secret*"`（组合条件）不支持。解决方案：**matcher 尽量宽，Hook 内部做精细判断。** 比如 matcher 写 `""`（匹配所有工具），Hook 里用 `jq` 按 tool name 和参数细分逻辑。
+
+## 什么时候不用 Hook
+
+Hook 很强——但不是所有自动化都适合用它：
+
+| 场景 | 用 Hook？ | 替代方案 |
+|---|---|---|
+| CC 改完代码自动格式化 | ✅ PostToolUse | — |
+| 拦截危险命令 | ✅ PreToolUse | — |
+| 每次启动注入项目状态 | ✅ SessionStart | 也可以写在 CLAUDE.md 里 |
+| 定时任务（每小时做某事）| ❌ | Cron / Makefile |
+| 复杂多步工作流 | ❌ | Skill |
+| 跨项目共享的行为规范 | ❌ Hook 太重 | CLAUDE.md（指南）+ Hook（硬约束）组合 |
+
+**一个判断标准：Hook 绑定 CC 的生命周期。** 如果一件事跟"CC 做了什么"无关——它不应该是一个 Hook。
+
+## 本章你学会的
+
+| 概念 | 解决的问题 | 一句话 |
+|---|---|---|
+| **PreToolUse 白名单** | 黑名单永远漏 | "只放行已知安全模式——sudo/force push/curl 不在名单上一律拦" |
+| **exit code 契约** | 为什么 `exit 1` 不拦截 | "只有 `exit 2` 阻塞——`exit 1` 是非阻塞失败" |
+| **updatedInput 改写** | CC 的命令需要自动修正 | "PreToolUse 输出 JSON → CC 用它替换原始输入" |
+| **5 层作用域链** | 同事机器上没有 Hook | "project 级 `.claude/settings.json` commit 进 git——团队共享" |
+| **5 类 handler** | 不是所有决策都能用 bash | "简单拦截用 command，外部状态用 http，需推理用 prompt/agent" |
+| **3 层事件** | 什么时候触发最合适 | "PreToolUse 守门，PostToolUse 验货，SessionStart 注入上下文" |
+| **8 条安全基线** | "能跑" vs "能防" | "全权限执行是根源——双引号、绝对路径、timeout、敏感文件排除" |
+| **调试日志** | Hook 跑了你不知道 | "`exec 2>hook-debug.log` + `tail -f`" |
+
+## 自检
+
+> 在 `cc-playground` 项目里：1) 把上面的生产级 `pre-bash-validator.sh` 放进去 2) 在 `.claude/settings.json` 注册 PreToolUse Hook 3) 让 CC 执行 `rm -rf node_modules`——看它是否被拦截 4) 让 CC 执行 `npm install`——看它是否放行 5) 让 CC 执行 `sudo npm install`——看它是否拦截。30 分钟。
+
+提示：注册 Hook 后需要重启 CC session 才能生效（SessionStart 才会 reload 配置）。
+
+做到？下一章。
+
+> **留白**：你现在有了一个"只放行已知安全命令"的 Bash 拦截器。但它有个盲区——白名单里的 `npm install` 可能安装一个恶意包，白名单里的 `curl` 可能下载一个木马。第 07 章（Skill 实战）会告诉你——如何把白名单策略升级为"命令内容审查"：让 CC 在执行前先解释这个命令**要做什么**、**可能的风险**、**有没有更安全的方式**。这不是技术问题——这是让 CC 自己当自己警察的设计模式。
+
+---
+
+**你刚把第 04 章的基础 Hook 升级成了生产级安全闸口。PreToolUse 守门，PostToolUse 验货，SessionStart 注入上下文。**
+
+**下一章：06. Memory 系统——CLAUDE.md、auto-memory 与 rules 目录：让 CC 像认识你三个月的同事。**
